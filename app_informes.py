@@ -279,10 +279,113 @@ PBX: {pbx} | Cel: {cel}
             canvas.drawCentredString(4.25*inch, 0.5*inch, page_text)
             canvas.restoreState()
 
-        # Crear el story primero
+        # Función para crear página de carátula
+        def create_cover_page():
+            cover_story = []
+
+            # Espacio inicial
+            cover_story.append(Spacer(1, 2*inch))
+
+            # Título principal
+            cover_story.append(Paragraph("INFORME DE INVESTIGACIÓN DE SINIESTRO", styles['ReportTitle']))
+            cover_story.append(Spacer(1, 0.5*inch))
+
+            # Reclamo
+            cover_story.append(Paragraph(f"RECLAMO: {reclamo_num}", ParagraphStyle('CoverSubtitle', parent=styles['NormalLeft'], fontSize=14, alignment=TA_CENTER)))
+            cover_story.append(Spacer(1, 0.3*inch))
+
+            # Fecha de emisión
+            cover_story.append(Paragraph(f"FECHA DE EMISIÓN: {fecha_informe}", ParagraphStyle('CoverDate', parent=styles['NormalLeft'], fontSize=12, alignment=TA_CENTER)))
+            cover_story.append(Spacer(1, 1*inch))
+
+            # Datos principales
+            cover_story.append(Paragraph("DATOS PRINCIPALES:", ParagraphStyle('CoverHeader', parent=styles['SectionHeader'], fontSize=12, alignment=TA_LEFT)))
+
+            bullet_style = ParagraphStyle('BulletStyle', parent=styles['NormalLeft'], leftIndent=20, bulletIndent=0)
+            cover_story.append(Paragraph(f"• Asegurado: {razon_social}", bullet_style))
+            cover_story.append(Paragraph(f"• Placa: {placa_aseg}", bullet_style))
+            cover_story.append(Paragraph(f"• Fecha Siniestro: {str(fecha_siniestro)}", bullet_style))
+            cover_story.append(Paragraph(f"• Inspector: {nombre_investigador}", bullet_style))
+            cover_story.append(Paragraph(f"• Compañía: {compania_seguros}", bullet_style))
+
+            cover_story.append(Spacer(1, 1*inch))
+
+            # Línea separadora
+            cover_story.append(Paragraph("―" * 50, ParagraphStyle('Separator', parent=styles['NormalLeft'], alignment=TA_CENTER)))
+            cover_story.append(Spacer(1, 0.5*inch))
+
+            # Texto final
+            cover_story.append(Paragraph("Este informe consta de varias páginas incluyendo anexos.", ParagraphStyle('CoverText', parent=styles['NormalLeft'], alignment=TA_CENTER)))
+            cover_story.append(Spacer(1, 2*inch))
+
+            # Firma
+            cover_story.append(Paragraph("Firma: _______________________", ParagraphStyle('SignatureLine', parent=styles['NormalLeft'], alignment=TA_LEFT)))
+            cover_story.append(Paragraph(f"Nombre: {nombre_investigador}", styles['NormalLeft']))
+            cover_story.append(Paragraph("Cargo: Investigador de Siniestros", styles['NormalLeft']))
+            cover_story.append(Paragraph(f"Fecha: {fecha_informe}", styles['NormalLeft']))
+
+            return cover_story
+
+        # Función para crear índice dinámico
+        def create_index():
+            index_story = []
+
+            # Título del índice
+            index_story.append(Paragraph("ÍNDICE", styles['SectionHeader']))
+            index_story.append(Paragraph("―" * 20, ParagraphStyle('IndexSeparator', parent=styles['NormalLeft'], alignment=TA_CENTER)))
+            index_story.append(Spacer(1, 0.5*inch))
+
+            # Lista de secciones con páginas estimadas
+            sections = [
+                ("DATOS DEL SINIESTRO", 1),
+                ("ASEGURADO", 1),
+                ("CONDUCTOR", 2),
+                ("OBJETO ASEGURADO", 2),
+                ("LUGAR DEL SINIESTRO", 3),
+            ]
+
+            # Agregar secciones condicionales
+            page_counter = 3
+            if afectado or placa_afectado:
+                sections.append(("TERCEROS AFECTADOS", page_counter))
+                page_counter += 1
+
+            # Secciones narrativas
+            narrative_titles = []
+            if antecedentes.strip(): narrative_titles.append("ANTECEDENTES")
+            if entrevista_conductor.strip(): narrative_titles.append("ENTREVISTA CON EL CONDUCTOR")
+            if visita_taller.strip(): narrative_titles.append("VISITA AL TALLER")
+            if inspeccion_lugar.strip(): narrative_titles.append("INSPECCIÓN DEL LUGAR DEL SINIESTRO")
+            if evidencias_complementarias.strip(): narrative_titles.append("EVIDENCIAS COMPLEMENTARIAS")
+            if dinamica_accidente.strip(): narrative_titles.append("DINÁMICA DEL ACCIDENTE")
+            if otras_diligencias.strip(): narrative_titles.append("OTRAS DILIGENCIAS")
+            if observaciones.strip(): narrative_titles.append("OBSERVACIONES")
+            if conclusiones.strip(): narrative_titles.append("CONCLUSIONES")
+            if recomendacion.strip(): narrative_titles.append("RECOMENDACIÓN SOBRE EL PAGO DE LA COBERTURA")
+
+            for title in narrative_titles:
+                sections.append((title, page_counter))
+                page_counter += 1
+
+            # Generar entradas del índice
+            for i, (section_title, page_num) in enumerate(sections, 1):
+                dots = "." * (60 - len(section_title))
+                index_story.append(Paragraph(f"{i}. {section_title} {dots} {page_num}", styles['NormalLeft']))
+
+            return index_story
+
+        # Crear el story completo
         story = []
 
-        # Título
+        # Página de carátula
+        story.extend(create_cover_page())
+        story.append(PageBreak())
+
+        # Índice
+        story.extend(create_index())
+        story.append(PageBreak())
+
+        # Contenido principal - Título
         story.append(Paragraph("INFORME DE INVESTIGACIÓN DE SINIESTRO", styles['ReportTitle']))
         story.append(Paragraph(fecha_informe, styles['ReportDate']))
 
@@ -341,7 +444,9 @@ PBX: {pbx} | Cel: {cel}
         story.append(Paragraph("LUGAR DEL SINIESTRO", styles['SectionHeader']))
         if lat is not None and lng is not None:
             maps_url = f"https://www.google.com/maps?q={lat},{lng}"
-            story.append(Paragraph(f"Ubicación: <a href='{maps_url}'>{maps_url}</a>", styles['NormalLeft']))
+            # URL subrayada como enlace típico
+            url_style = ParagraphStyle('URLStyle', parent=styles['NormalLeft'], underline=True, textColor=colors.blue)
+            story.append(Paragraph(f"Ubicación: {maps_url}", url_style))
             story.append(Spacer(1, 6))
 
             # Crear mapa estático con staticmap
