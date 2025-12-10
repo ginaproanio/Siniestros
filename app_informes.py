@@ -16,16 +16,12 @@ from reportlab.platypus.frames import Frame
 
 class CustomDocTemplate(BaseDocTemplate):
     def __init__(self, filename, **kwargs):
-        BaseDocTemplate.__init__(self, filename, **kwargs)
+        super().__init__(filename, **kwargs)
         self.total_pages = 0
 
     def afterPage(self):
+        super().afterPage()
         self.total_pages = max(self.total_pages, self.page)
-
-    def build(self, flowables, filename=None, canvasmaker=None):
-        BaseDocTemplate.build(self, flowables, filename, canvasmaker)
-        # Store total pages for access in footer
-        self._total_pages = self.total_pages
 
 # Crear carpeta para guardar informes y archivos si no existe
 if not os.path.exists('informes'):
@@ -419,11 +415,10 @@ PBX: {pbx} | Cel: {cel}
             # RECLAMO: [número] - alineado a la derecha
             canvas.drawRightString(7.5*inch, 10.3*inch, f"RECLAMO: {reclamo_num}")
 
-            # Footer - numeración de páginas alineada a la derecha con formato X/Y
+            # Footer - numeración de páginas alineada a la derecha
             canvas.setFont('Helvetica', 8)
             page_num = canvas.getPageNumber()
-            total_pages_val = getattr(doc, '_total_pages', 1)
-            page_text = f"Pág. {page_num}/{total_pages_val}"
+            page_text = f"Pág. {page_num}"
             canvas.drawRightString(7.5*inch, 0.75*inch, page_text)
 
             canvas.restoreState()
