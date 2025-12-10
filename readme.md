@@ -45,5 +45,6 @@ Aplicación web en Streamlit para generar informes profesionales de investigacio
   - streamlit
   - reportlab
   - folium
+  - staticmap
   - pillow
   - requests

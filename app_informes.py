@@ -1,7 +1,7 @@
 import streamlit as st
 import datetime
 import os
-import folium
+import staticmap
 import io
 from PIL import Image
 from reportlab.lib.pagesizes import letter
@@ -284,11 +284,11 @@ PBX: {pbx} | Cel: {cel}
 
         # Mapa si existe
         if lat is not None and lng is not None:
-            m = folium.Map(location=[lat, lng], zoom_start=15)
-            folium.Marker([lat, lng], popup="Lugar del Siniestro").add_to(m)
-            img_data = m._to_png(5)
-            img = Image.open(io.BytesIO(img_data))
-            img = img.resize((400, 300))
+            # Crear mapa estático con staticmap
+            m = staticmap.StaticMap(400, 300, url_template='https://tile.openstreetmap.org/{z}/{x}/{y}.png')
+            marker = staticmap.CircleMarker((lng, lat), 'red', 10)  # Nota: staticmap usa (lng, lat)
+            m.add_marker(marker)
+            img = m.render()
             img_bytes = io.BytesIO()
             img.save(img_bytes, format='PNG')
             img_bytes.seek(0)
