@@ -6,7 +6,7 @@ import io
 import base64
 from PIL import Image
 from jinja2 import Template
-from weasyprint import HTML, CSS
+from weasyprint import HTML
 
 # Crear carpeta para guardar informes y archivos si no existe
 if not os.path.exists('informes'):
