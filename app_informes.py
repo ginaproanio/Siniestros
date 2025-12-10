@@ -201,22 +201,21 @@ PBX: {pbx} | Cel: {cel}
         c.setFont("Helvetica", 12)
         c.drawCentredString(width / 2, height - 70, fecha_informe)
 
-        y = height - 100
+        y_pos = [height - 100]  # Usar lista para modificar dentro de función
 
         # Función para agregar sección
         def add_section(title, content):
-            nonlocal y
             c.setFont("Helvetica-Bold", 12)
-            c.drawString(50, y, title.upper())
-            y -= 20
+            c.drawString(50, y_pos[0], title.upper())
+            y_pos[0] -= 20
             c.setFont("Helvetica", 10)
             for line in content.split('\n'):
-                if y < 50:
+                if y_pos[0] < 50:
                     c.showPage()
-                    y = height - 50
-                c.drawString(70, y, line.strip())
-                y -= 15
-            y -= 10
+                    y_pos[0] = height - 50
+                c.drawString(70, y_pos[0], line.strip())
+                y_pos[0] -= 15
+            y_pos[0] -= 10
 
         # Datos del Siniestro
         add_section("Datos del Siniestro", f"""
@@ -295,15 +294,15 @@ Color: {color_afectado}
             add_section("Recomendación sobre el Pago de la Cobertura", recomendacion)
 
         # Firma
-        if y < 150:
+        if y_pos[0] < 150:
             c.showPage()
-            y = height - 50
+            y_pos[0] = height - 50
         c.setFont("Helvetica", 10)
-        c.drawString(50, y - 30, "Atentamente,")
-        c.drawString(50, y - 50, nombre_investigador)
-        c.drawString(50, y - 65, cargo)
-        c.drawString(50, y - 80, f"PBX: {pbx} | Cel: {cel}")
-        c.drawString(50, y - 95, email)
+        c.drawString(50, y_pos[0] - 30, "Atentamente,")
+        c.drawString(50, y_pos[0] - 50, nombre_investigador)
+        c.drawString(50, y_pos[0] - 65, cargo)
+        c.drawString(50, y_pos[0] - 80, f"PBX: {pbx} | Cel: {cel}")
+        c.drawString(50, y_pos[0] - 95, email)
 
         c.save()
 
