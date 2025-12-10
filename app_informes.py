@@ -2,7 +2,10 @@ import streamlit as st
 import datetime
 import os
 from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak
+from reportlab.lib.enums import TA_JUSTIFY, TA_LEFT, TA_CENTER
+from reportlab.lib.units import inch
 
 # Crear carpeta para guardar informes y archivos si no existe
 if not os.path.exists('informes'):
@@ -190,121 +193,115 @@ PBX: {pbx} | Cel: {cel}
         with open(filename_txt, 'w', encoding='utf-8') as f:
             f.write(informe_texto)
         
-        # Generar PDF profesional
+        # Generar PDF profesional con formato mejorado
         filename_pdf = f"informes/informe_{reclamo_num}_{datetime.date.today()}.pdf"
-        c = canvas.Canvas(filename_pdf, pagesize=letter)
-        width, height = letter
+
+        # Estilos
+        styles = getSampleStyleSheet()
+        styles.add(ParagraphStyle(name='Title', fontSize=16, alignment=TA_CENTER, spaceAfter=20))
+        styles.add(ParagraphStyle(name='Date', fontSize=12, alignment=TA_CENTER, spaceAfter=30))
+        styles.add(ParagraphStyle(name='SectionHeader', fontSize=12, alignment=TA_LEFT, spaceAfter=10, fontName='Helvetica-Bold'))
+        styles.add(ParagraphStyle(name='Normal', fontSize=10, alignment=TA_JUSTIFY, spaceAfter=10))
+        styles.add(ParagraphStyle(name='NormalLeft', fontSize=10, alignment=TA_LEFT, spaceAfter=10))
+        styles.add(ParagraphStyle(name='Signature', fontSize=10, alignment=TA_LEFT, spaceAfter=5))
+
+        # Documento
+        doc = SimpleDocTemplate(filename_pdf, pagesize=letter, leftMargin=inch, rightMargin=inch, topMargin=inch, bottomMargin=inch)
+        story = []
 
         # Título
-        c.setFont("Helvetica-Bold", 16)
-        c.drawCentredString(width / 2, height - 50, "INFORME DE INVESTIGACIÓN DE SINIESTRO")
-        c.setFont("Helvetica", 12)
-        c.drawCentredString(width / 2, height - 70, fecha_informe)
-
-        y_pos = [height - 100]  # Usar lista para modificar dentro de función
+        story.append(Paragraph("INFORME DE INVESTIGACIÓN DE SINIESTRO", styles['Title']))
+        story.append(Paragraph(fecha_informe, styles['Date']))
 
         # Función para agregar sección
-        def add_section(title, content):
-            c.setFont("Helvetica-Bold", 12)
-            c.drawString(50, y_pos[0], title.upper())
-            y_pos[0] -= 20
-            c.setFont("Helvetica", 10)
-            for line in content.split('\n'):
-                if y_pos[0] < 50:
-                    c.showPage()
-                    y_pos[0] = height - 50
-                c.drawString(70, y_pos[0], line.strip())
-                y_pos[0] -= 15
-            y_pos[0] -= 10
+        def add_section(title, content, justify=False):
+            story.append(Paragraph(title.upper(), styles['SectionHeader']))
+            style = styles['Normal'] if justify else styles['NormalLeft']
+            for line in content.strip().split('\n'):
+                if line.strip():
+                    story.append(Paragraph(line.strip(), style))
+            story.append(Spacer(1, 12))
 
         # Datos del Siniestro
-        add_section("Datos del Siniestro", f"""
-Compañía de Seguros: {compania_seguros}
-Reclamo #: {reclamo_num}
-Fecha del Siniestro: {fecha_siniestro}
-Dirección del Siniestro: {direccion_siniestro}
-Ubicación Georreferenciada: {ubicacion_geo}
-Daños a Terceros: {danos_terceros}
-Ejecutivo a Cargo: {ejecutivo_cargo}
-Fecha de Designación: {fecha_designacion}
-""")
+        siniestro_content = f"""Compañía de Seguros: {compania_seguros}<br/>
+Reclamo #: {reclamo_num}<br/>
+Fecha del Siniestro: {fecha_siniestro}<br/>
+Dirección del Siniestro: {direccion_siniestro}<br/>
+Ubicación Georreferenciada: {ubicacion_geo} (Puede visualizarse en Google Maps)<br/>
+Daños a Terceros: {danos_terceros}<br/>
+Ejecutivo a Cargo: {ejecutivo_cargo}<br/>
+Fecha de Designación: {fecha_designacion}"""
+        add_section("Datos del Siniestro", siniestro_content)
 
         # Asegurado
-        add_section("Asegurado", f"""
-Razón Social: {razon_social}
-Cédula / RUC: {cedula_ruc_aseg}
-Domicilio: {domicilio_aseg}
-""")
+        asegurado_content = f"""Razón Social: {razon_social}<br/>
+Cédula / RUC: {cedula_ruc_aseg}<br/>
+Domicilio: {domicilio_aseg}"""
+        add_section("Asegurado", asegurado_content)
 
         # Conductor
-        add_section("Conductor", f"""
-Nombre: {nombre_conductor}
-Cédula: {cedula_conductor}
-Celular: {celular_conductor}
-Dirección: {direccion_conductor}
-Parentesco: {parentesco}
-""")
+        conductor_content = f"""Nombre: {nombre_conductor}<br/>
+Cédula: {cedula_conductor}<br/>
+Celular: {celular_conductor}<br/>
+Dirección: {direccion_conductor}<br/>
+Parentesco: {parentesco}"""
+        add_section("Conductor", conductor_content)
 
         # Objeto Asegurado
-        add_section("Objeto Asegurado", f"""
-Placa: {placa_aseg}
-Marca: {marca_aseg}
-Modelo: {modelo_aseg}
-Color: {color_aseg}
-Año: {ano_aseg}
-Motor: {motor_aseg}
-Chasis: {chasis_aseg}
-""")
+        objeto_content = f"""Placa: {placa_aseg}<br/>
+Marca: {marca_aseg}<br/>
+Modelo: {modelo_aseg}<br/>
+Color: {color_aseg}<br/>
+Año: {ano_aseg}<br/>
+Motor: {motor_aseg}<br/>
+Chasis: {chasis_aseg}"""
+        add_section("Objeto Asegurado", objeto_content)
 
-        # Terceros Afectados (si hay datos)
+        # Terceros Afectados
         if afectado or placa_afectado:
-            add_section("Terceros Afectados", f"""
-Afectado: {afectado}
-RUC: {ruc_afectado}
-Dirección: {direccion_afectado}
-Teléfono: {telefono_afectado}
-Correo: {correo_afectado}
-Bien Afectado: {bien_afectado}
-Placa: {placa_afectado}
-Marca: {marca_afectado}
-Tipo: {tipo_afectado}
-Color: {color_afectado}
-""")
+            afectados_content = f"""Afectado: {afectado}<br/>
+RUC: {ruc_afectado}<br/>
+Dirección: {direccion_afectado}<br/>
+Teléfono: {telefono_afectado}<br/>
+Correo: {correo_afectado}<br/>
+Bien Afectado: {bien_afectado}<br/>
+Placa: {placa_afectado}<br/>
+Marca: {marca_afectado}<br/>
+Tipo: {tipo_afectado}<br/>
+Color: {color_afectado}"""
+            add_section("Terceros Afectados", afectados_content)
 
         # Secciones narrativas
         if antecedentes:
-            add_section("Antecedentes", antecedentes)
+            add_section("Antecedentes", antecedentes, justify=True)
         if entrevista_conductor:
-            add_section("Entrevista con el Conductor", entrevista_conductor)
+            add_section("Entrevista con el Conductor", entrevista_conductor, justify=True)
         if visita_taller:
-            add_section("Visita al Taller", visita_taller)
+            add_section("Visita al Taller", visita_taller, justify=True)
         if inspeccion_lugar:
-            add_section("Inspección del Lugar del Siniestro", inspeccion_lugar)
+            add_section("Inspección del Lugar del Siniestro", inspeccion_lugar, justify=True)
         if evidencias_complementarias:
-            add_section("Evidencias Complementarias", evidencias_complementarias)
+            add_section("Evidencias Complementarias", evidencias_complementarias, justify=True)
         if dinamica_accidente:
-            add_section("Dinámica del Accidente", dinamica_accidente)
+            add_section("Dinámica del Accidente", dinamica_accidente, justify=True)
         if otras_diligencias:
-            add_section("Otras Diligencias", otras_diligencias)
+            add_section("Otras Diligencias", otras_diligencias, justify=True)
         if observaciones:
-            add_section("Observaciones", observaciones)
+            add_section("Observaciones", observaciones, justify=True)
         if conclusiones:
-            add_section("Conclusiones", conclusiones)
+            add_section("Conclusiones", conclusiones, justify=True)
         if recomendacion:
-            add_section("Recomendación sobre el Pago de la Cobertura", recomendacion)
+            add_section("Recomendación sobre el Pago de la Cobertura", recomendacion, justify=True)
 
         # Firma
-        if y_pos[0] < 150:
-            c.showPage()
-            y_pos[0] = height - 50
-        c.setFont("Helvetica", 10)
-        c.drawString(50, y_pos[0] - 30, "Atentamente,")
-        c.drawString(50, y_pos[0] - 50, nombre_investigador)
-        c.drawString(50, y_pos[0] - 65, cargo)
-        c.drawString(50, y_pos[0] - 80, f"PBX: {pbx} | Cel: {cel}")
-        c.drawString(50, y_pos[0] - 95, email)
+        story.append(Spacer(1, 20))
+        story.append(Paragraph("Atentamente,", styles['Signature']))
+        story.append(Paragraph(nombre_investigador, styles['Signature']))
+        story.append(Paragraph(cargo, styles['Signature']))
+        story.append(Paragraph(f"PBX: {pbx} | Cel: {cel}", styles['Signature']))
+        story.append(Paragraph(email, styles['Signature']))
 
-        c.save()
+        doc.build(story)
 
         # Leer el PDF para descarga
         with open(filename_pdf, "rb") as pdf_file:
