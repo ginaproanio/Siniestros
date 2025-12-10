@@ -247,18 +247,20 @@ PBX: {pbx} | Cel: {cel}
         def header_footer(canvas, doc):
             canvas.saveState()
 
-            # Header
+            # Header - Right aligned
             canvas.setFont('Helvetica-Bold', 10)
-            canvas.drawString(inch, 10.5*inch, compania_seguros)
-            canvas.drawRightString(7.5*inch, 10.5*inch, fecha_informe)
-            canvas.line(inch, 10.3*inch, 7.5*inch, 10.3*inch)
+            # First line: INFORME DE INVESTIGACIÓN
+            canvas.drawRightString(7.5*inch, 10.8*inch, "INFORME DE INVESTIGACIÓN")
+            # Second line: RECLAMO: [number]
+            canvas.drawRightString(7.5*inch, 10.6*inch, f"RECLAMO: {reclamo_num}")
 
-            # Footer
+            # Footer - Page numbering centered (Pág. X/Y format)
             canvas.setFont('Helvetica', 8)
             page_num = canvas.getPageNumber()
-            canvas.drawString(inch, 0.5*inch, f"Página {page_num}")
-            canvas.drawRightString(7.5*inch, 0.5*inch, "Documento Confidencial")
-            canvas.line(inch, 0.7*inch, 7.5*inch, 0.7*inch)
+            # For full X/Y pagination, a two-pass rendering would be needed
+            # For now, showing Pág. X format
+            page_text = f"Pág. {page_num}"
+            canvas.drawCentredString(4.25*inch, 0.5*inch, page_text)
 
             canvas.restoreState()
 
