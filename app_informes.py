@@ -198,10 +198,10 @@ PBX: {pbx} | Cel: {cel}
 
         # Estilos
         styles = getSampleStyleSheet()
-        styles.add(ParagraphStyle(name='Title', fontSize=16, alignment=TA_CENTER, spaceAfter=20))
-        styles.add(ParagraphStyle(name='Date', fontSize=12, alignment=TA_CENTER, spaceAfter=30))
+        styles.add(ParagraphStyle(name='ReportTitle', fontSize=16, alignment=TA_CENTER, spaceAfter=20))
+        styles.add(ParagraphStyle(name='ReportDate', fontSize=12, alignment=TA_CENTER, spaceAfter=30))
         styles.add(ParagraphStyle(name='SectionHeader', fontSize=12, alignment=TA_LEFT, spaceAfter=10, fontName='Helvetica-Bold'))
-        styles.add(ParagraphStyle(name='Normal', fontSize=10, alignment=TA_JUSTIFY, spaceAfter=10))
+        styles.add(ParagraphStyle(name='NormalJustified', fontSize=10, alignment=TA_JUSTIFY, spaceAfter=10))
         styles.add(ParagraphStyle(name='NormalLeft', fontSize=10, alignment=TA_LEFT, spaceAfter=10))
         styles.add(ParagraphStyle(name='Signature', fontSize=10, alignment=TA_LEFT, spaceAfter=5))
 
@@ -210,13 +210,13 @@ PBX: {pbx} | Cel: {cel}
         story = []
 
         # Título
-        story.append(Paragraph("INFORME DE INVESTIGACIÓN DE SINIESTRO", styles['Title']))
-        story.append(Paragraph(fecha_informe, styles['Date']))
+        story.append(Paragraph("INFORME DE INVESTIGACIÓN DE SINIESTRO", styles['ReportTitle']))
+        story.append(Paragraph(fecha_informe, styles['ReportDate']))
 
         # Función para agregar sección
         def add_section(title, content, justify=False):
             story.append(Paragraph(title.upper(), styles['SectionHeader']))
-            style = styles['Normal'] if justify else styles['NormalLeft']
+            style = styles['NormalJustified'] if justify else styles['NormalLeft']
             for line in content.strip().split('\n'):
                 if line.strip():
                     story.append(Paragraph(line.strip(), style))
