@@ -14,6 +14,19 @@ from reportlab.lib.pagesizes import A4
 from reportlab.platypus.doctemplate import PageTemplate, BaseDocTemplate
 from reportlab.platypus.frames import Frame
 
+class CustomDocTemplate(BaseDocTemplate):
+    def __init__(self, filename, **kwargs):
+        BaseDocTemplate.__init__(self, filename, **kwargs)
+        self.total_pages = 0
+
+    def afterPage(self):
+        self.total_pages = max(self.total_pages, self.page)
+
+    def build(self, flowables, filename=None, canvasmaker=None):
+        BaseDocTemplate.build(self, flowables, filename, canvasmaker)
+        # Store total pages for access in footer
+        self._total_pages = self.total_pages
+
 # Crear carpeta para guardar informes y archivos si no existe
 if not os.path.exists('informes'):
     os.makedirs('informes')
@@ -399,17 +412,19 @@ PBX: {pbx} | Cel: {cel}
         def header_footer(canvas, doc):
             canvas.saveState()
 
-            # Header - posicionado correctamente dentro del área de impresión
+            # Header - más arriba en la página
             canvas.setFont('Helvetica-Bold', 10)
             # INFORME DE INVESTIGACIÓN - alineado a la derecha
-            canvas.drawRightString(7.5*inch, 10*inch, "INFORME DE INVESTIGACIÓN")
+            canvas.drawRightString(7.5*inch, 10.5*inch, "INFORME DE INVESTIGACIÓN")
             # RECLAMO: [número] - alineado a la derecha
-            canvas.drawRightString(7.5*inch, 9.8*inch, f"RECLAMO: {reclamo_num}")
+            canvas.drawRightString(7.5*inch, 10.3*inch, f"RECLAMO: {reclamo_num}")
 
-            # Footer - numeración de páginas centrada
+            # Footer - numeración de páginas alineada a la derecha con formato X/Y
             canvas.setFont('Helvetica', 8)
             page_num = canvas.getPageNumber()
-            canvas.drawCentredString(4.25*inch, 0.75*inch, f"Pág. {page_num}")
+            total_pages_val = getattr(doc, '_total_pages', 1)
+            page_text = f"Pág. {page_num}/{total_pages_val}"
+            canvas.drawRightString(7.5*inch, 0.75*inch, page_text)
 
             canvas.restoreState()
 
@@ -419,8 +434,8 @@ PBX: {pbx} | Cel: {cel}
             template = PageTemplate(id='custom', frames=[frame], onPage=header_footer)
             return template
 
-        # Generar PDF con BaseDocTemplate para mejor control de headers/footers
-        doc = BaseDocTemplate(filename_pdf, pagesize=letter, pageTemplates=[create_page_template()])
+        # Generar PDF con CustomDocTemplate para mejor control de headers/footers
+        doc = CustomDocTemplate(filename_pdf, pagesize=letter, pageTemplates=[create_page_template()])
 
         doc.build(story)
 
