@@ -395,10 +395,32 @@ PBX: {pbx} | Cel: {cel}
         story.append(Paragraph(f"PBX: {pbx} | Cel: {cel}", styles['Signature']))
         story.append(Paragraph(email, styles['Signature']))
 
-        # Generar PDF con header y footer
-        doc = SimpleDocTemplate(filename_pdf, pagesize=letter, leftMargin=inch, rightMargin=inch,
-                               topMargin=1.5*inch, bottomMargin=inch, onFirstPage=header,
-                               onLaterPages=footer)
+        # Crear template de página personalizado para header/footer
+        def create_page_template():
+            frame = Frame(inch, inch, 6.5*inch, 9*inch)  # left, bottom, width, height
+            template = PageTemplate(id='custom', frames=[frame], onPage=header_footer)
+            return template
+
+        # Generar PDF con BaseDocTemplate para mejor control de headers/footers
+        doc = BaseDocTemplate(filename_pdf, pagesize=letter, pageTemplates=[create_page_template()])
+
+        # Función unificada para header y footer
+        def header_footer(canvas, doc):
+            canvas.saveState()
+
+            # Header - posicionado correctamente dentro del área de impresión
+            canvas.setFont('Helvetica-Bold', 10)
+            # INFORME DE INVESTIGACIÓN - alineado a la derecha
+            canvas.drawRightString(7.5*inch, 10*inch, "INFORME DE INVESTIGACIÓN")
+            # RECLAMO: [número] - alineado a la derecha
+            canvas.drawRightString(7.5*inch, 9.8*inch, f"RECLAMO: {reclamo_num}")
+
+            # Footer - numeración de páginas centrada
+            canvas.setFont('Helvetica', 8)
+            page_num = canvas.getPageNumber()
+            canvas.drawCentredString(4.25*inch, 0.75*inch, f"Pág. {page_num}")
+
+            canvas.restoreState()
 
         doc.build(story)
 
