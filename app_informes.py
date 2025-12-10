@@ -395,15 +395,6 @@ PBX: {pbx} | Cel: {cel}
         story.append(Paragraph(f"PBX: {pbx} | Cel: {cel}", styles['Signature']))
         story.append(Paragraph(email, styles['Signature']))
 
-        # Crear template de página personalizado para header/footer
-        def create_page_template():
-            frame = Frame(inch, inch, 6.5*inch, 9*inch)  # left, bottom, width, height
-            template = PageTemplate(id='custom', frames=[frame], onPage=header_footer)
-            return template
-
-        # Generar PDF con BaseDocTemplate para mejor control de headers/footers
-        doc = BaseDocTemplate(filename_pdf, pagesize=letter, pageTemplates=[create_page_template()])
-
         # Función unificada para header y footer
         def header_footer(canvas, doc):
             canvas.saveState()
@@ -421,6 +412,15 @@ PBX: {pbx} | Cel: {cel}
             canvas.drawCentredString(4.25*inch, 0.75*inch, f"Pág. {page_num}")
 
             canvas.restoreState()
+
+        # Crear template de página personalizado para header/footer
+        def create_page_template():
+            frame = Frame(inch, inch, 6.5*inch, 9*inch)  # left, bottom, width, height
+            template = PageTemplate(id='custom', frames=[frame], onPage=header_footer)
+            return template
+
+        # Generar PDF con BaseDocTemplate para mejor control de headers/footers
+        doc = BaseDocTemplate(filename_pdf, pagesize=letter, pageTemplates=[create_page_template()])
 
         doc.build(story)
 
