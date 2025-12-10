@@ -35,11 +35,11 @@ with st.form(key='form_informe'):
 
     # Sección: CONDUCTOR
     st.header("Conductor")
-    nombre_conductor = st.text_input("Nombre")
-    cedula_conductor = st.text_input("Cédula")
-    celular_conductor = st.text_input("Celular")
-    direccion_conductor = st.text_input("Dirección")
-    parentesco = st.text_input("Parentesco")
+    nombre_conductor = st.text_input("Nombre", key="nombre_conductor")
+    cedula_conductor = st.text_input("Cédula", key="cedula_conductor")
+    celular_conductor = st.text_input("Celular", key="celular_conductor")
+    direccion_conductor = st.text_input("Dirección", key="direccion_conductor")
+    parentesco = st.text_input("Parentesco", key="parentesco_conductor")
 
     # Sección: OBJETO ASEGURADO
     st.header("Objeto Asegurado")
@@ -53,16 +53,16 @@ with st.form(key='form_informe'):
 
     # Sección: TERCEROS AFECTADOS
     st.header("Terceros Afectados")
-    afectado = st.text_input("Afectado")
-    ruc_afectado = st.text_input("RUC")
-    direccion_afectado = st.text_input("Dirección")
-    telefono_afectado = st.text_input("Teléfono")
-    correo_afectado = st.text_input("Correo")
-    bien_afectado = st.text_input("Bien Afectado")
-    placa_afectado = st.text_input("Placa")
-    marca_afectado = st.text_input("Marca")
-    tipo_afectado = st.text_input("Tipo")
-    color_afectado = st.text_input("Color")
+    afectado = st.text_input("Afectado", key="afectado")
+    ruc_afectado = st.text_input("RUC", key="ruc_afectado")
+    direccion_afectado = st.text_input("Dirección", key="direccion_afectado")
+    telefono_afectado = st.text_input("Teléfono", key="telefono_afectado")
+    correo_afectado = st.text_input("Correo", key="correo_afectado")
+    bien_afectado = st.text_input("Bien Afectado", key="bien_afectado")
+    placa_afectado = st.text_input("Placa", key="placa_afectado")
+    marca_afectado = st.text_input("Marca", key="marca_afectado")
+    tipo_afectado = st.text_input("Tipo", key="tipo_afectado")
+    color_afectado = st.text_input("Color", key="color_afectado")
 
     # Secciones narrativas
     st.header("Secciones Narrativas")
