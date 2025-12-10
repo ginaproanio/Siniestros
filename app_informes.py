@@ -239,6 +239,7 @@ PBX: {pbx} | Cel: {cel}
                 ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
                 ('GRID', (0, 0), (-1, -1), 1, colors.black),
                 ('FONTSIZE', (0, 1), (-1, -1), 9),
+                ('ROUNDEDCORNERS', [3]),  # Radio de 3px para esquinas redondeadas sutiles
             ]))
             return table
 
@@ -271,19 +272,7 @@ PBX: {pbx} | Cel: {cel}
         story.append(Paragraph("INFORME DE INVESTIGACIÓN DE SINIESTRO", styles['ReportTitle']))
         story.append(Paragraph(fecha_informe, styles['ReportDate']))
 
-        # Mapa si existe
-        if lat is not None and lng is not None:
-            # Crear mapa estático con staticmap
-            m = staticmap.StaticMap(400, 300, url_template='https://tile.openstreetmap.org/{z}/{x}/{y}.png')
-            marker = staticmap.CircleMarker((lng, lat), 'red', 10)  # Nota: staticmap usa (lng, lat)
-            m.add_marker(marker)
-            img = m.render()
-            img_bytes = io.BytesIO()
-            img.save(img_bytes, format='PNG')
-            img_bytes.seek(0)
-            map_img = RLImage(img_bytes, width=4*inch, height=3*inch)
-            story.append(map_img)
-            story.append(Spacer(1, 12))
+
 
         # Datos del Siniestro
         story.append(Paragraph("DATOS DEL SINIESTRO", styles['SectionHeader']))
@@ -334,6 +323,27 @@ PBX: {pbx} | Cel: {cel}
             'Chasis': chasis_aseg
         }
         story.append(create_data_table(objeto_data))
+        story.append(Spacer(1, 12))
+
+        # Lugar del Siniestro
+        story.append(Paragraph("LUGAR DEL SINIESTRO", styles['SectionHeader']))
+        if lat is not None and lng is not None:
+            maps_url = f"https://www.google.com/maps?q={lat},{lng}"
+            story.append(Paragraph(f"Ubicación: <a href='{maps_url}'>{maps_url}</a>", styles['NormalLeft']))
+            story.append(Spacer(1, 6))
+
+            # Crear mapa estático con staticmap
+            m = staticmap.StaticMap(400, 300, url_template='https://tile.openstreetmap.org/{z}/{x}/{y}.png')
+            marker = staticmap.CircleMarker((lng, lat), 'red', 10)
+            m.add_marker(marker)
+            img = m.render()
+            img_bytes = io.BytesIO()
+            img.save(img_bytes, format='PNG')
+            img_bytes.seek(0)
+            map_img = RLImage(img_bytes, width=4*inch, height=3*inch)
+            story.append(map_img)
+        else:
+            story.append(Paragraph("Coordenadas no disponibles", styles['NormalLeft']))
         story.append(Spacer(1, 12))
 
         # Terceros Afectados (solo si hay datos)
