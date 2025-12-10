@@ -190,19 +190,136 @@ PBX: {pbx} | Cel: {cel}
         with open(filename_txt, 'w', encoding='utf-8') as f:
             f.write(informe_texto)
         
-        # Opcional: Generar PDF
+        # Generar PDF profesional
         filename_pdf = f"informes/informe_{reclamo_num}_{datetime.date.today()}.pdf"
         c = canvas.Canvas(filename_pdf, pagesize=letter)
-        y = 750  # Posición inicial
-        for line in informe_texto.split('\n'):
-            c.drawString(50, y, line)
-            y -= 15
-            if y < 50:
-                c.showPage()
-                y = 750
+        width, height = letter
+
+        # Título
+        c.setFont("Helvetica-Bold", 16)
+        c.drawCentredString(width / 2, height - 50, "INFORME DE INVESTIGACIÓN DE SINIESTRO")
+        c.setFont("Helvetica", 12)
+        c.drawCentredString(width / 2, height - 70, fecha_informe)
+
+        y = height - 100
+
+        # Función para agregar sección
+        def add_section(title, content):
+            nonlocal y
+            c.setFont("Helvetica-Bold", 12)
+            c.drawString(50, y, title.upper())
+            y -= 20
+            c.setFont("Helvetica", 10)
+            for line in content.split('\n'):
+                if y < 50:
+                    c.showPage()
+                    y = height - 50
+                c.drawString(70, y, line.strip())
+                y -= 15
+            y -= 10
+
+        # Datos del Siniestro
+        add_section("Datos del Siniestro", f"""
+Compañía de Seguros: {compania_seguros}
+Reclamo #: {reclamo_num}
+Fecha del Siniestro: {fecha_siniestro}
+Dirección del Siniestro: {direccion_siniestro}
+Ubicación Georreferenciada: {ubicacion_geo}
+Daños a Terceros: {danos_terceros}
+Ejecutivo a Cargo: {ejecutivo_cargo}
+Fecha de Designación: {fecha_designacion}
+""")
+
+        # Asegurado
+        add_section("Asegurado", f"""
+Razón Social: {razon_social}
+Cédula / RUC: {cedula_ruc_aseg}
+Domicilio: {domicilio_aseg}
+""")
+
+        # Conductor
+        add_section("Conductor", f"""
+Nombre: {nombre_conductor}
+Cédula: {cedula_conductor}
+Celular: {celular_conductor}
+Dirección: {direccion_conductor}
+Parentesco: {parentesco}
+""")
+
+        # Objeto Asegurado
+        add_section("Objeto Asegurado", f"""
+Placa: {placa_aseg}
+Marca: {marca_aseg}
+Modelo: {modelo_aseg}
+Color: {color_aseg}
+Año: {ano_aseg}
+Motor: {motor_aseg}
+Chasis: {chasis_aseg}
+""")
+
+        # Terceros Afectados (si hay datos)
+        if afectado or placa_afectado:
+            add_section("Terceros Afectados", f"""
+Afectado: {afectado}
+RUC: {ruc_afectado}
+Dirección: {direccion_afectado}
+Teléfono: {telefono_afectado}
+Correo: {correo_afectado}
+Bien Afectado: {bien_afectado}
+Placa: {placa_afectado}
+Marca: {marca_afectado}
+Tipo: {tipo_afectado}
+Color: {color_afectado}
+""")
+
+        # Secciones narrativas
+        if antecedentes:
+            add_section("Antecedentes", antecedentes)
+        if entrevista_conductor:
+            add_section("Entrevista con el Conductor", entrevista_conductor)
+        if visita_taller:
+            add_section("Visita al Taller", visita_taller)
+        if inspeccion_lugar:
+            add_section("Inspección del Lugar del Siniestro", inspeccion_lugar)
+        if evidencias_complementarias:
+            add_section("Evidencias Complementarias", evidencias_complementarias)
+        if dinamica_accidente:
+            add_section("Dinámica del Accidente", dinamica_accidente)
+        if otras_diligencias:
+            add_section("Otras Diligencias", otras_diligencias)
+        if observaciones:
+            add_section("Observaciones", observaciones)
+        if conclusiones:
+            add_section("Conclusiones", conclusiones)
+        if recomendacion:
+            add_section("Recomendación sobre el Pago de la Cobertura", recomendacion)
+
+        # Firma
+        if y < 150:
+            c.showPage()
+            y = height - 50
+        c.setFont("Helvetica", 10)
+        c.drawString(50, y - 30, "Atentamente,")
+        c.drawString(50, y - 50, nombre_investigador)
+        c.drawString(50, y - 65, cargo)
+        c.drawString(50, y - 80, f"PBX: {pbx} | Cel: {cel}")
+        c.drawString(50, y - 95, email)
+
         c.save()
 
-        st.success(f"Informe generado y guardado en: {filename_txt} y {filename_pdf}")
+        # Leer el PDF para descarga
+        with open(filename_pdf, "rb") as pdf_file:
+            pdf_data = pdf_file.read()
+
+        st.success("Informe generado exitosamente!")
+
+        # Botón de descarga del PDF
+        st.download_button(
+            label="Descargar Informe en PDF",
+            data=pdf_data,
+            file_name=f"informe_{reclamo_num}_{datetime.date.today()}.pdf",
+            mime="application/pdf"
+        )
 
         # Guardar archivos subidos
         if uploaded_files:
@@ -211,5 +328,6 @@ PBX: {pbx} | Cel: {cel}
                     f.write(uploaded_file.getbuffer())
             st.success("Archivos de evidencias subidos y guardados.")
 
-        # Mostrar vista previa
-        st.text_area("Vista Previa del Informe", informe_texto, height=400)
+        # Mostrar vista previa (opcional)
+        with st.expander("Vista Previa del Informe (Texto)"):
+            st.text_area("", informe_texto, height=300)
