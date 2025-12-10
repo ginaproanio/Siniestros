@@ -104,9 +104,35 @@ with st.form(key='form_informe'):
     cel = st.text_input("Cel", value="099.9846.432")
     email = st.text_input("Correo", value="susi.espinosa@hotmail.com")
 
-    # Upload de evidencias
-    st.header("Subir Evidencias (fotos, documentos, etc.)")
-    uploaded_files = st.file_uploader("Sube archivos (imágenes, PDFs, etc.)", accept_multiple_files=True)
+    # Galería de Imágenes de Inspección
+    st.header("Galería de Imágenes de Inspección")
+    st.write("Sube las fotos tomadas durante la inspección del siniestro. Para cada imagen, proporciona una descripción detallada.")
+
+    # Permitir subir hasta 10 imágenes
+    num_images = st.number_input("Número de imágenes a subir", min_value=0, max_value=10, value=0)
+
+    inspection_images = []
+    image_descriptions = []
+
+    if num_images > 0:
+        cols = st.columns(2)  # 2 columnas para organizar los inputs
+
+        for i in range(num_images):
+            col_idx = i % 2
+            with cols[col_idx]:
+                st.subheader(f"Imagen {i+1}")
+                image_file = st.file_uploader(f"Seleccionar imagen {i+1}", type=['jpg', 'jpeg', 'png'], key=f"img_{i}")
+                description = st.text_area(f"Descripción de la imagen {i+1}",
+                                         placeholder=f"Describe detalladamente la imagen {i+1}...",
+                                         height=80, key=f"desc_{i}")
+
+                if image_file is not None:
+                    inspection_images.append(image_file)
+                    image_descriptions.append(description if description.strip() else f"Imagen {i+1} del siniestro")
+
+    # Upload de evidencias adicionales
+    st.header("Evidencias Adicionales (documentos, PDFs, etc.)")
+    uploaded_files = st.file_uploader("Sube archivos adicionales (documentos, PDFs, etc.)", accept_multiple_files=True)
 
     submit_button = st.form_submit_button(label='Generar y Guardar Informe')
 
@@ -444,9 +470,10 @@ PBX: {pbx} | Cel: {cel}
         story.append(Paragraph("LUGAR DEL SINIESTRO", styles['SectionHeader']))
         if lat is not None and lng is not None:
             maps_url = f"https://www.google.com/maps?q={lat},{lng}"
-            # URL subrayada como enlace típico
+            # Solo la URL subrayada y en azul, no la palabra "Ubicación"
+            story.append(Paragraph(f"Ubicación: ", styles['NormalLeft']))
             url_style = ParagraphStyle('URLStyle', parent=styles['NormalLeft'], underline=True, textColor=colors.blue)
-            story.append(Paragraph(f"Ubicación: {maps_url}", url_style))
+            story.append(Paragraph(maps_url, url_style))
             story.append(Spacer(1, 6))
 
             # Crear mapa estático con staticmap
@@ -480,6 +507,61 @@ PBX: {pbx} | Cel: {cel}
             }
             story.append(create_data_table(afectados_data))
             story.append(Spacer(1, 12))
+
+        # Galería de Imágenes de Inspección
+        if inspection_images:
+            story.append(Paragraph("GALERÍA DE IMÁGENES DE INSPECCIÓN", styles['SectionHeader']))
+            story.append(Spacer(1, 6))
+
+            # Crear tabla de 2 columnas para las imágenes
+            image_table_data = []
+            current_row = []
+
+            for i, (img_file, description) in enumerate(zip(inspection_images, image_descriptions)):
+                # Procesar imagen
+                img = Image.open(img_file)
+                # Redimensionar manteniendo proporción
+                max_width, max_height = 2.5*inch, 2*inch
+                img_ratio = img.width / img.height
+                if img_ratio > max_width / max_height:
+                    new_width = max_width
+                    new_height = max_width / img_ratio
+                else:
+                    new_height = max_height
+                    new_width = max_height * img_ratio
+
+                # Convertir a ReportLab Image
+                img_bytes = io.BytesIO()
+                img.save(img_bytes, format='PNG')
+                img_bytes.seek(0)
+                rl_img = RLImage(img_bytes, width=new_width, height=new_height)
+
+                # Crear celda con imagen y descripción
+                image_cell = []
+                image_cell.append(rl_img)
+                image_cell.append(Spacer(1, 6))
+                image_cell.append(Paragraph(f"Imagen {i+1}: {description}", styles['NormalLeft']))
+
+                current_row.append(image_cell)
+
+                # Si tenemos 2 imágenes o es la última, agregar fila
+                if len(current_row) == 2 or i == len(inspection_images) - 1:
+                    # Si solo tenemos una imagen en la fila, agregar celda vacía
+                    if len(current_row) == 1:
+                        current_row.append("")
+
+                    image_table_data.append(current_row)
+                    current_row = []
+
+            # Crear tabla de imágenes
+            if image_table_data:
+                image_table = Table(image_table_data, colWidths=[3*inch, 3*inch])
+                image_table.setStyle(TableStyle([
+                    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                    ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+                ]))
+                story.append(image_table)
+                story.append(Spacer(1, 12))
 
         # Secciones narrativas
         narrative_sections = [
