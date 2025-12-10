@@ -239,7 +239,7 @@ PBX: {pbx} | Cel: {cel}
                 ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
                 ('GRID', (0, 0), (-1, -1), 1, colors.black),
                 ('FONTSIZE', (0, 1), (-1, -1), 9),
-                ('ROUNDEDCORNERS', [3]),  # Radio de 3px para esquinas redondeadas sutiles
+                ('ROUNDEDCORNERS', [3, 3, 3, 3]),  # Radio de 3px para todas las 4 esquinas
             ]))
             return table
 
