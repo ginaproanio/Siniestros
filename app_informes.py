@@ -113,18 +113,7 @@ if submit_button:
         except:
             lat = lng = None
 
-        # Generate map image if valid coordinates
-        map_img_b64 = None
-        if lat is not None and lng is not None:
-            m = folium.Map(location=[lat, lng], zoom_start=15)
-            folium.Marker([lat, lng], popup="Lugar del Siniestro").add_to(m)
-            img_data = m._to_png(5)
-            img = Image.open(io.BytesIO(img_data))
-            img = img.resize((400, 300))
-            img_bytes = io.BytesIO()
-            img.save(img_bytes, format='PNG')
-            img_bytes.seek(0)
-            map_img_b64 = base64.b64encode(img_bytes.getvalue()).decode('utf-8')
+        # No necesitamos generar mapa para el texto, solo para PDF
         # Generar el contenido del informe
         informe_texto = f"""
 INFORME DE INVESTIGACIÓN DE SINIESTRO
