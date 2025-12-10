@@ -214,10 +214,10 @@ PBX: {pbx} | Cel: {cel}
 
         # Estilos
         styles = getSampleStyleSheet()
-        styles.add(ParagraphStyle(name='Title', fontSize=16, alignment=TA_CENTER, spaceAfter=20, fontName='Helvetica-Bold'))
-        styles.add(ParagraphStyle(name='Date', fontSize=12, alignment=TA_CENTER, spaceAfter=30))
+        styles.add(ParagraphStyle(name='ReportTitle', fontSize=16, alignment=TA_CENTER, spaceAfter=20, fontName='Helvetica-Bold'))
+        styles.add(ParagraphStyle(name='ReportDate', fontSize=12, alignment=TA_CENTER, spaceAfter=30))
         styles.add(ParagraphStyle(name='SectionHeader', fontSize=14, alignment=TA_LEFT, spaceAfter=10, fontName='Helvetica-Bold'))
-        styles.add(ParagraphStyle(name='Normal', fontSize=10, alignment=TA_LEFT, spaceAfter=10))
+        styles.add(ParagraphStyle(name='NormalLeft', fontSize=10, alignment=TA_LEFT, spaceAfter=10))
         styles.add(ParagraphStyle(name='Justified', fontSize=10, alignment=TA_JUSTIFY, spaceAfter=10))
         styles.add(ParagraphStyle(name='Signature', fontSize=10, alignment=TA_LEFT, spaceAfter=5))
 
@@ -268,8 +268,8 @@ PBX: {pbx} | Cel: {cel}
         story = []
 
         # Título
-        story.append(Paragraph("INFORME DE INVESTIGACIÓN DE SINIESTRO", styles['Title']))
-        story.append(Paragraph(fecha_informe, styles['Date']))
+        story.append(Paragraph("INFORME DE INVESTIGACIÓN DE SINIESTRO", styles['ReportTitle']))
+        story.append(Paragraph(fecha_informe, styles['ReportDate']))
 
         # Mapa si existe
         if lat is not None and lng is not None:
