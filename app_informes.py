@@ -3,10 +3,16 @@ import datetime
 import os
 import folium
 import io
-import base64
 from PIL import Image
-from jinja2 import Template
-from weasyprint import HTML
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, Image as RLImage, Table, TableStyle
+from reportlab.lib.enums import TA_JUSTIFY, TA_LEFT, TA_CENTER, TA_RIGHT
+from reportlab.lib.units import inch
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from reportlab.platypus.doctemplate import PageTemplate, BaseDocTemplate
+from reportlab.platypus.frames import Frame
 
 # Crear carpeta para guardar informes y archivos si no existe
 if not os.path.exists('informes'):
@@ -214,73 +220,180 @@ PBX: {pbx} | Cel: {cel}
         with open(filename_txt, 'w', encoding='utf-8') as f:
             f.write(informe_texto)
         
-        # Generar PDF profesional con plantilla HTML
+        # Generar PDF profesional con ReportLab
         filename_pdf = f"informes/informe_{reclamo_num}_{datetime.date.today()}.pdf"
 
-        # Cargar plantilla
-        with open('template.html', 'r', encoding='utf-8') as f:
-            template_content = f.read()
+        # Estilos
+        styles = getSampleStyleSheet()
+        styles.add(ParagraphStyle(name='Title', fontSize=16, alignment=TA_CENTER, spaceAfter=20, fontName='Helvetica-Bold'))
+        styles.add(ParagraphStyle(name='Date', fontSize=12, alignment=TA_CENTER, spaceAfter=30))
+        styles.add(ParagraphStyle(name='SectionHeader', fontSize=14, alignment=TA_LEFT, spaceAfter=10, fontName='Helvetica-Bold'))
+        styles.add(ParagraphStyle(name='Normal', fontSize=10, alignment=TA_LEFT, spaceAfter=10))
+        styles.add(ParagraphStyle(name='Justified', fontSize=10, alignment=TA_JUSTIFY, spaceAfter=10))
+        styles.add(ParagraphStyle(name='Signature', fontSize=10, alignment=TA_LEFT, spaceAfter=5))
 
-        # Datos para la plantilla
-        data = {
-            'fecha_informe': fecha_informe,
-            'compania_seguros': compania_seguros,
-            'reclamo_num': reclamo_num,
-            'fecha_siniestro': str(fecha_siniestro),
-            'direccion_siniestro': direccion_siniestro,
-            'ubicacion_geo': ubicacion_geo,
-            'danos_terceros': danos_terceros,
-            'ejecutivo_cargo': ejecutivo_cargo,
-            'fecha_designacion': str(fecha_designacion),
-            'razon_social': razon_social,
-            'cedula_ruc_aseg': cedula_ruc_aseg,
-            'domicilio_aseg': domicilio_aseg,
-            'nombre_conductor': nombre_conductor,
-            'cedula_conductor': cedula_conductor,
-            'celular_conductor': celular_conductor,
-            'direccion_conductor': direccion_conductor,
-            'parentesco': parentesco,
-            'placa_aseg': placa_aseg,
-            'marca_aseg': marca_aseg,
-            'modelo_aseg': modelo_aseg,
-            'color_aseg': color_aseg,
-            'ano_aseg': ano_aseg,
-            'motor_aseg': motor_aseg,
-            'chasis_aseg': chasis_aseg,
-            'afectado': afectado,
-            'ruc_afectado': ruc_afectado,
-            'direccion_afectado': direccion_afectado,
-            'telefono_afectado': telefono_afectado,
-            'correo_afectado': correo_afectado,
-            'bien_afectado': bien_afectado,
-            'placa_afectado': placa_afectado,
-            'marca_afectado': marca_afectado,
-            'tipo_afectado': tipo_afectado,
-            'color_afectado': color_afectado,
-            'antecedentes': antecedentes,
-            'entrevista_conductor': entrevista_conductor,
-            'visita_taller': visita_taller,
-            'inspeccion_lugar': inspeccion_lugar,
-            'evidencias_complementarias': evidencias_complementarias,
-            'dinamica_accidente': dinamica_accidente,
-            'otras_diligencias': otras_diligencias,
-            'observaciones': observaciones,
-            'conclusiones': conclusiones,
-            'recomendacion': recomendacion,
-            'nombre_investigador': nombre_investigador,
-            'cargo': cargo,
-            'pbx': pbx,
-            'cel': cel,
-            'email': email,
-            'map_img': map_img_b64
+        # Función para crear tabla de datos
+        def create_data_table(data_dict):
+            table_data = [['Campo', 'Detalle']]
+            for key, value in data_dict.items():
+                if value:  # Solo incluir campos con valor
+                    table_data.append([key, str(value)])
+
+            table = Table(table_data, colWidths=[2.5*inch, 4*inch])
+            table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, 0), 10),
+                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                ('FONTSIZE', (0, 1), (-1, -1), 9),
+            ]))
+            return table
+
+        # Función para header y footer
+        def header_footer(canvas, doc):
+            canvas.saveState()
+
+            # Header
+            canvas.setFont('Helvetica-Bold', 10)
+            canvas.drawString(inch, 10.5*inch, compania_seguros)
+            canvas.drawRightString(7.5*inch, 10.5*inch, fecha_informe)
+            canvas.line(inch, 10.3*inch, 7.5*inch, 10.3*inch)
+
+            # Footer
+            canvas.setFont('Helvetica', 8)
+            page_num = canvas.getPageNumber()
+            canvas.drawString(inch, 0.5*inch, f"Página {page_num}")
+            canvas.drawRightString(7.5*inch, 0.5*inch, "Documento Confidencial")
+            canvas.line(inch, 0.7*inch, 7.5*inch, 0.7*inch)
+
+            canvas.restoreState()
+
+        # Documento
+        doc = SimpleDocTemplate(filename_pdf, pagesize=letter, leftMargin=inch, rightMargin=inch,
+                               topMargin=1.5*inch, bottomMargin=inch, onFirstPage=header_footer,
+                               onLaterPages=header_footer)
+        story = []
+
+        # Título
+        story.append(Paragraph("INFORME DE INVESTIGACIÓN DE SINIESTRO", styles['Title']))
+        story.append(Paragraph(fecha_informe, styles['Date']))
+
+        # Mapa si existe
+        if lat is not None and lng is not None:
+            m = folium.Map(location=[lat, lng], zoom_start=15)
+            folium.Marker([lat, lng], popup="Lugar del Siniestro").add_to(m)
+            img_data = m._to_png(5)
+            img = Image.open(io.BytesIO(img_data))
+            img = img.resize((400, 300))
+            img_bytes = io.BytesIO()
+            img.save(img_bytes, format='PNG')
+            img_bytes.seek(0)
+            map_img = RLImage(img_bytes, width=4*inch, height=3*inch)
+            story.append(map_img)
+            story.append(Spacer(1, 12))
+
+        # Datos del Siniestro
+        story.append(Paragraph("DATOS DEL SINIESTRO", styles['SectionHeader']))
+        siniestro_data = {
+            'Compañía de Seguros': compania_seguros,
+            'Reclamo #': reclamo_num,
+            'Fecha del Siniestro': str(fecha_siniestro),
+            'Dirección del Siniestro': direccion_siniestro,
+            'Ubicación Georreferenciada': ubicacion_geo,
+            'Daños a Terceros': danos_terceros,
+            'Ejecutivo a Cargo': ejecutivo_cargo,
+            'Fecha de Designación': str(fecha_designacion)
         }
+        story.append(create_data_table(siniestro_data))
+        story.append(Spacer(1, 12))
 
-        # Renderizar plantilla
-        template = Template(template_content)
-        html_content = template.render(**data)
+        # Asegurado
+        story.append(Paragraph("ASEGURADO", styles['SectionHeader']))
+        asegurado_data = {
+            'Razón Social': razon_social,
+            'Cédula / RUC': cedula_ruc_aseg,
+            'Domicilio': domicilio_aseg
+        }
+        story.append(create_data_table(asegurado_data))
+        story.append(Spacer(1, 12))
 
-        # Generar PDF con WeasyPrint
-        HTML(string=html_content).write_pdf(filename_pdf)
+        # Conductor
+        story.append(Paragraph("CONDUCTOR", styles['SectionHeader']))
+        conductor_data = {
+            'Nombre': nombre_conductor,
+            'Cédula': cedula_conductor,
+            'Celular': celular_conductor,
+            'Dirección': direccion_conductor,
+            'Parentesco': parentesco
+        }
+        story.append(create_data_table(conductor_data))
+        story.append(Spacer(1, 12))
+
+        # Objeto Asegurado
+        story.append(Paragraph("OBJETO ASEGURADO", styles['SectionHeader']))
+        objeto_data = {
+            'Placa': placa_aseg,
+            'Marca': marca_aseg,
+            'Modelo': modelo_aseg,
+            'Color': color_aseg,
+            'Año': ano_aseg,
+            'Motor': motor_aseg,
+            'Chasis': chasis_aseg
+        }
+        story.append(create_data_table(objeto_data))
+        story.append(Spacer(1, 12))
+
+        # Terceros Afectados (solo si hay datos)
+        if afectado or placa_afectado:
+            story.append(Paragraph("TERCEROS AFECTADOS", styles['SectionHeader']))
+            afectados_data = {
+                'Afectado': afectado,
+                'RUC': ruc_afectado,
+                'Dirección': direccion_afectado,
+                'Teléfono': telefono_afectado,
+                'Correo': correo_afectado,
+                'Bien Afectado': bien_afectado,
+                'Placa': placa_afectado,
+                'Marca': marca_afectado,
+                'Tipo': tipo_afectado,
+                'Color': color_afectado
+            }
+            story.append(create_data_table(afectados_data))
+            story.append(Spacer(1, 12))
+
+        # Secciones narrativas
+        narrative_sections = [
+            ("ANTECEDENTES", antecedentes),
+            ("ENTREVISTA CON EL CONDUCTOR", entrevista_conductor),
+            ("VISITA AL TALLER", visita_taller),
+            ("INSPECCIÓN DEL LUGAR DEL SINIESTRO", inspeccion_lugar),
+            ("EVIDENCIAS COMPLEMENTARIAS", evidencias_complementarias),
+            ("DINÁMICA DEL ACCIDENTE", dinamica_accidente),
+            ("OTRAS DILIGENCIAS", otras_diligencias),
+            ("OBSERVACIONES", observaciones),
+            ("CONCLUSIONES", conclusiones),
+            ("RECOMENDACIÓN SOBRE EL PAGO DE LA COBERTURA", recomendacion)
+        ]
+
+        for title, content in narrative_sections:
+            if content.strip():
+                story.append(Paragraph(title, styles['SectionHeader']))
+                story.append(Paragraph(content.replace('\n', '<br/>'), styles['Justified']))
+                story.append(Spacer(1, 12))
+
+        # Firma
+        story.append(Spacer(1, 30))
+        story.append(Paragraph("Atentamente,", styles['Signature']))
+        story.append(Paragraph(nombre_investigador, styles['Signature']))
+        story.append(Paragraph(cargo, styles['Signature']))
+        story.append(Paragraph(f"PBX: {pbx} | Cel: {cel}", styles['Signature']))
+        story.append(Paragraph(email, styles['Signature']))
+
+        doc.build(story)
 
         # Leer el PDF para descarga
         with open(filename_pdf, "rb") as pdf_file:

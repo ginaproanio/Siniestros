@@ -1,5 +1,5 @@
 # Sistema de Informes de Siniestros
-Aplicación web en Streamlit para generar informes profesionales de investigaciones de siniestros en seguros. Utiliza plantillas HTML/CSS para crear PDFs con diseño corporativo, incluyendo mapas integrados y headers/footers automáticos.
+Aplicación web en Streamlit para generar informes profesionales de investigaciones de siniestros en seguros. Utiliza ReportLab para crear PDFs con diseño corporativo, incluyendo mapas integrados y headers/footers automáticos.
 
 ## Instalación Local
 1. Instala Python 3.8 o superior desde python.org.
@@ -23,19 +23,19 @@ Aplicación web en Streamlit para generar informes profesionales de investigacio
 
 ## Funcionalidades
 - **Formulario estructurado**: Recolección completa de datos del siniestro, asegurado, conductor, vehículo y terceros afectados.
-- **Generación de PDFs profesionales**: Utiliza WeasyPrint para convertir HTML/CSS a PDF con:
+- **Generación de PDFs profesionales**: Utiliza ReportLab para crear PDFs con:
   - Diseño corporativo con tablas estructuradas
   - Mapas integrados generados con Folium
   - Headers con nombre de compañía y fecha
   - Footers con numeración de páginas y confidencialidad
-  - Tipografía formal (Times New Roman)
+  - Tipografía formal (Helvetica)
 - **Vista previa en texto**: Permite revisar el contenido antes de generar el PDF.
 - **Upload de evidencias**: Subida de fotos y documentos complementarios.
 - **Archivos de respaldo**: Genera informes en formato TXT además del PDF.
 
 ## Arquitectura Técnica
 - **Frontend**: Streamlit para interfaz web
-- **Generación de PDFs**: WeasyPrint + Jinja2 con plantilla HTML/CSS (`template.html`)
+- **Generación de PDFs**: ReportLab con diseño profesional, tablas estructuradas, headers/footers automáticos
 - **Mapas**: Folium para generación de mapas estáticos integrados en PDF
 - **Almacenamiento**: Sistema de archivos local (carpeta `informes/`)
 
@@ -43,8 +43,7 @@ Aplicación web en Streamlit para generar informes profesionales de investigacio
 - Python 3.8+
 - Dependencias listadas en `requirements.txt`:
   - streamlit
-  - weasyprint
-  - jinja2
+  - reportlab
   - folium
   - pillow
   - requests
