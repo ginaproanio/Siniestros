@@ -164,64 +164,38 @@ with st.form(key='form_informe'):
 
     # Sección: TERCEROS AFECTADOS
     st.header("Terceros Afectados")
-    num_terceros_options = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    num_terceros = st.selectbox("Número de terceros afectados", options=num_terceros_options, index=0, key="num_terceros")
 
     terceros_data = []
-    if num_terceros > 0:
-        for i in range(num_terceros):
-            st.subheader(f"Tercero Afectado {i+1}")
-            cols_tercero = st.columns(4)
-            with cols_tercero[0]:
-                afectado = st.text_input(f"Afectado {i+1}", key=f"afectado_{i}")
-            with cols_tercero[1]:
-                ruc_afectado = st.text_input(f"RUC {i+1}", key=f"ruc_{i}")
-            with cols_tercero[2]:
-                direccion_afectado = st.text_input(f"Dirección {i+1}", key=f"direccion_{i}")
-            with cols_tercero[3]:
-                telefono_afectado = st.text_input(f"Teléfono {i+1}", key=f"telefono_{i}")
+    num_terceros = 1  # Default to 1 tercero
+    for i in range(num_terceros):
+        st.subheader(f"Tercero Afectado {i+1}")
+        cols_tercero = st.columns(4)
+        with cols_tercero[0]:
+            afectado = st.text_input(f"Afectado {i+1}", key=f"afectado_{i}")
+        with cols_tercero[1]:
+            ruc_afectado = st.text_input(f"RUC {i+1}", key=f"ruc_{i}")
+        with cols_tercero[2]:
+            direccion_afectado = st.text_input(f"Dirección {i+1}", key=f"direccion_{i}")
+        with cols_tercero[3]:
+            telefono_afectado = st.text_input(f"Teléfono {i+1}", key=f"telefono_{i}")
 
-            cols_tercero2 = st.columns(4)
-            with cols_tercero2[0]:
-                correo_afectado = st.text_input(f"Correo {i+1}", key=f"correo_{i}")
-            with cols_tercero2[1]:
-                bien_afectado = st.text_input(f"Bien Afectado {i+1}", key=f"bien_{i}")
-            with cols_tercero2[2]:
-                placa_afectado = st.text_input(f"Placa {i+1}", key=f"placa_{i}")
-            with cols_tercero2[3]:
-                marca_afectado = st.text_input(f"Marca {i+1}", key=f"marca_{i}")
+        cols_tercero2 = st.columns(4)
+        with cols_tercero2[0]:
+            correo_afectado = st.text_input(f"Correo {i+1}", key=f"correo_{i}")
+        with cols_tercero2[1]:
+            bien_afectado = st.text_input(f"Bien Afectado {i+1}", key=f"bien_{i}")
+        with cols_tercero2[2]:
+            placa_afectado = st.text_input(f"Placa {i+1}", key=f"placa_{i}")
+        with cols_tercero2[3]:
+            marca_afectado = st.text_input(f"Marca {i+1}", key=f"marca_{i}")
 
-            cols_tercero3 = st.columns(2)
-            with cols_tercero3[0]:
-                tipo_afectado = st.text_input(f"Tipo {i+1}", key=f"tipo_{i}")
-            with cols_tercero3[1]:
-                color_afectado = st.text_input(f"Color {i+1}", key=f"color_{i}")
+        cols_tercero3 = st.columns(2)
+        with cols_tercero3[0]:
+            tipo_afectado = st.text_input(f"Tipo {i+1}", key=f"tipo_{i}")
+        with cols_tercero3[1]:
+            color_afectado = st.text_input(f"Color {i+1}", key=f"color_{i}")
 
-            terceros_data.append({
-                'Afectado': afectado,
-                'RUC': ruc_afectado,
-                'Dirección': direccion_afectado,
-                'Teléfono': telefono_afectado,
-                'Correo': correo_afectado,
-                'Bien Afectado': bien_afectado,
-                'Placa': placa_afectado,
-                'Marca': marca_afectado,
-                'Tipo': tipo_afectado,
-                'Color': color_afectado
-            })
-    else:
-        # Default single tercero for backward compatibility
-        afectado = ""
-        ruc_afectado = ""
-        direccion_afectado = ""
-        telefono_afectado = ""
-        correo_afectado = ""
-        bien_afectado = ""
-        placa_afectado = ""
-        marca_afectado = ""
-        tipo_afectado = ""
-        color_afectado = ""
-        terceros_data = [{
+        terceros_data.append({
             'Afectado': afectado,
             'RUC': ruc_afectado,
             'Dirección': direccion_afectado,
@@ -232,7 +206,7 @@ with st.form(key='form_informe'):
             'Marca': marca_afectado,
             'Tipo': tipo_afectado,
             'Color': color_afectado
-        }]
+        })
 
     # ENTREVISTA CON EL ASEGURADO
     st.header("ENTREVISTA CON EL ASEGURADO")
@@ -251,11 +225,11 @@ with st.form(key='form_informe'):
             # Acciones
             cols_actions = st.columns(3)
             with cols_actions[0]:
-                st.button("Buscar", key=f"buscar_aseg_{i}")
+                st.button("Cargar Imagen", key=f"cargar_aseg_{i}")
             with cols_actions[1]:
-                st.button("Grabar", key=f"grabar_aseg_{i}")
+                st.button("Guardar", key=f"guardar_aseg_{i}")
             with cols_actions[2]:
-                st.button("Añadir Otro", key=f"añadir_aseg_{i}")
+                st.button("Añadir", key=f"añadir_aseg_{i}")
 
         relatos_asegurado.append({
             'text': relato_text,
