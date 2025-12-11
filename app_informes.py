@@ -67,13 +67,51 @@ with st.form(key='form_informe'):
 
     # Sección: ASEGURADO
     st.header("Asegurado")
-    cols3 = st.columns(3)
-    with cols3[0]:
-        razon_social = st.text_input("Razón Social", value="Empresa XYZ S.A.")
-    with cols3[1]:
-        cedula_ruc_aseg = st.text_input("Cédula / RUC", value="1791234567001")
-    with cols3[2]:
-        domicilio_aseg = st.text_input("Domicilio", value="Calle Principal 123, Quito")
+    tipo_asegurado = st.radio("Tipo de Asegurado", options=["Persona Natural", "Persona Jurídica"], index=1, key="tipo_asegurado")
+
+    asegurado_data = {}
+
+    if tipo_asegurado == "Persona Natural":
+        cols3 = st.columns(4)
+        with cols3[0]:
+            cedula_aseg = st.text_input("Cédula", value="1701234567", key="cedula_aseg")
+        with cols3[1]:
+            celular_aseg = st.text_input("Celular", value="0987654321", key="celular_aseg")
+        with cols3[2]:
+            direccion_aseg = st.text_input("Dirección", value="Calle Principal 123, Quito", key="direccion_aseg")
+        with cols3[3]:
+            parentesco_aseg = st.text_input("Parentesco", value="Propietario", key="parentesco_aseg")
+
+        asegurado_data = {
+            'Tipo': 'Persona Natural',
+            'Cédula': cedula_aseg,
+            'Celular': celular_aseg,
+            'Dirección': direccion_aseg,
+            'Parentesco': parentesco_aseg
+        }
+    else:  # Persona Jurídica
+        cols3 = st.columns(4)
+        with cols3[0]:
+            ruc_aseg = st.text_input("RUC", value="1791234567001", key="ruc_aseg")
+        with cols3[1]:
+            empresa_aseg = st.text_input("Empresa", value="Empresa XYZ S.A.", key="empresa_aseg")
+        with cols3[2]:
+            representante_legal_aseg = st.text_input("Representante Legal", value="Juan Pérez", key="representante_aseg")
+        with cols3[3]:
+            telefono_aseg = st.text_input("Teléfono", value="022417481", key="telefono_aseg")
+
+        cols4 = st.columns(1)
+        with cols4[0]:
+            direccion_aseg_jur = st.text_input("Dirección", value="Calle Principal 123, Quito", key="direccion_aseg_jur")
+
+        asegurado_data = {
+            'Tipo': 'Persona Jurídica',
+            'RUC': ruc_aseg,
+            'Empresa': empresa_aseg,
+            'Representante Legal': representante_legal_aseg,
+            'Dirección': direccion_aseg_jur,
+            'Teléfono': telefono_aseg
+        }
 
     # Sección: CONDUCTOR
     st.header("Conductor")
@@ -183,36 +221,29 @@ with st.form(key='form_informe'):
             'Color': color_afectado
         }]
 
-    # Secciones narrativas
-    st.header("Secciones Narrativas")
+    # ANTECEDENTES
+    st.header("ANTECEDENTES")
     antecedentes = st.text_area("Antecedentes", value="El asegurado reportó un accidente vehicular el 15 de octubre de 2023. El vehículo asegurado colisionó con otro vehículo en la intersección.", height=150)
 
-    # Entrevista con el Conductor
-    st.subheader("Entrevista con el Conductor")
-    entrevista_conductor = st.text_area("Texto de la Entrevista", value="El conductor declaró que circulaba a velocidad normal cuando el otro vehículo invadió su carril. No hubo consumo de alcohol. El conductor tiene licencia válida.", height=200)
+    # ENTREVISTA CON EL CONDUCTOR
+    st.header("ENTREVISTA CON EL CONDUCTOR")
+    num_relatos = st.number_input("Número de relatos", min_value=1, max_value=10, value=1, key="num_relatos")
 
-    # Imágenes para la Entrevista con el Conductor
-    st.subheader("Imágenes de la Entrevista con el Conductor")
-    st.write("Sube las fotos tomadas durante la entrevista con el conductor. Para cada imagen, proporciona una descripción detallada.")
-    num_conductor_images = st.number_input("Número de imágenes para la entrevista", min_value=0, max_value=10, value=0, key="num_conductor")
+    relatos_conductor = []
 
-    conductor_images = []
-    conductor_descriptions = []
+    for i in range(num_relatos):
+        st.subheader(f"Relato {i+1}")
+        cols_relato = st.columns([3, 1])  # 3 for text, 1 for image
+        with cols_relato[0]:
+            relato_text = st.text_area(f"Texto del Relato {i+1}", value="" if i > 0 else "El conductor declaró que circulaba a velocidad normal cuando el otro vehículo invadió su carril. No hubo consumo de alcohol. El conductor tiene licencia válida.", height=150, key=f"relato_text_{i}")
+        with cols_relato[1]:
+            st.write("Añadir Imagen (opcional)")
+            image_file = st.file_uploader(f"Seleccionar imagen {i+1}", type=['jpg', 'jpeg', 'png'], key=f"relato_img_{i}")
 
-    if num_conductor_images > 0:
-        cols = st.columns(2)
-        for i in range(num_conductor_images):
-            col_idx = i % 2
-            with cols[col_idx]:
-                st.subheader(f"Imagen {i+1}")
-                image_file = st.file_uploader(f"Seleccionar imagen/video {i+1}", type=['jpg', 'jpeg', 'png', 'mp4', 'avi', 'mov'], key=f"conductor_img_{i}")
-                description = st.text_area(f"Descripción de la imagen {i+1}",
-                                         placeholder=f"Describe detalladamente la imagen {i+1}...",
-                                         height=80, key=f"conductor_desc_{i}")
-
-                if image_file is not None:
-                    conductor_images.append(image_file)
-                    conductor_descriptions.append(description if description.strip() else f"Imagen {i+1} de la entrevista")
+        relatos_conductor.append({
+            'text': relato_text,
+            'image': image_file
+        })
 
     visita_taller = st.text_area("Visita al Taller", value="En el taller se constató daños en el parachoques delantero y lateral izquierdo. El costo estimado de reparación es de $2,500.", height=150)
     inspeccion_lugar = st.text_area("Inspección del Lugar del Siniestro", value="El lugar del accidente es una intersección con semáforo. Las condiciones climáticas eran buenas. Hay testigos que confirman la versión del conductor.", height=150)
@@ -277,6 +308,9 @@ if submit_button:
 
         # No necesitamos generar mapa para el texto, solo para PDF
         # Generar el contenido del informe
+        asegurado_lines = '\n'.join([f'{k}\t{v}' for k, v in asegurado_data.items()])
+        relatos_text = '\n\n'.join([f'Relato {i+1}:\n{relato["text"]}' for i, relato in enumerate(relatos_conductor, 1)])
+
         informe_texto = f"""
 INFORME DE INVESTIGACIÓN DE SINIESTRO
 {fecha_informe}
@@ -294,9 +328,7 @@ Fecha de Designación\t{fecha_designacion}
 
 ASEGURADO
 CAMPO\tDETALLE
-Razón Social\t{razon_social}
-Cédula / RUC\t{cedula_ruc_aseg}
-Domicilio\t{domicilio_aseg}
+{asegurado_lines}
 
 CONDUCTOR
 CAMPO\tDETALLE
@@ -333,7 +365,7 @@ ANTECEDENTES
 {antecedentes}
 
 ENTREVISTA CON EL CONDUCTOR
-{entrevista_conductor}
+{relatos_text}
 
 VISITA AL TALLER
 {visita_taller}
@@ -455,7 +487,7 @@ PBX: {pbx} | Cel: {cel}
             cover_story.append(Paragraph("DATOS PRINCIPALES:", ParagraphStyle('CoverHeader', parent=styles['SectionHeader'], fontSize=12, alignment=TA_LEFT)))
 
             bullet_style = ParagraphStyle('BulletStyle', parent=styles['NormalLeft'], leftIndent=20, bulletIndent=0)
-            cover_story.append(Paragraph(f"• Asegurado: {razon_social}", bullet_style))
+            cover_story.append(Paragraph(f"• Asegurado: {asegurado_data.get('Empresa', asegurado_data.get('Tipo', 'Asegurado'))}", bullet_style))
             cover_story.append(Paragraph(f"• Placa: {placa_aseg}", bullet_style))
             cover_story.append(Paragraph(f"• Fecha Siniestro: {str(fecha_siniestro)}", bullet_style))
             cover_story.append(Paragraph(f"• Inspector: {nombre_investigador}", bullet_style))
@@ -495,7 +527,7 @@ PBX: {pbx} | Cel: {cel}
             # Secciones narrativas
             narrative_titles = []
             if antecedentes.strip(): narrative_titles.append("ANTECEDENTES")
-            if entrevista_conductor.strip(): narrative_titles.append("ENTREVISTA CON EL CONDUCTOR")
+            if any(relato['text'].strip() for relato in relatos_conductor): narrative_titles.append("ENTREVISTA CON EL CONDUCTOR")
             if visita_taller.strip(): narrative_titles.append("VISITA AL TALLER")
             if inspeccion_lugar.strip(): narrative_titles.append("INSPECCIÓN DEL LUGAR DEL SINIESTRO")
             if evidencias_complementarias.strip(): narrative_titles.append("EVIDENCIAS COMPLEMENTARIAS")
@@ -545,11 +577,6 @@ PBX: {pbx} | Cel: {cel}
 
         # Asegurado
         story.append(Paragraph("ASEGURADO", styles['SectionHeader']))
-        asegurado_data = {
-            'Razón Social': razon_social,
-            'Cédula / RUC': cedula_ruc_aseg,
-            'Domicilio': domicilio_aseg
-        }
         story.append(create_data_table(asegurado_data))
         story.append(Spacer(1, 6))
 
@@ -682,65 +709,48 @@ PBX: {pbx} | Cel: {cel}
             ("RECOMENDACIÓN SOBRE EL PAGO DE LA COBERTURA", recomendacion)
         ]
 
-        # Entrevista con el Conductor (con imágenes)
-        if entrevista_conductor.strip():
+        # Entrevista con el Conductor (con relatos dinámicos)
+        if any(relato['text'].strip() for relato in relatos_conductor):
             story.append(Paragraph("ENTREVISTA CON EL CONDUCTOR", styles['SectionHeader']))
-            story.append(Paragraph(entrevista_conductor.replace('\n', '<br/>'), styles['Justified']))
             story.append(Spacer(1, 6))
 
-            # Agregar imágenes de la entrevista si existen
-            if conductor_images:
-                # Crear tabla de 2 columnas para las imágenes
-                conductor_image_table_data = []
-                current_row = []
+            for i, relato in enumerate(relatos_conductor):
+                if relato['text'].strip():
+                    if num_relatos > 1:
+                        story.append(Paragraph(f"Relato {i+1}", styles['NormalLeft']))
+                        story.append(Spacer(1, 3))
 
-                for i, (img_file, description) in enumerate(zip(conductor_images, conductor_descriptions)):
-                    # Procesar imagen
-                    img = Image.open(img_file)
-                    # Redimensionar manteniendo proporción
-                    max_width, max_height = 2.5*inch, 2*inch
-                    img_ratio = img.width / img.height
-                    if img_ratio > max_width / max_height:
-                        new_width = max_width
-                        new_height = max_width / img_ratio
+                    if relato['image'] is not None:
+                        # Procesar imagen
+                        img = Image.open(relato['image'])
+                        # Redimensionar manteniendo proporción
+                        max_width, max_height = 2.5*inch, 3*inch
+                        img_ratio = img.width / img.height
+                        if img_ratio > max_width / max_height:
+                            new_width = max_width
+                            new_height = max_width / img_ratio
+                        else:
+                            new_height = max_height
+                            new_width = max_height * img_ratio
+
+                        # Convertir a ReportLab Image
+                        img_bytes = io.BytesIO()
+                        img.save(img_bytes, format='PNG')
+                        img_bytes.seek(0)
+                        rl_img = RLImage(img_bytes, width=new_width, height=new_height)
+
+                        # Crear tabla de 2 columnas: imagen y texto
+                        table_data = [[rl_img, Paragraph(relato['text'].replace('\n', '<br/>'), styles['Justified'])]]
+                        table = Table(table_data, colWidths=[3*inch, 4*inch])
+                        table.setStyle(TableStyle([
+                            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+                        ]))
+                        story.append(table)
                     else:
-                        new_height = max_height
-                        new_width = max_height * img_ratio
+                        # Texto a ancho completo
+                        story.append(Paragraph(relato['text'].replace('\n', '<br/>'), styles['Justified']))
 
-                    # Convertir a ReportLab Image
-                    img_bytes = io.BytesIO()
-                    img.save(img_bytes, format='PNG')
-                    img_bytes.seek(0)
-                    rl_img = RLImage(img_bytes, width=new_width, height=new_height)
-
-                    # Crear celda con imagen y descripción
-                    image_cell = []
-                    image_cell.append(rl_img)
-                    image_cell.append(Spacer(1, 6))
-                    image_cell.append(Paragraph(f"Imagen {i+1}: {description}", styles['NormalLeft']))
-
-                    current_row.append(image_cell)
-
-                    # Si tenemos 2 imágenes o es la última, agregar fila
-                    if len(current_row) == 2 or i == len(conductor_images) - 1:
-                        # Si solo tenemos una imagen en la fila, agregar celda vacía
-                        if len(current_row) == 1:
-                            current_row.append("")
-
-                        conductor_image_table_data.append(current_row)
-                        current_row = []
-
-                # Crear tabla de imágenes
-                if conductor_image_table_data:
-                    conductor_image_table = Table(conductor_image_table_data, colWidths=[3*inch, 3*inch])
-                    conductor_image_table.setStyle(TableStyle([
-                        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-                    ]))
-                    story.append(conductor_image_table)
-                    story.append(Spacer(1, 12))
-            else:
-                story.append(Spacer(1, 6))
+                    story.append(Spacer(1, 6))
 
         for title, content in narrative_sections:
             if content.strip():
