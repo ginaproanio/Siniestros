@@ -87,7 +87,34 @@ with st.form(key='form_informe'):
     # Secciones narrativas
     st.header("Secciones Narrativas")
     antecedentes = st.text_area("Antecedentes", value="El asegurado reportó un accidente vehicular el 15 de octubre de 2023. El vehículo asegurado colisionó con otro vehículo en la intersección.", height=150)
-    entrevista_conductor = st.text_area("Entrevista con el Conductor", value="El conductor declaró que circulaba a velocidad normal cuando el otro vehículo invadió su carril. No hubo consumo de alcohol. El conductor tiene licencia válida.", height=200)
+
+    # Entrevista con el Conductor
+    st.subheader("Entrevista con el Conductor")
+    entrevista_conductor = st.text_area("Texto de la Entrevista", value="El conductor declaró que circulaba a velocidad normal cuando el otro vehículo invadió su carril. No hubo consumo de alcohol. El conductor tiene licencia válida.", height=200)
+
+    # Imágenes para la Entrevista con el Conductor
+    st.subheader("Imágenes de la Entrevista con el Conductor")
+    st.write("Sube las fotos tomadas durante la entrevista con el conductor. Para cada imagen, proporciona una descripción detallada.")
+    num_conductor_images = st.number_input("Número de imágenes para la entrevista", min_value=0, max_value=10, value=0, key="num_conductor")
+
+    conductor_images = []
+    conductor_descriptions = []
+
+    if num_conductor_images > 0:
+        cols = st.columns(2)
+        for i in range(num_conductor_images):
+            col_idx = i % 2
+            with cols[col_idx]:
+                st.subheader(f"Imagen {i+1}")
+                image_file = st.file_uploader(f"Seleccionar imagen {i+1}", type=['jpg', 'jpeg', 'png'], key=f"conductor_img_{i}")
+                description = st.text_area(f"Descripción de la imagen {i+1}",
+                                         placeholder=f"Describe detalladamente la imagen {i+1}...",
+                                         height=80, key=f"conductor_desc_{i}")
+
+                if image_file is not None:
+                    conductor_images.append(image_file)
+                    conductor_descriptions.append(description if description.strip() else f"Imagen {i+1} de la entrevista")
+
     visita_taller = st.text_area("Visita al Taller", value="En el taller se constató daños en el parachoques delantero y lateral izquierdo. El costo estimado de reparación es de $2,500.", height=150)
     inspeccion_lugar = st.text_area("Inspección del Lugar del Siniestro", value="El lugar del accidente es una intersección con semáforo. Las condiciones climáticas eran buenas. Hay testigos que confirman la versión del conductor.", height=150)
     evidencias_complementarias = st.text_area("Evidencias Complementarias", value="Fotos del lugar del accidente, informe policial, y declaración de testigos.", height=150)
@@ -553,7 +580,6 @@ PBX: {pbx} | Cel: {cel}
         # Secciones narrativas
         narrative_sections = [
             ("ANTECEDENTES", antecedentes),
-            ("ENTREVISTA CON EL CONDUCTOR", entrevista_conductor),
             ("VISITA AL TALLER", visita_taller),
             ("INSPECCIÓN DEL LUGAR DEL SINIESTRO", inspeccion_lugar),
             ("EVIDENCIAS COMPLEMENTARIAS", evidencias_complementarias),
@@ -563,6 +589,66 @@ PBX: {pbx} | Cel: {cel}
             ("CONCLUSIONES", conclusiones),
             ("RECOMENDACIÓN SOBRE EL PAGO DE LA COBERTURA", recomendacion)
         ]
+
+        # Entrevista con el Conductor (con imágenes)
+        if entrevista_conductor.strip():
+            story.append(Paragraph("ENTREVISTA CON EL CONDUCTOR", styles['SectionHeader']))
+            story.append(Paragraph(entrevista_conductor.replace('\n', '<br/>'), styles['Justified']))
+            story.append(Spacer(1, 6))
+
+            # Agregar imágenes de la entrevista si existen
+            if conductor_images:
+                # Crear tabla de 2 columnas para las imágenes
+                conductor_image_table_data = []
+                current_row = []
+
+                for i, (img_file, description) in enumerate(zip(conductor_images, conductor_descriptions)):
+                    # Procesar imagen
+                    img = Image.open(img_file)
+                    # Redimensionar manteniendo proporción
+                    max_width, max_height = 2.5*inch, 2*inch
+                    img_ratio = img.width / img.height
+                    if img_ratio > max_width / max_height:
+                        new_width = max_width
+                        new_height = max_width / img_ratio
+                    else:
+                        new_height = max_height
+                        new_width = max_height * img_ratio
+
+                    # Convertir a ReportLab Image
+                    img_bytes = io.BytesIO()
+                    img.save(img_bytes, format='PNG')
+                    img_bytes.seek(0)
+                    rl_img = RLImage(img_bytes, width=new_width, height=new_height)
+
+                    # Crear celda con imagen y descripción
+                    image_cell = []
+                    image_cell.append(rl_img)
+                    image_cell.append(Spacer(1, 6))
+                    image_cell.append(Paragraph(f"Imagen {i+1}: {description}", styles['NormalLeft']))
+
+                    current_row.append(image_cell)
+
+                    # Si tenemos 2 imágenes o es la última, agregar fila
+                    if len(current_row) == 2 or i == len(conductor_images) - 1:
+                        # Si solo tenemos una imagen en la fila, agregar celda vacía
+                        if len(current_row) == 1:
+                            current_row.append("")
+
+                        conductor_image_table_data.append(current_row)
+                        current_row = []
+
+                # Crear tabla de imágenes
+                if conductor_image_table_data:
+                    conductor_image_table = Table(conductor_image_table_data, colWidths=[3*inch, 3*inch])
+                    conductor_image_table.setStyle(TableStyle([
+                        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+                    ]))
+                    story.append(conductor_image_table)
+                    story.append(Spacer(1, 12))
+            else:
+                story.append(Spacer(1, 6))
 
         for title, content in narrative_sections:
             if content.strip():
