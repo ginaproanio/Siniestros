@@ -178,14 +178,7 @@ with st.form(key='form_informe'):
             st.write("Añadir Imagen (opcional)")
             image_file = st.file_uploader(f"Seleccionar imagen {i+1}", type=['jpg', 'jpeg', 'png'], key=f"relato_aseg_img_{i}")
 
-            # Acciones
-            cols_actions = st.columns(3)
-            with cols_actions[0]:
-                st.button("Cargar Imagen", key=f"cargar_aseg_{i}")
-            with cols_actions[1]:
-                st.button("Guardar", key=f"guardar_aseg_{i}")
-            with cols_actions[2]:
-                st.button("Añadir", key=f"añadir_aseg_{i}")
+
 
         relatos_asegurado.append({
             'text': relato_text,
@@ -206,14 +199,7 @@ with st.form(key='form_informe'):
             st.write("Añadir Imagen (opcional)")
             inspec_image = st.file_uploader(f"Seleccionar imagen {i+1}", type=['jpg', 'jpeg', 'png'], key=f"inspec_img_{i}")
 
-            # Acciones
-            cols_actions_inspec = st.columns(3)
-            with cols_actions_inspec[0]:
-                st.button("Buscar", key=f"buscar_inspec_{i}")
-            with cols_actions_inspec[1]:
-                st.button("Grabar", key=f"grabar_inspec_{i}")
-            with cols_actions_inspec[2]:
-                st.button("Añadir Otro", key=f"añadir_inspec_{i}")
+
 
         inspeccion_relatos.append({
             'text': inspec_text,
