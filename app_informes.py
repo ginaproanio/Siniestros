@@ -4,6 +4,7 @@ import os
 import staticmap
 import io
 from PIL import Image
+from endesive import pdf
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, Image as RLImage, Table, TableStyle
@@ -394,9 +395,7 @@ PBX: {pbx} | Cel: {cel}
 
         # Página de carátula
         story.extend(create_cover_page())
-
-        # Contenido principal
-        story.append(Paragraph(fecha_informe, styles['ReportDate']))
+        story.append(PageBreak())
 
         # Datos del Siniestro
         story.append(Paragraph("DATOS DEL SINIESTRO", styles['SectionHeader']))
@@ -603,6 +602,27 @@ PBX: {pbx} | Cel: {cel}
         doc = CustomDocTemplate(filename_pdf, pagesize=letter, pageTemplates=[create_page_template()])
 
         doc.build(story)
+
+        # Firmar digitalmente el PDF
+        try:
+            with open(filename_pdf, 'rb') as f:
+                data = f.read()
+            dct = {
+                "sigflags": 3,
+                "contact": email,
+                "location": "Quito, Ecuador",
+                "signingdate": datetime.datetime.now().strftime("D:%Y%m%d%H%M%S+00'00'"),
+                "reason": "Firma del Informe de Investigación de Siniestro",
+            }
+            with open('maria_susana_espinosa_lozada.p12', 'rb') as f:
+                p12 = f.read()
+            # Nota: Reemplaza 'password' con la contraseña real del certificado
+            data_signed = pdf.cms.sign(data, dct, p12, 'password', 'sha256', fname=filename_pdf)
+            # Escribir el PDF firmado de vuelta
+            with open(filename_pdf, 'wb') as f:
+                f.write(data_signed)
+        except Exception as e:
+            st.warning(f"No se pudo firmar digitalmente el PDF: {e}")
 
         # Leer el PDF para descarga
         with open(filename_pdf, "rb") as pdf_file:
