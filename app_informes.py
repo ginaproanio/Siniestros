@@ -270,11 +270,11 @@ PBX: {pbx} | Cel: {cel}
                 ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
                 ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
                 ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                ('FONTSIZE', (0, 0), (-1, 0), 10),
-                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                ('FONTSIZE', (0, 0), (-1, 0), 9),
+                ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
                 ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
                 ('GRID', (0, 0), (-1, -1), 1, colors.black),
-                ('FONTSIZE', (0, 1), (-1, -1), 9),
+                ('FONTSIZE', (0, 1), (-1, -1), 8),
                 ('ROUNDEDCORNERS', [3, 3, 3, 3]),  # Radio de 3px para todas las 4 esquinas
             ]))
             return table
@@ -415,7 +415,7 @@ PBX: {pbx} | Cel: {cel}
             'Tipo de Siniestro': 'Vehicular'
         }
         story.append(create_data_table(siniestro_data))
-        story.append(Spacer(1, 12))
+        story.append(Spacer(1, 6))
 
         # Asegurado
         story.append(Paragraph("ASEGURADO", styles['SectionHeader']))
@@ -425,7 +425,7 @@ PBX: {pbx} | Cel: {cel}
             'Domicilio': domicilio_aseg
         }
         story.append(create_data_table(asegurado_data))
-        story.append(Spacer(1, 12))
+        story.append(Spacer(1, 6))
 
         # Conductor
         story.append(Paragraph("CONDUCTOR", styles['SectionHeader']))
@@ -437,7 +437,7 @@ PBX: {pbx} | Cel: {cel}
             'Parentesco': parentesco
         }
         story.append(create_data_table(conductor_data))
-        story.append(Spacer(1, 12))
+        story.append(Spacer(1, 6))
 
         # Objeto Asegurado
         story.append(Paragraph("OBJETO ASEGURADO", styles['SectionHeader']))
@@ -451,7 +451,7 @@ PBX: {pbx} | Cel: {cel}
             'Chasis': chasis_aseg
         }
         story.append(create_data_table(objeto_data))
-        story.append(Spacer(1, 12))
+        story.append(Spacer(1, 6))
 
         # Lugar del Siniestro
         story.append(Paragraph("LUGAR DEL SINIESTRO", styles['SectionHeader']))
