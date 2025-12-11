@@ -162,51 +162,7 @@ with st.form(key='form_informe'):
     st.header("ANTECEDENTES")
     antecedentes = st.text_area("Antecedentes", value="El asegurado reportó un accidente vehicular el 15 de octubre de 2023. El vehículo asegurado colisionó con otro vehículo en la intersección.", height=150)
 
-    # Sección: TERCEROS AFECTADOS
-    st.header("Terceros Afectados")
 
-    terceros_data = []
-    num_terceros = 1  # Default to 1 tercero
-    for i in range(num_terceros):
-        st.subheader(f"Tercero Afectado {i+1}")
-        cols_tercero = st.columns(4)
-        with cols_tercero[0]:
-            afectado = st.text_input(f"Afectado {i+1}", key=f"afectado_{i}")
-        with cols_tercero[1]:
-            ruc_afectado = st.text_input(f"RUC {i+1}", key=f"ruc_{i}")
-        with cols_tercero[2]:
-            direccion_afectado = st.text_input(f"Dirección {i+1}", key=f"direccion_{i}")
-        with cols_tercero[3]:
-            telefono_afectado = st.text_input(f"Teléfono {i+1}", key=f"telefono_{i}")
-
-        cols_tercero2 = st.columns(4)
-        with cols_tercero2[0]:
-            correo_afectado = st.text_input(f"Correo {i+1}", key=f"correo_{i}")
-        with cols_tercero2[1]:
-            bien_afectado = st.text_input(f"Bien Afectado {i+1}", key=f"bien_{i}")
-        with cols_tercero2[2]:
-            placa_afectado = st.text_input(f"Placa {i+1}", key=f"placa_{i}")
-        with cols_tercero2[3]:
-            marca_afectado = st.text_input(f"Marca {i+1}", key=f"marca_{i}")
-
-        cols_tercero3 = st.columns(2)
-        with cols_tercero3[0]:
-            tipo_afectado = st.text_input(f"Tipo {i+1}", key=f"tipo_{i}")
-        with cols_tercero3[1]:
-            color_afectado = st.text_input(f"Color {i+1}", key=f"color_{i}")
-
-        terceros_data.append({
-            'Afectado': afectado,
-            'RUC': ruc_afectado,
-            'Dirección': direccion_afectado,
-            'Teléfono': telefono_afectado,
-            'Correo': correo_afectado,
-            'Bien Afectado': bien_afectado,
-            'Placa': placa_afectado,
-            'Marca': marca_afectado,
-            'Tipo': tipo_afectado,
-            'Color': color_afectado
-        })
 
     # ENTREVISTA CON EL ASEGURADO
     st.header("ENTREVISTA CON EL ASEGURADO")
@@ -410,14 +366,7 @@ TESTIGOS
 {testigos_text}
 """
 
-        if danos_terceros == "Sí":
-            terceros_lines = '\n'.join([f'{k}\t{v}' for tercero in terceros_data for k, v in tercero.items() if v])
-            informe_texto += f"""
 
-TERCEROS AFECTADOS
-CAMPO\tDETALLE
-{terceros_lines}
-"""
 
         informe_texto += f"""
 
@@ -569,16 +518,11 @@ PBX: {pbx} | Cel: {cel}
                 ("LUGAR DEL SINIESTRO", 3),
             ]
 
-            # Agregar secciones condicionales
-            page_counter = 3
-            if afectado or placa_afectado:
-                sections.append(("TERCEROS AFECTADOS", page_counter))
-                page_counter += 1
-
             # Secciones narrativas
+            page_counter = 4
             narrative_titles = []
             if antecedentes.strip(): narrative_titles.append("ANTECEDENTES")
-            if any(relato['text'].strip() for relato in relatos_conductor): narrative_titles.append("ENTREVISTA CON EL CONDUCTOR")
+            if any(relato['text'].strip() for relato in relatos_asegurado): narrative_titles.append("ENTREVISTA CON EL ASEGURADO")
             if visita_taller.strip(): narrative_titles.append("VISITA AL TALLER")
             if inspeccion_lugar.strip(): narrative_titles.append("INSPECCIÓN DEL LUGAR DEL SINIESTRO")
             if evidencias_complementarias.strip(): narrative_titles.append("EVIDENCIAS COMPLEMENTARIAS")
@@ -681,16 +625,7 @@ PBX: {pbx} | Cel: {cel}
             story.append(Paragraph("Coordenadas no disponibles", styles['NormalLeft']))
         story.append(Spacer(1, 12))
 
-        # Terceros Afectados
-        if terceros_data and any(any(value.strip() for value in tercero.values()) for tercero in terceros_data):
-            story.append(Paragraph("TERCEROS AFECTADOS", styles['SectionHeader']))
-            for i, tercero in enumerate(terceros_data):
-                if any(value.strip() for value in tercero.values()):
-                    if num_terceros > 1:
-                        story.append(Paragraph(f"Tercero {i+1}", styles['NormalLeft']))
-                    story.append(create_data_table(tercero))
-                    story.append(Spacer(1, 6))
-            story.append(Spacer(1, 6))
+
 
         # Galería de Imágenes de Inspección
         if inspection_images:
@@ -882,16 +817,7 @@ PBX: {pbx} | Cel: {cel}
 
                     story.append(Spacer(1, 6))
 
-        # TERCEROS AFECTADOS (solo si hay daños a terceros)
-        if danos_terceros == "Sí" and terceros_data and any(any(value.strip() for value in tercero.values()) for tercero in terceros_data):
-            story.append(Paragraph("TERCEROS AFECTADOS", styles['SectionHeader']))
-            for i, tercero in enumerate(terceros_data):
-                if any(value.strip() for value in tercero.values()):
-                    if num_terceros > 1:
-                        story.append(Paragraph(f"Tercero {i+1}", styles['NormalLeft']))
-                    story.append(create_data_table(tercero))
-                    story.append(Spacer(1, 6))
-            story.append(Spacer(1, 6))
+
 
         # Resto de secciones
         remaining_sections = [
