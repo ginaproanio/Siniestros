@@ -394,10 +394,8 @@ PBX: {pbx} | Cel: {cel}
 
         # Página de carátula
         story.extend(create_cover_page())
-        story.append(PageBreak())
 
-        # Contenido principal - Título
-        story.append(Paragraph("INFORME DE INVESTIGACIÓN DE SINIESTRO", styles['ReportTitle']))
+        # Contenido principal
         story.append(Paragraph(fecha_informe, styles['ReportDate']))
 
         # Datos del Siniestro
@@ -616,7 +614,7 @@ PBX: {pbx} | Cel: {cel}
         st.download_button(
             label="Descargar Informe en PDF",
             data=pdf_data,
-            file_name=f"informe_{reclamo_num}_{datetime.date.today()}.pdf",
+            file_name=f"{reclamo_num}.pdf",
             mime="application/pdf"
         )
 
