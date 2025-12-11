@@ -38,6 +38,10 @@ if not os.path.exists('informes'):
 st.title("Sistema de Generación de Informes de Siniestros")
 st.write("Llena los campos obligatorios para generar el informe. Usa las áreas de texto para las secciones narrativas. Puedes subir evidencias al final.")
 
+# Initialize session state for relatos
+if 'num_relatos' not in st.session_state:
+    st.session_state.num_relatos = 1
+
 # Formulario principal
 with st.form(key='form_informe'):
     # Fecha actual para el informe
@@ -67,7 +71,7 @@ with st.form(key='form_informe'):
 
     # Sección: ASEGURADO
     st.header("Asegurado")
-    tipo_asegurado = st.radio("Tipo de Asegurado", options=["Persona Natural", "Persona Jurídica"], index=1, key="tipo_asegurado")
+    tipo_asegurado = st.selectbox("Tipo de Asegurado", options=["Persona Natural", "Persona Jurídica"], index=0, key="tipo_asegurado")
 
     asegurado_data = {}
 
@@ -145,7 +149,7 @@ with st.form(key='form_informe'):
     with cols7[0]:
         ano_aseg = st.number_input("Año", value=2020, min_value=1900, max_value=2100)
     with cols7[1]:
-        motor_aseg = st.text_input("Motor", value="1.8L")
+        motor_aseg = st.text_input("Serie del Motor", value="")
     with cols7[2]:
         chasis_aseg = st.text_input("Chasis", value="1HGCM82633A123456")
 
@@ -227,11 +231,10 @@ with st.form(key='form_informe'):
 
     # ENTREVISTA CON EL CONDUCTOR
     st.header("ENTREVISTA CON EL CONDUCTOR")
-    num_relatos = st.number_input("Número de relatos", min_value=1, max_value=10, value=1, key="num_relatos")
 
     relatos_conductor = []
 
-    for i in range(num_relatos):
+    for i in range(st.session_state.num_relatos):
         st.subheader(f"Relato {i+1}")
         cols_relato = st.columns([3, 1])  # 3 for text, 1 for image
         with cols_relato[0]:
@@ -716,7 +719,7 @@ PBX: {pbx} | Cel: {cel}
 
             for i, relato in enumerate(relatos_conductor):
                 if relato['text'].strip():
-                    if num_relatos > 1:
+                    if len(relatos_conductor) > 1:
                         story.append(Paragraph(f"Relato {i+1}", styles['NormalLeft']))
                         story.append(Spacer(1, 3))
 
@@ -841,3 +844,8 @@ PBX: {pbx} | Cel: {cel}
                 with open(os.path.join('informes', f"{reclamo_num}_{uploaded_file.name}"), "wb") as f:
                     f.write(uploaded_file.getbuffer())
             st.success("Archivos de evidencias subidos y guardados.")
+
+# Botón para añadir otro relato (fuera del formulario)
+if st.button("Añadir Otro Relato"):
+    st.session_state.num_relatos += 1
+    st.rerun()
