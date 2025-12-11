@@ -39,8 +39,12 @@ st.title("Sistema de Generación de Informes de Siniestros")
 st.write("Llena los campos obligatorios para generar el informe. Usa las áreas de texto para las secciones narrativas. Puedes subir evidencias al final.")
 
 # Initialize session state for relatos
-if 'num_relatos' not in st.session_state:
-    st.session_state.num_relatos = 1
+if 'num_relatos_aseg' not in st.session_state:
+    st.session_state.num_relatos_aseg = 1
+if 'num_relatos_inspec' not in st.session_state:
+    st.session_state.num_relatos_inspec = 1
+if 'num_relatos_testigos' not in st.session_state:
+    st.session_state.num_relatos_testigos = 1
 
 # Sección: ASEGURADO (fuera del formulario para actualización dinámica)
 st.header("Asegurado")
@@ -169,7 +173,7 @@ with st.form(key='form_informe'):
 
     relatos_asegurado = []
 
-    for i in range(st.session_state.num_relatos):
+    for i in range(st.session_state.num_relatos_aseg):
         st.subheader(f"Relato {i+1}")
         cols_relato = st.columns([3, 1])  # 3 for text, 1 for image
         with cols_relato[0]:
@@ -190,7 +194,7 @@ with st.form(key='form_informe'):
 
     inspeccion_relatos = []
 
-    for i in range(st.session_state.num_relatos):
+    for i in range(st.session_state.num_relatos_inspec):
         st.subheader(f"Descripción {i+1}")
         cols_inspec = st.columns([3, 1])  # 3 for text, 1 for image
         with cols_inspec[0]:
@@ -211,7 +215,7 @@ with st.form(key='form_informe'):
 
     testigos_relatos = []
 
-    for i in range(st.session_state.num_relatos):
+    for i in range(st.session_state.num_relatos_testigos):
         st.subheader(f"Relato {i+1}")
         cols_testigo = st.columns([3, 1])  # 3 for text, 1 for image
         with cols_testigo[0]:
@@ -220,14 +224,7 @@ with st.form(key='form_informe'):
             st.write("Añadir Imagen (opcional)")
             testigo_image = st.file_uploader(f"Seleccionar imagen {i+1}", type=['jpg', 'jpeg', 'png'], key=f"testigo_img_{i}")
 
-            # Acciones
-            cols_actions_testigo = st.columns(3)
-            with cols_actions_testigo[0]:
-                st.button("Buscar", key=f"buscar_testigo_{i}")
-            with cols_actions_testigo[1]:
-                st.button("Grabar", key=f"grabar_testigo_{i}")
-            with cols_actions_testigo[2]:
-                st.button("Añadir Otro", key=f"añadir_testigo_{i}")
+
 
         testigos_relatos.append({
             'text': testigo_text,
@@ -906,7 +903,21 @@ PBX: {pbx} | Cel: {cel}
                     f.write(uploaded_file.getbuffer())
             st.success("Archivos de evidencias subidos y guardados.")
 
-# Botón para añadir otro relato (fuera del formulario)
-if st.button("Añadir Otro Relato"):
-    st.session_state.num_relatos += 1
-    st.rerun()
+# Botones para añadir más relatos (fuera del formulario)
+st.header("Añadir Más Relatos")
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    if st.button("Añadir Otro Relato del Asegurado (Azul)", help="Añade un nuevo relato del asegurado"):
+        st.session_state.num_relatos_aseg += 1
+        st.rerun()
+
+with col2:
+    if st.button("Añadir Otra Descripción de Inspección (Verde)", help="Añade una nueva descripción de inspección"):
+        st.session_state.num_relatos_inspec += 1
+        st.rerun()
+
+with col3:
+    if st.button("Añadir Otro Relato de Testigo (Rojo)", help="Añade un nuevo relato de testigo"):
+        st.session_state.num_relatos_testigos += 1
+        st.rerun()
