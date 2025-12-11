@@ -339,7 +339,7 @@ PBX: {pbx} | Cel: {cel}
 
             # Texto final
             cover_story.append(Paragraph("Este informe consta de varias páginas incluyendo anexos.", ParagraphStyle('CoverText', parent=styles['NormalLeft'], alignment=TA_CENTER)))
-            cover_story.append(Spacer(1, 2*inch))
+            cover_story.append(Spacer(1, 0.5*inch))
 
             return cover_story
 
