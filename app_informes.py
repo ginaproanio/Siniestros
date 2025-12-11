@@ -395,6 +395,11 @@ PBX: {pbx} | Cel: {cel}
 
         # Página de carátula
         story.extend(create_cover_page())
+        story.append(PageBreak())
+
+        # Índice
+        story.extend(create_index())
+        story.append(PageBreak())
 
         # Datos del Siniestro
         story.append(Paragraph("DATOS DEL SINIESTRO", styles['SectionHeader']))
