@@ -113,7 +113,8 @@ with st.form(key='form_informe'):
 
     # Sección: TERCEROS AFECTADOS
     st.header("Terceros Afectados")
-    num_terceros = st.number_input("Número de terceros afectados", min_value=0, max_value=10, value=0, key="num_terceros")
+    num_terceros_options = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    num_terceros = st.selectbox("Número de terceros afectados", options=num_terceros_options, index=0, key="num_terceros")
 
     terceros_data = []
     if num_terceros > 0:
@@ -204,7 +205,7 @@ with st.form(key='form_informe'):
             col_idx = i % 2
             with cols[col_idx]:
                 st.subheader(f"Imagen {i+1}")
-                image_file = st.file_uploader(f"Seleccionar imagen {i+1}", type=['jpg', 'jpeg', 'png'], key=f"conductor_img_{i}")
+                image_file = st.file_uploader(f"Seleccionar imagen/video {i+1}", type=['jpg', 'jpeg', 'png', 'mp4', 'avi', 'mov'], key=f"conductor_img_{i}")
                 description = st.text_area(f"Descripción de la imagen {i+1}",
                                          placeholder=f"Describe detalladamente la imagen {i+1}...",
                                          height=80, key=f"conductor_desc_{i}")
