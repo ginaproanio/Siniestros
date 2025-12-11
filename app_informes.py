@@ -234,32 +234,88 @@ with st.form(key='form_informe'):
             'Color': color_afectado
         }]
 
-    # ENTREVISTA CON EL CONDUCTOR
-    st.header("ENTREVISTA CON EL CONDUCTOR")
+    # ENTREVISTA CON EL ASEGURADO
+    st.header("ENTREVISTA CON EL ASEGURADO")
 
-    relatos_conductor = []
+    relatos_asegurado = []
 
     for i in range(st.session_state.num_relatos):
         st.subheader(f"Relato {i+1}")
         cols_relato = st.columns([3, 1])  # 3 for text, 1 for image
         with cols_relato[0]:
-            relato_text = st.text_area(f"Texto del Relato {i+1}", value="" if i > 0 else "El conductor declaró que circulaba a velocidad normal cuando el otro vehículo invadió su carril. No hubo consumo de alcohol. El conductor tiene licencia válida.", height=150, key=f"relato_text_{i}")
+            relato_text = st.text_area(f"Texto del Relato {i+1}", value="" if i > 0 else "El asegurado declaró que el vehículo estaba estacionado cuando fue impactado por otro vehículo. No hubo testigos directos del incidente.", height=150, key=f"relato_aseg_text_{i}")
         with cols_relato[1]:
             st.write("Añadir Imagen (opcional)")
-            image_file = st.file_uploader(f"Seleccionar imagen {i+1}", type=['jpg', 'jpeg', 'png'], key=f"relato_img_{i}")
+            image_file = st.file_uploader(f"Seleccionar imagen {i+1}", type=['jpg', 'jpeg', 'png'], key=f"relato_aseg_img_{i}")
 
             # Acciones
             cols_actions = st.columns(3)
             with cols_actions[0]:
-                st.button("Buscar", key=f"buscar_{i}")
+                st.button("Buscar", key=f"buscar_aseg_{i}")
             with cols_actions[1]:
-                st.button("Grabar", key=f"grabar_{i}")
+                st.button("Grabar", key=f"grabar_aseg_{i}")
             with cols_actions[2]:
-                st.button("Añadir Otro", key=f"añadir_{i}")
+                st.button("Añadir Otro", key=f"añadir_aseg_{i}")
 
-        relatos_conductor.append({
+        relatos_asegurado.append({
             'text': relato_text,
             'image': image_file
+        })
+
+    # INSPECCIÓN DEL LUGAR DEL SINIESTRO
+    st.header("INSPECCIÓN DEL LUGAR DEL SINIESTRO")
+
+    inspeccion_relatos = []
+
+    for i in range(st.session_state.num_relatos):
+        st.subheader(f"Descripción {i+1}")
+        cols_inspec = st.columns([3, 1])  # 3 for text, 1 for image
+        with cols_inspec[0]:
+            inspec_text = st.text_area(f"Texto de la Descripción {i+1}", value="" if i > 0 else "El lugar del accidente presenta daños en la infraestructura vial. Se observan marcas de frenado y restos de vidrio.", height=150, key=f"inspec_text_{i}")
+        with cols_inspec[1]:
+            st.write("Añadir Imagen (opcional)")
+            inspec_image = st.file_uploader(f"Seleccionar imagen {i+1}", type=['jpg', 'jpeg', 'png'], key=f"inspec_img_{i}")
+
+            # Acciones
+            cols_actions_inspec = st.columns(3)
+            with cols_actions_inspec[0]:
+                st.button("Buscar", key=f"buscar_inspec_{i}")
+            with cols_actions_inspec[1]:
+                st.button("Grabar", key=f"grabar_inspec_{i}")
+            with cols_actions_inspec[2]:
+                st.button("Añadir Otro", key=f"añadir_inspec_{i}")
+
+        inspeccion_relatos.append({
+            'text': inspec_text,
+            'image': inspec_image
+        })
+
+    # TESTIGOS
+    st.header("TESTIGOS")
+
+    testigos_relatos = []
+
+    for i in range(st.session_state.num_relatos):
+        st.subheader(f"Relato {i+1}")
+        cols_testigo = st.columns([3, 1])  # 3 for text, 1 for image
+        with cols_testigo[0]:
+            testigo_text = st.text_area(f"Texto del Relato {i+1}", value="" if i > 0 else "El testigo declaró haber visto el accidente desde su ventana. Confirma la versión del asegurado.", height=150, key=f"testigo_text_{i}")
+        with cols_testigo[1]:
+            st.write("Añadir Imagen (opcional)")
+            testigo_image = st.file_uploader(f"Seleccionar imagen {i+1}", type=['jpg', 'jpeg', 'png'], key=f"testigo_img_{i}")
+
+            # Acciones
+            cols_actions_testigo = st.columns(3)
+            with cols_actions_testigo[0]:
+                st.button("Buscar", key=f"buscar_testigo_{i}")
+            with cols_actions_testigo[1]:
+                st.button("Grabar", key=f"grabar_testigo_{i}")
+            with cols_actions_testigo[2]:
+                st.button("Añadir Otro", key=f"añadir_testigo_{i}")
+
+        testigos_relatos.append({
+            'text': testigo_text,
+            'image': testigo_image
         })
 
     visita_taller = st.text_area("Visita al Taller", value="En el taller se constató daños en el parachoques delantero y lateral izquierdo. El costo estimado de reparación es de $2,500.", height=150)
@@ -326,7 +382,9 @@ if submit_button:
         # No necesitamos generar mapa para el texto, solo para PDF
         # Generar el contenido del informe
         asegurado_lines = '\n'.join([f'{k}\t{v}' for k, v in asegurado_data.items()])
-        relatos_text = '\n\n'.join([f'Relato {i+1}:\n{relato["text"]}' for i, relato in enumerate(relatos_conductor, 1)])
+        relatos_aseg_text = '\n\n'.join([f'Relato {i+1}:\n{relato["text"]}' for i, relato in enumerate(relatos_asegurado, 1)])
+        inspeccion_text = '\n\n'.join([f'Descripción {i+1}:\n{desc["text"]}' for i, desc in enumerate(inspeccion_relatos, 1)])
+        testigos_text = '\n\n'.join([f'Relato {i+1}:\n{relato["text"]}' for i, relato in enumerate(testigos_relatos, 1)])
 
         informe_texto = f"""
 INFORME DE INVESTIGACIÓN DE SINIESTRO
@@ -365,30 +423,32 @@ Año\t{ano_aseg}
 Motor\t{motor_aseg}
 Chasis\t{chasis_aseg}
 
-TERCEROS AFECTADOS
-CAMPO\tDETALLE
-Afectado\t{afectado}
-RUC\t{ruc_afectado}
-Dirección\t{direccion_afectado}
-Teléfono\t{telefono_afectado}
-Correo\t{correo_afectado}
-Bien Afectado\t{bien_afectado}
-Placa\t{placa_afectado}
-Marca\t{marca_afectado}
-Tipo\t{tipo_afectado}
-Color\t{color_afectado}
-
 ANTECEDENTES
 {antecedentes}
 
-ENTREVISTA CON EL CONDUCTOR
-{relatos_text}
+ENTREVISTA CON EL ASEGURADO
+{relatos_aseg_text}
+
+INSPECCIÓN DEL LUGAR DEL SINIESTRO
+{inspeccion_text}
+
+TESTIGOS
+{testigos_text}
+"""
+
+        if danos_terceros == "Sí":
+            terceros_lines = '\n'.join([f'{k}\t{v}' for tercero in terceros_data for k, v in tercero.items() if v])
+            informe_texto += f"""
+
+TERCEROS AFECTADOS
+CAMPO\tDETALLE
+{terceros_lines}
+"""
+
+        informe_texto += f"""
 
 VISITA AL TALLER
 {visita_taller}
-
-INSPECCIÓN DEL LUGAR DEL SINIESTRO
-{inspeccion_lugar}
 
 EVIDENCIAS COMPLEMENTARIAS
 {evidencias_complementarias}
@@ -713,27 +773,20 @@ PBX: {pbx} | Cel: {cel}
                 story.append(image_table)
                 story.append(Spacer(1, 12))
 
-        # Secciones narrativas
-        narrative_sections = [
-            ("ANTECEDENTES", antecedentes),
-            ("VISITA AL TALLER", visita_taller),
-            ("INSPECCIÓN DEL LUGAR DEL SINIESTRO", inspeccion_lugar),
-            ("EVIDENCIAS COMPLEMENTARIAS", evidencias_complementarias),
-            ("DINÁMICA DEL ACCIDENTE", dinamica_accidente),
-            ("OTRAS DILIGENCIAS", otras_diligencias),
-            ("OBSERVACIONES", observaciones),
-            ("CONCLUSIONES", conclusiones),
-            ("RECOMENDACIÓN SOBRE EL PAGO DE LA COBERTURA", recomendacion)
-        ]
+        # ANTECEDENTES
+        if antecedentes.strip():
+            story.append(Paragraph("ANTECEDENTES", styles['SectionHeader']))
+            story.append(Paragraph(antecedentes.replace('\n', '<br/>'), styles['Justified']))
+            story.append(Spacer(1, 12))
 
-        # Entrevista con el Conductor (con relatos dinámicos)
-        if any(relato['text'].strip() for relato in relatos_conductor):
-            story.append(Paragraph("ENTREVISTA CON EL CONDUCTOR", styles['SectionHeader']))
+        # ENTREVISTA CON EL ASEGURADO
+        if any(relato['text'].strip() for relato in relatos_asegurado):
+            story.append(Paragraph("ENTREVISTA CON EL ASEGURADO", styles['SectionHeader']))
             story.append(Spacer(1, 6))
 
-            for i, relato in enumerate(relatos_conductor):
+            for i, relato in enumerate(relatos_asegurado):
                 if relato['text'].strip():
-                    if len(relatos_conductor) > 1:
+                    if len(relatos_asegurado) > 1:
                         story.append(Paragraph(f"Relato {i+1}", styles['NormalLeft']))
                         story.append(Spacer(1, 3))
 
@@ -769,7 +822,115 @@ PBX: {pbx} | Cel: {cel}
 
                     story.append(Spacer(1, 6))
 
-        for title, content in narrative_sections:
+        # INSPECCIÓN DEL LUGAR DEL SINIESTRO
+        if any(desc['text'].strip() for desc in inspeccion_relatos):
+            story.append(Paragraph("INSPECCIÓN DEL LUGAR DEL SINIESTRO", styles['SectionHeader']))
+            story.append(Spacer(1, 6))
+
+            for i, desc in enumerate(inspeccion_relatos):
+                if desc['text'].strip():
+                    if len(inspeccion_relatos) > 1:
+                        story.append(Paragraph(f"Descripción {i+1}", styles['NormalLeft']))
+                        story.append(Spacer(1, 3))
+
+                    if desc['image'] is not None:
+                        # Procesar imagen
+                        img = Image.open(desc['image'])
+                        # Redimensionar manteniendo proporción
+                        max_width, max_height = 2.5*inch, 3*inch
+                        img_ratio = img.width / img.height
+                        if img_ratio > max_width / max_height:
+                            new_width = max_width
+                            new_height = max_width / img_ratio
+                        else:
+                            new_height = max_height
+                            new_width = max_height * img_ratio
+
+                        # Convertir a ReportLab Image
+                        img_bytes = io.BytesIO()
+                        img.save(img_bytes, format='PNG')
+                        img_bytes.seek(0)
+                        rl_img = RLImage(img_bytes, width=new_width, height=new_height)
+
+                        # Crear tabla de 2 columnas: imagen y texto
+                        table_data = [[rl_img, Paragraph(desc['text'].replace('\n', '<br/>'), styles['Justified'])]]
+                        table = Table(table_data, colWidths=[3*inch, 4*inch])
+                        table.setStyle(TableStyle([
+                            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+                        ]))
+                        story.append(table)
+                    else:
+                        # Texto a ancho completo
+                        story.append(Paragraph(desc['text'].replace('\n', '<br/>'), styles['Justified']))
+
+                    story.append(Spacer(1, 6))
+
+        # TESTIGOS
+        if any(relato['text'].strip() for relato in testigos_relatos):
+            story.append(Paragraph("TESTIGOS", styles['SectionHeader']))
+            story.append(Spacer(1, 6))
+
+            for i, relato in enumerate(testigos_relatos):
+                if relato['text'].strip():
+                    if len(testigos_relatos) > 1:
+                        story.append(Paragraph(f"Relato {i+1}", styles['NormalLeft']))
+                        story.append(Spacer(1, 3))
+
+                    if relato['image'] is not None:
+                        # Procesar imagen
+                        img = Image.open(relato['image'])
+                        # Redimensionar manteniendo proporción
+                        max_width, max_height = 2.5*inch, 3*inch
+                        img_ratio = img.width / img.height
+                        if img_ratio > max_width / max_height:
+                            new_width = max_width
+                            new_height = max_width / img_ratio
+                        else:
+                            new_height = max_height
+                            new_width = max_height * img_ratio
+
+                        # Convertir a ReportLab Image
+                        img_bytes = io.BytesIO()
+                        img.save(img_bytes, format='PNG')
+                        img_bytes.seek(0)
+                        rl_img = RLImage(img_bytes, width=new_width, height=new_height)
+
+                        # Crear tabla de 2 columnas: imagen y texto
+                        table_data = [[rl_img, Paragraph(relato['text'].replace('\n', '<br/>'), styles['Justified'])]]
+                        table = Table(table_data, colWidths=[3*inch, 4*inch])
+                        table.setStyle(TableStyle([
+                            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+                        ]))
+                        story.append(table)
+                    else:
+                        # Texto a ancho completo
+                        story.append(Paragraph(relato['text'].replace('\n', '<br/>'), styles['Justified']))
+
+                    story.append(Spacer(1, 6))
+
+        # TERCEROS AFECTADOS (solo si hay daños a terceros)
+        if danos_terceros == "Sí" and terceros_data and any(any(value.strip() for value in tercero.values()) for tercero in terceros_data):
+            story.append(Paragraph("TERCEROS AFECTADOS", styles['SectionHeader']))
+            for i, tercero in enumerate(terceros_data):
+                if any(value.strip() for value in tercero.values()):
+                    if num_terceros > 1:
+                        story.append(Paragraph(f"Tercero {i+1}", styles['NormalLeft']))
+                    story.append(create_data_table(tercero))
+                    story.append(Spacer(1, 6))
+            story.append(Spacer(1, 6))
+
+        # Resto de secciones
+        remaining_sections = [
+            ("VISITA AL TALLER", visita_taller),
+            ("EVIDENCIAS COMPLEMENTARIAS", evidencias_complementarias),
+            ("DINÁMICA DEL ACCIDENTE", dinamica_accidente),
+            ("OTRAS DILIGENCIAS", otras_diligencias),
+            ("OBSERVACIONES", observaciones),
+            ("CONCLUSIONES", conclusiones),
+            ("RECOMENDACIÓN SOBRE EL PAGO DE LA COBERTURA", recomendacion)
+        ]
+
+        for title, content in remaining_sections:
             if content.strip():
                 story.append(Paragraph(title, styles['SectionHeader']))
                 story.append(Paragraph(content.replace('\n', '<br/>'), styles['Justified']))
