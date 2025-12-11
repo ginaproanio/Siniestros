@@ -42,6 +42,54 @@ st.write("Llena los campos obligatorios para generar el informe. Usa las áreas 
 if 'num_relatos' not in st.session_state:
     st.session_state.num_relatos = 1
 
+# Sección: ASEGURADO (fuera del formulario para actualización dinámica)
+st.header("Asegurado")
+tipo_asegurado = st.radio("Tipo de Asegurado", options=["Persona Natural", "Persona Jurídica"], index=1, key="tipo_asegurado")
+
+asegurado_data = {}
+
+if tipo_asegurado == "Persona Natural":
+    cols3 = st.columns(4)
+    with cols3[0]:
+        cedula_aseg = st.text_input("Cédula", value="1701234567", key="cedula_aseg")
+    with cols3[1]:
+        celular_aseg = st.text_input("Celular", value="0987654321", key="celular_aseg")
+    with cols3[2]:
+        direccion_aseg = st.text_input("Dirección", value="Calle Principal 123, Quito", key="direccion_aseg")
+    with cols3[3]:
+        parentesco_aseg = st.text_input("Parentesco", value="Propietario", key="parentesco_aseg")
+
+    asegurado_data = {
+        'Tipo': 'Persona Natural',
+        'Cédula': cedula_aseg,
+        'Celular': celular_aseg,
+        'Dirección': direccion_aseg,
+        'Parentesco': parentesco_aseg
+    }
+else:  # Persona Jurídica
+    cols3 = st.columns(4)
+    with cols3[0]:
+        ruc_aseg = st.text_input("RUC", value="1791234567001", key="ruc_aseg")
+    with cols3[1]:
+        empresa_aseg = st.text_input("Empresa", value="Empresa XYZ S.A.", key="empresa_aseg")
+    with cols3[2]:
+        representante_legal_aseg = st.text_input("Representante Legal", value="Juan Pérez", key="representante_aseg")
+    with cols3[3]:
+        telefono_aseg = st.text_input("Teléfono", value="022417481", key="telefono_aseg")
+
+    cols4 = st.columns(1)
+    with cols4[0]:
+        direccion_aseg_jur = st.text_input("Dirección", value="Calle Principal 123, Quito", key="direccion_aseg_jur")
+
+    asegurado_data = {
+        'Tipo': 'Persona Jurídica',
+        'RUC': ruc_aseg,
+        'Empresa': empresa_aseg,
+        'Representante Legal': representante_legal_aseg,
+        'Dirección': direccion_aseg_jur,
+        'Teléfono': telefono_aseg
+    }
+
 # Formulario principal
 with st.form(key='form_informe'):
     # Fecha actual para el informe
@@ -69,53 +117,7 @@ with st.form(key='form_informe'):
     with cols2[3]:
         fecha_designacion = st.date_input("Fecha de Designación", value=datetime.date.today())
 
-    # Sección: ASEGURADO
-    st.header("Asegurado")
-    tipo_asegurado = st.radio("Tipo de Asegurado", options=["Persona Natural", "Persona Jurídica"], index=1, key="tipo_asegurado")
 
-    asegurado_data = {}
-
-    if tipo_asegurado == "Persona Natural":
-        cols3 = st.columns(4)
-        with cols3[0]:
-            cedula_aseg = st.text_input("Cédula", value="1701234567", key="cedula_aseg")
-        with cols3[1]:
-            celular_aseg = st.text_input("Celular", value="0987654321", key="celular_aseg")
-        with cols3[2]:
-            direccion_aseg = st.text_input("Dirección", value="Calle Principal 123, Quito", key="direccion_aseg")
-        with cols3[3]:
-            parentesco_aseg = st.text_input("Parentesco", value="Propietario", key="parentesco_aseg")
-
-        asegurado_data = {
-            'Tipo': 'Persona Natural',
-            'Cédula': cedula_aseg,
-            'Celular': celular_aseg,
-            'Dirección': direccion_aseg,
-            'Parentesco': parentesco_aseg
-        }
-    else:  # Persona Jurídica
-        cols3 = st.columns(4)
-        with cols3[0]:
-            ruc_aseg = st.text_input("RUC", value="1791234567001", key="ruc_aseg")
-        with cols3[1]:
-            empresa_aseg = st.text_input("Empresa", value="Empresa XYZ S.A.", key="empresa_aseg")
-        with cols3[2]:
-            representante_legal_aseg = st.text_input("Representante Legal", value="Juan Pérez", key="representante_aseg")
-        with cols3[3]:
-            telefono_aseg = st.text_input("Teléfono", value="022417481", key="telefono_aseg")
-
-        cols4 = st.columns(1)
-        with cols4[0]:
-            direccion_aseg_jur = st.text_input("Dirección", value="Calle Principal 123, Quito", key="direccion_aseg_jur")
-
-        asegurado_data = {
-            'Tipo': 'Persona Jurídica',
-            'RUC': ruc_aseg,
-            'Empresa': empresa_aseg,
-            'Representante Legal': representante_legal_aseg,
-            'Dirección': direccion_aseg_jur,
-            'Teléfono': telefono_aseg
-        }
 
     # Sección: CONDUCTOR
     st.header("Conductor")
