@@ -245,7 +245,7 @@ PBX: {pbx} | Cel: {cel}
             f.write(informe_texto)
         
         # Generar PDF profesional con ReportLab
-        filename_pdf = f"informes/informe_{reclamo_num}_{datetime.date.today()}.pdf"
+        filename_pdf = f"informes/{reclamo_num}.pdf"
 
         # Estilos
         styles = getSampleStyleSheet()
@@ -394,10 +394,6 @@ PBX: {pbx} | Cel: {cel}
 
         # Página de carátula
         story.extend(create_cover_page())
-        story.append(PageBreak())
-
-        # Índice
-        story.extend(create_index())
         story.append(PageBreak())
 
         # Contenido principal - Título
