@@ -411,7 +411,8 @@ PBX: {pbx} | Cel: {cel}
             'Ubicación Georreferenciada': ubicacion_geo,
             'Daños a Terceros': danos_terceros,
             'Ejecutivo a Cargo': ejecutivo_cargo,
-            'Fecha de Designación': str(fecha_designacion)
+            'Fecha de Designación': str(fecha_designacion),
+            'Tipo de Siniestro': 'Vehicular'
         }
         story.append(create_data_table(siniestro_data))
         story.append(Spacer(1, 12))
