@@ -63,7 +63,7 @@ with st.form(key='form_informe'):
     with cols2[0]:
         ubicacion_geo = st.text_input("Ubicación Georreferenciada", value="-0.1807,-78.4678")
     with cols2[1]:
-        danos_terceros = st.text_input("Daños a Terceros", value="Vehículo dañado")
+        danos_terceros = st.selectbox("Daños a Terceros", options=["Sí", "No"], index=0)
     with cols2[2]:
         ejecutivo_cargo = st.text_input("Ejecutivo a Cargo", value="Juan Pérez")
     with cols2[3]:
@@ -71,7 +71,7 @@ with st.form(key='form_informe'):
 
     # Sección: ASEGURADO
     st.header("Asegurado")
-    tipo_asegurado = st.selectbox("Tipo de Asegurado", options=["Persona Natural", "Persona Jurídica"], index=0, key="tipo_asegurado")
+    tipo_asegurado = st.radio("Tipo de Asegurado", options=["Persona Natural", "Persona Jurídica"], index=1, key="tipo_asegurado")
 
     asegurado_data = {}
 
