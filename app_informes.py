@@ -153,6 +153,10 @@ with st.form(key='form_informe'):
     with cols7[2]:
         chasis_aseg = st.text_input("Chasis", value="1HGCM82633A123456")
 
+    # ANTECEDENTES
+    st.header("ANTECEDENTES")
+    antecedentes = st.text_area("Antecedentes", value="El asegurado reportó un accidente vehicular el 15 de octubre de 2023. El vehículo asegurado colisionó con otro vehículo en la intersección.", height=150)
+
     # Sección: TERCEROS AFECTADOS
     st.header("Terceros Afectados")
     num_terceros_options = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
@@ -225,10 +229,6 @@ with st.form(key='form_informe'):
             'Color': color_afectado
         }]
 
-    # ANTECEDENTES
-    st.header("ANTECEDENTES")
-    antecedentes = st.text_area("Antecedentes", value="El asegurado reportó un accidente vehicular el 15 de octubre de 2023. El vehículo asegurado colisionó con otro vehículo en la intersección.", height=150)
-
     # ENTREVISTA CON EL CONDUCTOR
     st.header("ENTREVISTA CON EL CONDUCTOR")
 
@@ -242,6 +242,15 @@ with st.form(key='form_informe'):
         with cols_relato[1]:
             st.write("Añadir Imagen (opcional)")
             image_file = st.file_uploader(f"Seleccionar imagen {i+1}", type=['jpg', 'jpeg', 'png'], key=f"relato_img_{i}")
+
+            # Acciones
+            cols_actions = st.columns(3)
+            with cols_actions[0]:
+                st.button("Buscar", key=f"buscar_{i}")
+            with cols_actions[1]:
+                st.button("Grabar", key=f"grabar_{i}")
+            with cols_actions[2]:
+                st.button("Añadir Otro", key=f"añadir_{i}")
 
         relatos_conductor.append({
             'text': relato_text,
