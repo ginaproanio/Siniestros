@@ -1,7 +1,7 @@
 # Sistema de Informes de Siniestros
 Aplicación web en Streamlit para generar informes profesionales de investigaciones de siniestros en seguros. Utiliza ReportLab para crear PDFs con diseño corporativo, incluyendo mapas integrados y headers/footers automáticos.
 
-**Repositorio**: https://github.com/ginaproanio/Siniestros  
+**Repositorio**: https://github.com/ginaproanio/Siniestros
 **Rama**: main
 
 ## Instalación Local
@@ -26,20 +26,28 @@ Aplicación web en Streamlit para generar informes profesionales de investigacio
 
 ## Funcionalidades
 - **Formulario estructurado**: Recolección completa de datos del siniestro, asegurado, conductor, vehículo y terceros afectados.
+- **Sección Asegurado Dinámica**: Permite seleccionar entre Persona Natural o Persona Jurídica, mostrando campos específicos:
+  - Persona Natural: Cédula, Celular, Dirección, Parentesco
+  - Persona Jurídica: RUC, Empresa, Representante Legal, Dirección, Teléfono
+- **Entrevista con el Conductor**: Permite registrar múltiples relatos dinámicamente, cada uno con texto opcional y imagen adjunta. Incluye acciones por relato: Buscar, Grabar, Añadir Otro.
+- **Orden de Secciones**: ANTECEDENTES antes de TERCEROS AFECTADOS.
 - **Generación de PDFs profesionales**: Utiliza ReportLab para crear PDFs con:
   - Diseño corporativo con tablas estructuradas
-  - Mapas integrados generados con Folium
+  - Mapas integrados generados con StaticMap
   - Headers con nombre de compañía y fecha
-  - Footers con numeración de páginas y confidencialidad
+  - Footers con numeración de páginas
+  - Relatos con imágenes dispuestas lado a lado cuando aplicable
   - Tipografía formal (Helvetica)
 - **Vista previa en texto**: Permite revisar el contenido antes de generar el PDF.
 - **Upload de evidencias**: Subida de fotos y documentos complementarios.
 - **Archivos de respaldo**: Genera informes en formato TXT además del PDF.
+- **Firma digital**: Soporte para firma digital de PDFs usando certificado P12.
 
 ## Arquitectura Técnica
-- **Frontend**: Streamlit para interfaz web
-- **Generación de PDFs**: ReportLab con diseño profesional, tablas estructuradas, headers/footers automáticos
-- **Mapas**: Folium para generación de mapas estáticos integrados en PDF
+- **Frontend**: Streamlit para interfaz web con formularios dinámicos y manejo de estado de sesión
+- **Generación de PDFs**: ReportLab con diseño profesional, tablas estructuradas, headers/footers automáticos, y disposición inteligente de imágenes y texto
+- **Mapas**: StaticMap para generación de mapas estáticos integrados en PDF
+- **Firma Digital**: Endesive para firma digital de PDFs
 - **Almacenamiento**: Sistema de archivos local (carpeta `informes/`)
 
 ## Requisitos del Sistema
@@ -47,7 +55,7 @@ Aplicación web en Streamlit para generar informes profesionales de investigacio
 - Dependencias listadas en `requirements.txt`:
   - streamlit
   - reportlab
-  - folium
   - staticmap
   - pillow
+  - endesive
   - requests
