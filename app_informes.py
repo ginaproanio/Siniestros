@@ -49,19 +49,22 @@ tipo_asegurado = st.radio("Tipo de Asegurado", options=["Persona Natural", "Pers
 asegurado_data = {}
 
 if tipo_asegurado == "Persona Natural":
-    cols3 = st.columns(4)
+    cols3 = st.columns(5)
     with cols3[0]:
         cedula_aseg = st.text_input("Cédula", value="1701234567", key="cedula_aseg")
     with cols3[1]:
-        celular_aseg = st.text_input("Celular", value="0987654321", key="celular_aseg")
+        nombre_aseg = st.text_input("Nombre", value="Juan Pérez", key="nombre_aseg")
     with cols3[2]:
-        direccion_aseg = st.text_input("Dirección", value="Calle Principal 123, Quito", key="direccion_aseg")
+        celular_aseg = st.text_input("Celular", value="0987654321", key="celular_aseg")
     with cols3[3]:
+        direccion_aseg = st.text_input("Dirección", value="Calle Principal 123, Quito", key="direccion_aseg")
+    with cols3[4]:
         parentesco_aseg = st.text_input("Parentesco", value="Propietario", key="parentesco_aseg")
 
     asegurado_data = {
         'Tipo': 'Persona Natural',
         'Cédula': cedula_aseg,
+        'Nombre': nombre_aseg,
         'Celular': celular_aseg,
         'Dirección': direccion_aseg,
         'Parentesco': parentesco_aseg
