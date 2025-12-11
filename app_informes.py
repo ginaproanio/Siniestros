@@ -15,6 +15,13 @@ from reportlab.lib.pagesizes import A4
 from reportlab.platypus.doctemplate import PageTemplate, BaseDocTemplate
 from reportlab.platypus.frames import Frame
 
+st.set_page_config(
+    page_title="Sistema de Informes de Siniestros",
+    page_icon="📄",
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
+
 class CustomDocTemplate(BaseDocTemplate):
     def __init__(self, filename, **kwargs):
         super().__init__(filename, **kwargs)
