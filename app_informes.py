@@ -106,31 +106,74 @@ with st.form(key='form_informe'):
 
     # Sección: TERCEROS AFECTADOS
     st.header("Terceros Afectados")
-    cols8 = st.columns(4)
-    with cols8[0]:
-        afectado = st.text_input("Afectado", key="afectado")
-    with cols8[1]:
-        ruc_afectado = st.text_input("RUC", key="ruc_afectado")
-    with cols8[2]:
-        direccion_afectado = st.text_input("Dirección", key="direccion_afectado")
-    with cols8[3]:
-        telefono_afectado = st.text_input("Teléfono", key="telefono_afectado")
+    num_terceros = st.number_input("Número de terceros afectados", min_value=0, max_value=10, value=0, key="num_terceros")
 
-    cols9 = st.columns(4)
-    with cols9[0]:
-        correo_afectado = st.text_input("Correo", key="correo_afectado")
-    with cols9[1]:
-        bien_afectado = st.text_input("Bien Afectado", key="bien_afectado")
-    with cols9[2]:
-        placa_afectado = st.text_input("Placa", key="placa_afectado")
-    with cols9[3]:
-        marca_afectado = st.text_input("Marca", key="marca_afectado")
+    terceros_data = []
+    if num_terceros > 0:
+        for i in range(num_terceros):
+            st.subheader(f"Tercero Afectado {i+1}")
+            cols_tercero = st.columns(4)
+            with cols_tercero[0]:
+                afectado = st.text_input(f"Afectado {i+1}", key=f"afectado_{i}")
+            with cols_tercero[1]:
+                ruc_afectado = st.text_input(f"RUC {i+1}", key=f"ruc_{i}")
+            with cols_tercero[2]:
+                direccion_afectado = st.text_input(f"Dirección {i+1}", key=f"direccion_{i}")
+            with cols_tercero[3]:
+                telefono_afectado = st.text_input(f"Teléfono {i+1}", key=f"telefono_{i}")
 
-    cols10 = st.columns(2)
-    with cols10[0]:
-        tipo_afectado = st.text_input("Tipo", key="tipo_afectado")
-    with cols10[1]:
-        color_afectado = st.text_input("Color", key="color_afectado")
+            cols_tercero2 = st.columns(4)
+            with cols_tercero2[0]:
+                correo_afectado = st.text_input(f"Correo {i+1}", key=f"correo_{i}")
+            with cols_tercero2[1]:
+                bien_afectado = st.text_input(f"Bien Afectado {i+1}", key=f"bien_{i}")
+            with cols_tercero2[2]:
+                placa_afectado = st.text_input(f"Placa {i+1}", key=f"placa_{i}")
+            with cols_tercero2[3]:
+                marca_afectado = st.text_input(f"Marca {i+1}", key=f"marca_{i}")
+
+            cols_tercero3 = st.columns(2)
+            with cols_tercero3[0]:
+                tipo_afectado = st.text_input(f"Tipo {i+1}", key=f"tipo_{i}")
+            with cols_tercero3[1]:
+                color_afectado = st.text_input(f"Color {i+1}", key=f"color_{i}")
+
+            terceros_data.append({
+                'Afectado': afectado,
+                'RUC': ruc_afectado,
+                'Dirección': direccion_afectado,
+                'Teléfono': telefono_afectado,
+                'Correo': correo_afectado,
+                'Bien Afectado': bien_afectado,
+                'Placa': placa_afectado,
+                'Marca': marca_afectado,
+                'Tipo': tipo_afectado,
+                'Color': color_afectado
+            })
+    else:
+        # Default single tercero for backward compatibility
+        afectado = ""
+        ruc_afectado = ""
+        direccion_afectado = ""
+        telefono_afectado = ""
+        correo_afectado = ""
+        bien_afectado = ""
+        placa_afectado = ""
+        marca_afectado = ""
+        tipo_afectado = ""
+        color_afectado = ""
+        terceros_data = [{
+            'Afectado': afectado,
+            'RUC': ruc_afectado,
+            'Dirección': direccion_afectado,
+            'Teléfono': telefono_afectado,
+            'Correo': correo_afectado,
+            'Bien Afectado': bien_afectado,
+            'Placa': placa_afectado,
+            'Marca': marca_afectado,
+            'Tipo': tipo_afectado,
+            'Color': color_afectado
+        }]
 
     # Secciones narrativas
     st.header("Secciones Narrativas")
@@ -552,23 +595,16 @@ PBX: {pbx} | Cel: {cel}
             story.append(Paragraph("Coordenadas no disponibles", styles['NormalLeft']))
         story.append(Spacer(1, 12))
 
-        # Terceros Afectados (solo si hay datos)
-        if afectado or placa_afectado:
+        # Terceros Afectados
+        if terceros_data and any(any(value.strip() for value in tercero.values()) for tercero in terceros_data):
             story.append(Paragraph("TERCEROS AFECTADOS", styles['SectionHeader']))
-            afectados_data = {
-                'Afectado': afectado,
-                'RUC': ruc_afectado,
-                'Dirección': direccion_afectado,
-                'Teléfono': telefono_afectado,
-                'Correo': correo_afectado,
-                'Bien Afectado': bien_afectado,
-                'Placa': placa_afectado,
-                'Marca': marca_afectado,
-                'Tipo': tipo_afectado,
-                'Color': color_afectado
-            }
-            story.append(create_data_table(afectados_data))
-            story.append(Spacer(1, 12))
+            for i, tercero in enumerate(terceros_data):
+                if any(value.strip() for value in tercero.values()):
+                    if num_terceros > 1:
+                        story.append(Paragraph(f"Tercero {i+1}", styles['NormalLeft']))
+                    story.append(create_data_table(tercero))
+                    story.append(Spacer(1, 6))
+            story.append(Spacer(1, 6))
 
         # Galería de Imágenes de Inspección
         if inspection_images:
