@@ -38,51 +38,99 @@ with st.form(key='form_informe'):
 
     # Sección: DATOS DEL SINIESTRO
     st.header("Datos del Siniestro")
-    compania_seguros = st.text_input("Compañía de Seguros", value="Zurich Seguros Ecuador S.A.")
-    reclamo_num = st.text_input("Reclamo #", value="25-01-VH-7079448")
-    fecha_siniestro = st.date_input("Fecha del Siniestro", value=datetime.date(2023, 10, 15))
-    direccion_siniestro = st.text_input("Dirección del Siniestro", value="Av. Amazonas y Naciones Unidas, Quito")
-    ubicacion_geo = st.text_input("Ubicación Georreferenciada", value="-0.1807,-78.4678")
-    danos_terceros = st.text_input("Daños a Terceros", value="Vehículo dañado")
-    ejecutivo_cargo = st.text_input("Ejecutivo a Cargo", value="Juan Pérez")
-    fecha_designacion = st.date_input("Fecha de Designación", value=datetime.date.today())
+    cols = st.columns(4)
+    with cols[0]:
+        compania_seguros = st.text_input("Compañía de Seguros", value="Zurich Seguros Ecuador S.A.")
+    with cols[1]:
+        reclamo_num = st.text_input("Reclamo #", value="25-01-VH-7079448")
+    with cols[2]:
+        fecha_siniestro = st.date_input("Fecha del Siniestro", value=datetime.date(2023, 10, 15))
+    with cols[3]:
+        direccion_siniestro = st.text_input("Dirección del Siniestro", value="Av. Amazonas y Naciones Unidas, Quito")
+
+    cols2 = st.columns(4)
+    with cols2[0]:
+        ubicacion_geo = st.text_input("Ubicación Georreferenciada", value="-0.1807,-78.4678")
+    with cols2[1]:
+        danos_terceros = st.text_input("Daños a Terceros", value="Vehículo dañado")
+    with cols2[2]:
+        ejecutivo_cargo = st.text_input("Ejecutivo a Cargo", value="Juan Pérez")
+    with cols2[3]:
+        fecha_designacion = st.date_input("Fecha de Designación", value=datetime.date.today())
 
     # Sección: ASEGURADO
     st.header("Asegurado")
-    razon_social = st.text_input("Razón Social", value="Empresa XYZ S.A.")
-    cedula_ruc_aseg = st.text_input("Cédula / RUC", value="1791234567001")
-    domicilio_aseg = st.text_input("Domicilio", value="Calle Principal 123, Quito")
+    cols3 = st.columns(3)
+    with cols3[0]:
+        razon_social = st.text_input("Razón Social", value="Empresa XYZ S.A.")
+    with cols3[1]:
+        cedula_ruc_aseg = st.text_input("Cédula / RUC", value="1791234567001")
+    with cols3[2]:
+        domicilio_aseg = st.text_input("Domicilio", value="Calle Principal 123, Quito")
 
     # Sección: CONDUCTOR
     st.header("Conductor")
-    nombre_conductor = st.text_input("Nombre", value="Carlos López", key="nombre_conductor")
-    cedula_conductor = st.text_input("Cédula", value="1701234567", key="cedula_conductor")
-    celular_conductor = st.text_input("Celular", value="0987654321", key="celular_conductor")
-    direccion_conductor = st.text_input("Dirección", value="Av. República 456, Quito", key="direccion_conductor")
-    parentesco = st.text_input("Parentesco", value="Propietario", key="parentesco_conductor")
+    cols4 = st.columns(3)
+    with cols4[0]:
+        nombre_conductor = st.text_input("Nombre", value="Carlos López", key="nombre_conductor")
+    with cols4[1]:
+        cedula_conductor = st.text_input("Cédula", value="1701234567", key="cedula_conductor")
+    with cols4[2]:
+        celular_conductor = st.text_input("Celular", value="0987654321", key="celular_conductor")
+
+    cols5 = st.columns(2)
+    with cols5[0]:
+        direccion_conductor = st.text_input("Dirección", value="Av. República 456, Quito", key="direccion_conductor")
+    with cols5[1]:
+        parentesco = st.text_input("Parentesco", value="Propietario", key="parentesco_conductor")
 
     # Sección: OBJETO ASEGURADO
     st.header("Objeto Asegurado")
-    placa_aseg = st.text_input("Placa", value="ABC-123")
-    marca_aseg = st.text_input("Marca", value="Toyota")
-    modelo_aseg = st.text_input("Modelo", value="Corolla")
-    color_aseg = st.text_input("Color", value="Blanco")
-    ano_aseg = st.number_input("Año", value=2020, min_value=1900, max_value=2100)
-    motor_aseg = st.text_input("Motor", value="1.8L")
-    chasis_aseg = st.text_input("Chasis", value="1HGCM82633A123456")
+    cols6 = st.columns(4)
+    with cols6[0]:
+        placa_aseg = st.text_input("Placa", value="ABC-123")
+    with cols6[1]:
+        marca_aseg = st.text_input("Marca", value="Toyota")
+    with cols6[2]:
+        modelo_aseg = st.text_input("Modelo", value="Corolla")
+    with cols6[3]:
+        color_aseg = st.text_input("Color", value="Blanco")
+
+    cols7 = st.columns(3)
+    with cols7[0]:
+        ano_aseg = st.number_input("Año", value=2020, min_value=1900, max_value=2100)
+    with cols7[1]:
+        motor_aseg = st.text_input("Motor", value="1.8L")
+    with cols7[2]:
+        chasis_aseg = st.text_input("Chasis", value="1HGCM82633A123456")
 
     # Sección: TERCEROS AFECTADOS
     st.header("Terceros Afectados")
-    afectado = st.text_input("Afectado", key="afectado")
-    ruc_afectado = st.text_input("RUC", key="ruc_afectado")
-    direccion_afectado = st.text_input("Dirección", key="direccion_afectado")
-    telefono_afectado = st.text_input("Teléfono", key="telefono_afectado")
-    correo_afectado = st.text_input("Correo", key="correo_afectado")
-    bien_afectado = st.text_input("Bien Afectado", key="bien_afectado")
-    placa_afectado = st.text_input("Placa", key="placa_afectado")
-    marca_afectado = st.text_input("Marca", key="marca_afectado")
-    tipo_afectado = st.text_input("Tipo", key="tipo_afectado")
-    color_afectado = st.text_input("Color", key="color_afectado")
+    cols8 = st.columns(4)
+    with cols8[0]:
+        afectado = st.text_input("Afectado", key="afectado")
+    with cols8[1]:
+        ruc_afectado = st.text_input("RUC", key="ruc_afectado")
+    with cols8[2]:
+        direccion_afectado = st.text_input("Dirección", key="direccion_afectado")
+    with cols8[3]:
+        telefono_afectado = st.text_input("Teléfono", key="telefono_afectado")
+
+    cols9 = st.columns(4)
+    with cols9[0]:
+        correo_afectado = st.text_input("Correo", key="correo_afectado")
+    with cols9[1]:
+        bien_afectado = st.text_input("Bien Afectado", key="bien_afectado")
+    with cols9[2]:
+        placa_afectado = st.text_input("Placa", key="placa_afectado")
+    with cols9[3]:
+        marca_afectado = st.text_input("Marca", key="marca_afectado")
+
+    cols10 = st.columns(2)
+    with cols10[0]:
+        tipo_afectado = st.text_input("Tipo", key="tipo_afectado")
+    with cols10[1]:
+        color_afectado = st.text_input("Color", key="color_afectado")
 
     # Secciones narrativas
     st.header("Secciones Narrativas")
