@@ -336,10 +336,6 @@ PBX: {pbx} | Cel: {cel}
 
             cover_story.append(Spacer(1, 1*inch))
 
-            # Línea separadora
-            cover_story.append(Paragraph("―" * 50, ParagraphStyle('Separator', parent=styles['NormalLeft'], alignment=TA_CENTER)))
-            cover_story.append(Spacer(1, 0.5*inch))
-
             # Texto final
             cover_story.append(Paragraph("Este informe consta de varias páginas incluyendo anexos.", ParagraphStyle('CoverText', parent=styles['NormalLeft'], alignment=TA_CENTER)))
             cover_story.append(Spacer(1, 2*inch))
@@ -358,7 +354,6 @@ PBX: {pbx} | Cel: {cel}
 
             # Título del índice
             index_story.append(Paragraph("ÍNDICE", styles['SectionHeader']))
-            index_story.append(Paragraph("―" * 20, ParagraphStyle('IndexSeparator', parent=styles['NormalLeft'], alignment=TA_CENTER)))
             index_story.append(Spacer(1, 0.5*inch))
 
             # Lista de secciones con páginas estimadas
