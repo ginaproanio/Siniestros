@@ -340,12 +340,6 @@ PBX: {pbx} | Cel: {cel}
             cover_story.append(Paragraph("Este informe consta de varias páginas incluyendo anexos.", ParagraphStyle('CoverText', parent=styles['NormalLeft'], alignment=TA_CENTER)))
             cover_story.append(Spacer(1, 2*inch))
 
-            # Firma
-            cover_story.append(Paragraph("Firma: _______________________", ParagraphStyle('SignatureLine', parent=styles['NormalLeft'], alignment=TA_LEFT)))
-            cover_story.append(Paragraph(f"Nombre: {nombre_investigador}", styles['NormalLeft']))
-            cover_story.append(Paragraph("Cargo: Investigador de Siniestros", styles['NormalLeft']))
-            cover_story.append(Paragraph(f"Fecha: {fecha_informe}", styles['NormalLeft']))
-
             return cover_story
 
         # Función para crear índice dinámico
@@ -636,7 +630,3 @@ PBX: {pbx} | Cel: {cel}
                 with open(os.path.join('informes', f"{reclamo_num}_{uploaded_file.name}"), "wb") as f:
                     f.write(uploaded_file.getbuffer())
             st.success("Archivos de evidencias subidos y guardados.")
-
-        # Mostrar vista previa (opcional)
-        with st.expander("Vista Previa del Informe (Texto)"):
-            st.text_area("", informe_texto, height=300)

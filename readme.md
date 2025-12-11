@@ -1,6 +1,9 @@
 # Sistema de Informes de Siniestros
 Aplicación web en Streamlit para generar informes profesionales de investigaciones de siniestros en seguros. Utiliza ReportLab para crear PDFs con diseño corporativo, incluyendo mapas integrados y headers/footers automáticos.
 
+**Repositorio**: https://github.com/ginaproanio/Siniestros  
+**Rama**: main
+
 ## Instalación Local
 1. Instala Python 3.8 o superior desde python.org.
 2. Instala las dependencias:
