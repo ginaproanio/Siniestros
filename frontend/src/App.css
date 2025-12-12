@@ -1,3 +1,15 @@
+/* Corporate Color Palette */
+:root {
+  --color-negro-corporativo: #0f172a;
+  --color-rojo-acento: #dc2626;
+  --color-gris-texto: #475569;
+  --color-gris-borde: #e2e8f0;
+  --color-blanco-puro: #ffffff;
+  --color-negro-hover: #1e293b;
+  --color-rojo-hover: #b91c1c;
+  --color-gris-hover: #64748b;
+}
+
 .App {
   text-align: center;
   max-width: 1200px;
@@ -6,9 +18,9 @@
 }
 
 .App-header {
-  background-color: #282c34;
+  background-color: var(--color-negro-corporativo);
   padding: 20px;
-  color: white;
+  color: var(--color-blanco-puro);
   margin-bottom: 30px;
 }
 
@@ -18,17 +30,18 @@
 }
 
 .form-container {
-  background: white;
+  background: var(--color-blanco-puro);
   border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.1);
   padding: 30px;
   margin: 20px 0;
+  border: 1px solid var(--color-gris-borde);
 }
 
 .form-container h2 {
-  color: #333;
+  color: var(--color-negro-corporativo);
   margin-bottom: 30px;
-  border-bottom: 2px solid #f0f0f0;
+  border-bottom: 2px solid var(--color-gris-borde);
   padding-bottom: 10px;
 }
 
@@ -47,7 +60,7 @@
   display: block;
   margin-bottom: 5px;
   font-weight: bold;
-  color: #555;
+  color: var(--color-gris-texto);
 }
 
 .form-group input,
@@ -55,10 +68,19 @@
 .form-group select {
   width: 100%;
   padding: 10px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-gris-borde);
   border-radius: 4px;
   font-size: 16px;
   box-sizing: border-box;
+  color: var(--color-negro-corporativo);
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: var(--color-rojo-acento);
+  box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.25);
 }
 
 .form-group textarea {
@@ -79,8 +101,8 @@
 }
 
 button[type="submit"] {
-  background-color: #007bff;
-  color: white;
+  background-color: var(--color-negro-corporativo);
+  color: var(--color-blanco-puro);
   padding: 12px 30px;
   border: none;
   border-radius: 4px;
@@ -91,12 +113,36 @@ button[type="submit"] {
 }
 
 button[type="submit"]:hover:not(:disabled) {
-  background-color: #0056b3;
+  background-color: var(--color-negro-hover);
 }
 
 button[type="submit"]:disabled {
-  background-color: #6c757d;
+  background-color: var(--color-gris-borde);
+  color: var(--color-gris-texto);
   cursor: not-allowed;
+}
+
+button[type="button"] {
+  background-color: var(--color-rojo-acento);
+  color: var(--color-blanco-puro);
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+button[type="button"]:hover {
+  background-color: var(--color-rojo-hover);
+}
+
+button[type="button"]:nth-child(2) {
+  background-color: var(--color-gris-texto);
+}
+
+button[type="button"]:nth-child(2):hover {
+  background-color: var(--color-gris-hover);
 }
 
 .message {
