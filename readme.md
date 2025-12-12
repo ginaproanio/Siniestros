@@ -53,10 +53,33 @@ Aplicación web full-stack para generar informes profesionales de investigacione
    Frontend disponible en http://localhost:3000
 
 ## Despliegue en Railway
-1. Sube este proyecto a un repositorio Git (GitHub, GitLab, etc.).
-2. Conecta el repositorio a Railway.app.
-3. Railway detectará automáticamente el Procfile y railway.toml para desplegar la app.
-4. La app estará disponible en la URL proporcionada por Railway.
+
+### Configuración de Servicios Separados (Recomendado)
+Para un despliegue limpio y profesional, configura **dos servicios separados** en Railway:
+
+#### 1. Servicio Frontend (React)
+- **Nombre**: `frontend`
+- **Root Directory**: `frontend`
+- **Variables de entorno**:
+  - `REACT_APP_BACKEND_URL`: URL del servicio backend (ej: `https://siniestros-backend-production.up.railway.app`)
+- **Build**: Automático con Railpack (Node.js)
+- **Start**: Automático (`npm start`)
+
+#### 2. Servicio Backend (FastAPI)
+- **Nombre**: `Siniestros` o `backend`
+- **Root Directory**: `backend`
+- **Variables de entorno**:
+  - `DATABASE_URL`: Proporcionada automáticamente por Railway PostgreSQL
+  - `AWS_ACCESS_KEY_ID`: Tu access key de AWS
+  - `AWS_SECRET_ACCESS_KEY`: Tu secret key de AWS
+  - `AWS_DEFAULT_REGION`: `us-east-2`
+  - `S3_BUCKET_NAME`: `siniestrossusiespinosa`
+  - `ALLOWED_ORIGINS`: URLs permitidas para CORS (ej: `https://frontend-production.up.railway.app`)
+  - `LOG_BODY`: `false` (para no loguear datos sensibles en producción)
+- **Start Command**: `alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+
+### Configuración Antigua (Obsoleta)
+⚠️ **Los archivos `railway.toml` y `Procfile` del directorio raíz ya no se usan** porque ahora usamos servicios separados. Estos archivos han sido eliminados del repositorio para evitar conflictos.
 
 **Nota**: Los archivos subidos e informes se guardan en la base de datos PostgreSQL. En Railway, la BD es persistente.
 
