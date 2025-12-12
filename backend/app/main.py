@@ -1,15 +1,14 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers import siniestros
-from app.database import engine, Base
 import logging
+import os
 
 # Configurar logging detallado
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Las tablas se crean automáticamente con Alembic migrations
-# Base.metadata.create_all(bind=engine) # Eliminado para evitar conflictos con Alembic
 
 app = FastAPI(
     title="Sistema de Informes de Siniestros API",
@@ -18,9 +17,10 @@ app = FastAPI(
 )
 
 # CORS middleware
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "*").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # En producción, especificar dominios
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -55,7 +55,6 @@ async def health_check():
 async def debug_database():
     """Endpoint para debug de conexión a base de datos"""
     try:
-        from sqlalchemy.orm import sessionmaker
         from app.database import SessionLocal
 
         db = SessionLocal()

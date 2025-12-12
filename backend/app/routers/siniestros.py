@@ -1,9 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, UploadFile, File
-from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import List
 from datetime import datetime
-import os
 
 from app import models, schemas
 from app.database import get_db
@@ -201,42 +199,13 @@ async def generar_pdf(siniestro_id: int, db: Session = Depends(get_db)):
             print(f"❌ Error generando PDF de error: {e2}")
             raise HTTPException(status_code=500, detail=f"Error crítico generando PDF: {str(e)}")
 
-@router.post("/upload-imagen")
-async def upload_imagen(file: UploadFile = File(...)):
-    """Subir imagen a AWS S3 y devolver URL para almacenamiento"""
-    # Validar tipo de archivo
-    allowed_types = ["image/jpeg", "image/png", "image/jpg", "image/webp"]
-    if file.content_type not in allowed_types:
-        raise HTTPException(status_code=400, detail="Tipo de archivo no permitido. Solo imágenes JPG, PNG, WEBP.")
+@router.post("/upload-image")
+async def upload_image(file: UploadFile = File(...)):
+    """Subir imagen a AWS S3 y devolver URL presigned"""
+    from app.services.s3_service import upload_file_to_s3
 
-    try:
-        # Leer contenido del archivo
-        content = await file.read()
-
-        # Importar y usar servicio S3
-        from app.services.s3_service import s3_service
-
-        # Subir a S3
-        s3_url = s3_service.upload_file(
-            file_content=content,
-            filename=file.filename,
-            content_type=file.content_type
-        )
-
-        if not s3_url:
-            raise HTTPException(status_code=500, detail="Error al subir archivo a S3")
-
-        return {
-            "filename": file.filename,
-            "url": s3_url,
-            "content_type": file.content_type,
-            "size": len(content),
-            "s3_url": s3_url
-        }
-
-    except Exception as e:
-        print(f"❌ Error subiendo imagen: {e}")
-        raise HTTPException(status_code=500, detail=f"Error al subir la imagen: {str(e)}")
+    presigned_url = await upload_file_to_s3(file)
+    return {"url_presigned": presigned_url}
 
 
 

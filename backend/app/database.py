@@ -3,12 +3,19 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import os
 
+
+def normalize_database_url(url: str) -> str:
+    """Normaliza URL de base de datos para compatibilidad con Railway"""
+    if url and url.startswith("postgres://"):
+        return url.replace("postgres://", "postgresql+psycopg2://", 1)
+    return url
+
+
 # Database URL from environment variable (Railway provides DATABASE_URL)
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if DATABASE_URL:
-    # Convert postgres:// to postgresql+psycopg2:// for Railway/Heroku compatibility
-    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg2://")
+    DATABASE_URL = normalize_database_url(DATABASE_URL)
 else:
     # Fallback for local development
     DATABASE_URL = "postgresql://user:password@localhost/siniestros_db"

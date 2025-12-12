@@ -19,15 +19,17 @@ def sign_pdf(pdf_data: bytes, certificate_path: str, password: str = None) -> by
         print(f"🔐 Firmando PDF con certificado: {certificate_path}")
 
         # Leer certificado
-        with open(certificate_path, 'rb') as f:
+        with open(certificate_path, "rb") as f:
             p12_data = f.read()
 
         # Extraer clave privada y certificado
         from cryptography.hazmat.primitives import serialization
         from cryptography.hazmat.primitives.serialization import pkcs12
 
-        private_key, certificate, additional_certificates = pkcs12.load_key_and_certificates(
-            p12_data, password.encode() if password else None
+        private_key, certificate, additional_certificates = (
+            pkcs12.load_key_and_certificates(
+                p12_data, password.encode() if password else None
+            )
         )
 
         # Preparar datos para firma
@@ -51,7 +53,9 @@ def sign_pdf(pdf_data: bytes, certificate_path: str, password: str = None) -> by
         }
 
         # Crear firma
-        signed_pdf = cms.sign(pdf_data, dct, private_key, certificate, additional_certificates or [])
+        signed_pdf = cms.sign(
+            pdf_data, dct, private_key, certificate, additional_certificates or []
+        )
 
         print(f"✅ PDF firmado exitosamente: {len(signed_pdf)} bytes")
         return signed_pdf
@@ -74,28 +78,25 @@ def generate_simple_pdf(siniestro: models.Siniestro) -> bytes:
         doc = SimpleDocTemplate(
             buffer,
             pagesize=letter,
-            topMargin=1*inch,
-            bottomMargin=1*inch,
-            leftMargin=1*inch,
-            rightMargin=1*inch
+            topMargin=1 * inch,
+            bottomMargin=1 * inch,
+            leftMargin=1 * inch,
+            rightMargin=1 * inch,
         )
         styles = getSampleStyleSheet()
 
         # Estilos personalizados
         title_style = ParagraphStyle(
-            'Title',
-            parent=styles['Heading1'],
+            "Title",
+            parent=styles["Heading1"],
             fontSize=18,
             alignment=TA_CENTER,
             spaceAfter=30,
-            fontName='Helvetica-Bold'
+            fontName="Helvetica-Bold",
         )
 
         normal_style = ParagraphStyle(
-            'Normal',
-            parent=styles['Normal'],
-            fontSize=10,
-            fontName='Helvetica'
+            "Normal", parent=styles["Normal"], fontSize=10, fontName="Helvetica"
         )
 
         story = []
@@ -108,25 +109,39 @@ def generate_simple_pdf(siniestro: models.Siniestro) -> bytes:
         data = [
             ["Compañía de Seguros:", siniestro.compania_seguros or "No especificada"],
             ["Número de Reclamo:", siniestro.reclamo_num or "No especificado"],
-            ["Fecha del Siniestro:", siniestro.fecha_siniestro.strftime('%d/%m/%Y') if siniestro.fecha_siniestro else "No especificada"],
+            [
+                "Fecha del Siniestro:",
+                (
+                    siniestro.fecha_siniestro.strftime("%d/%m/%Y")
+                    if siniestro.fecha_siniestro
+                    else "No especificada"
+                ),
+            ],
             ["Dirección:", siniestro.direccion_siniestro or "No especificada"],
             ["Tipo de Siniestro:", siniestro.tipo_siniestro or "No especificado"],
         ]
 
-        table = Table(data, colWidths=[2.5*inch, 4*inch])
-        table.setStyle(TableStyle([
-            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-            ('FONTSIZE', (0, 0), (-1, -1), 10),
-            ('GRID', (0, 0), (-1, -1), 1, colors.black),
-            ('ALIGN', (0, 0), (0, -1), 'LEFT'),
-            ('ALIGN', (1, 0), (1, -1), 'LEFT'),
-            ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
-        ]))
+        table = Table(data, colWidths=[2.5 * inch, 4 * inch])
+        table.setStyle(
+            TableStyle(
+                [
+                    ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
+                    ("FONTSIZE", (0, 0), (-1, -1), 10),
+                    ("GRID", (0, 0), (-1, -1), 1, colors.black),
+                    ("ALIGN", (0, 0), (0, -1), "LEFT"),
+                    ("ALIGN", (1, 0), (1, -1), "LEFT"),
+                    ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
+                ]
+            )
+        )
         story.append(table)
         story.append(Spacer(1, 20))
 
         # Fecha de generación
-        fecha_gen = Paragraph(f"Fecha de Generación: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}", normal_style)
+        fecha_gen = Paragraph(
+            f"Fecha de Generación: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}",
+            normal_style,
+        )
         story.append(fecha_gen)
         story.append(Spacer(1, 10))
 
@@ -140,7 +155,9 @@ def generate_simple_pdf(siniestro: models.Siniestro) -> bytes:
         print(f"✅ PDF generado exitosamente: {len(pdf_data)} bytes")
 
         # Firmar PDF si existe certificado
-        cert_path = os.path.join(os.path.dirname(__file__), '..', '..', 'maria_susana_espinosa_lozada.p12')
+        cert_path = os.path.join(
+            os.path.dirname(__file__), "..", "..", "maria_susana_espinosa_lozada.p12"
+        )
         if os.path.exists(cert_path):
             print("🔐 Firmando PDF con certificado digital...")
             pdf_data = sign_pdf(pdf_data, cert_path)
@@ -154,7 +171,7 @@ def generate_simple_pdf(siniestro: models.Siniestro) -> bytes:
         # PDF de error mínimo
         buffer = io.BytesIO()
         doc = SimpleDocTemplate(buffer, pagesize=letter)
-        story = [Paragraph("ERROR: No se pudo generar el PDF", styles['Normal'])]
+        story = [Paragraph("ERROR: No se pudo generar el PDF", styles["Normal"])]
         doc.build(story)
         buffer.seek(0)
         return buffer.getvalue()
