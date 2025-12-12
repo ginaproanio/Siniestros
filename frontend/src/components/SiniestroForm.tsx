@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
+// Configurar base URL para el backend
+axios.defaults.baseURL = 'https://siniestros-production.up.railway.app';
+
 interface FormData {
   compania_seguros: string;
   reclamo_num: string;
