@@ -103,16 +103,26 @@ class SiniestroPDFGenerator:
 
     def generate_pdf(self, siniestro: models.Siniestro, db: Session) -> bytes:
         """Generar PDF completo del siniestro"""
-        buffer = io.BytesIO()
-        doc = SimpleDocTemplate(buffer, pagesize=letter, topMargin=1.5*inch, bottomMargin=1*inch)
-        doc.onFirstPage = self.create_header_footer
-        doc.onLaterPages = self.create_header_footer
+        try:
+            buffer = io.BytesIO()
+            doc = SimpleDocTemplate(buffer, pagesize=letter, topMargin=1.5*inch, bottomMargin=1*inch)
+            doc.onFirstPage = self.create_header_footer
+            doc.onLaterPages = self.create_header_footer
 
-        story = []
+            story = []
 
-        # Título principal
-        story.append(Paragraph("INFORME DE INVESTIGACIÓN DE SINIESTRO", self.title_style))
-        story.append(Spacer(1, 20))
+            # Título principal
+            story.append(Paragraph("INFORME DE INVESTIGACIÓN DE SINIESTRO", self.title_style))
+            story.append(Spacer(1, 20))
+        except Exception as e:
+            print(f"Error inicializando PDF: {e}")
+            # Return a minimal PDF if initialization fails
+            buffer = io.BytesIO()
+            doc = SimpleDocTemplate(buffer, pagesize=letter)
+            story = [Paragraph("Error generando PDF", self.normal_style)]
+            doc.build(story)
+            buffer.seek(0)
+            return buffer.getvalue()
 
         # Información básica del siniestro
         story.append(Paragraph("DATOS DEL SINIESTRO", self.section_style))
