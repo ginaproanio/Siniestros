@@ -144,8 +144,10 @@ async def create_testigo(siniestro_id: int, testigo: schemas.TestigoCreate, db: 
 async def generar_pdf(siniestro_id: int, db: Session = Depends(get_db)):
     """Generar PDF del informe de siniestro"""
     try:
+        print(f"🔍 INICIANDO GENERACIÓN PDF - Siniestro ID: {siniestro_id}")
         from app.utils.pdf_generator import generate_siniestro_pdf
         pdf_data = generate_siniestro_pdf(siniestro_id, db)
+        print(f"✅ PDF generado exitosamente: {len(pdf_data)} bytes")
 
         from fastapi.responses import Response
 
@@ -158,5 +160,77 @@ async def generar_pdf(siniestro_id: int, db: Session = Depends(get_db)):
             }
         )
     except Exception as e:
-        print(f"Error generando PDF: {e}")
-        raise HTTPException(status_code=500, detail=f"Error generando PDF: {str(e)}")
+        print(f"❌ Error generando PDF: {e}")
+        import traceback
+        print(f"❌ Traceback completo: {traceback.format_exc()}")
+
+        # Generar PDF de error mínimo como prueba
+        print("🧪 Generando PDF de error mínimo...")
+        from reportlab.lib.pagesizes import letter
+        from reportlab.platypus import SimpleDocTemplate, Paragraph
+        from reportlab.lib.styles import getSampleStyleSheet
+        import io
+
+        buffer = io.BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=letter)
+        styles = getSampleStyleSheet()
+        story = [Paragraph("ERROR: No se pudo generar el PDF completo. Intente nuevamente.", styles['Normal'])]
+
+        try:
+            doc.build(story)
+            buffer.seek(0)
+            error_pdf = buffer.getvalue()
+            print(f"✅ PDF de error generado: {len(error_pdf)} bytes")
+
+            return Response(
+                content=error_pdf,
+                media_type="application/pdf",
+                headers={
+                    "Content-Disposition": f"attachment; filename=error_siniestro_{siniestro_id}.pdf",
+                    "Content-Length": str(len(error_pdf))
+                }
+            )
+        except Exception as e2:
+            print(f"❌ Error generando PDF de error: {e2}")
+            raise HTTPException(status_code=500, detail=f"Error crítico generando PDF: {str(e)}")
+
+@router.get("/test-pdf")
+async def test_pdf():
+    """Generar PDF de prueba mínimo sin BD"""
+    print("🧪 GENERANDO PDF DE PRUEBA MÍNIMO")
+
+    from reportlab.lib.pagesizes import letter
+    from reportlab.platypus import SimpleDocTemplate, Paragraph
+    from reportlab.lib.styles import getSampleStyleSheet
+    from fastapi.responses import Response
+    import io
+
+    try:
+        buffer = io.BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=letter)
+        styles = getSampleStyleSheet()
+        story = [
+            Paragraph("PDF DE PRUEBA - SISTEMA FUNCIONANDO", styles['Heading1']),
+            Paragraph("Si puedes leer esto, el generador de PDF está funcionando correctamente.", styles['Normal']),
+            Paragraph("Fecha de generación: " + str(datetime.now()), styles['Normal'])
+        ]
+
+        doc.build(story)
+        buffer.seek(0)
+        pdf_data = buffer.getvalue()
+
+        print(f"✅ PDF de prueba generado: {len(pdf_data)} bytes")
+
+        return Response(
+            content=pdf_data,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": "attachment; filename=test.pdf",
+                "Content-Length": str(len(pdf_data))
+            }
+        )
+    except Exception as e:
+        print(f"❌ Error generando PDF de prueba: {e}")
+        import traceback
+        print(f"❌ Traceback: {traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Error generando PDF de prueba: {str(e)}")
