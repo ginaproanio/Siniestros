@@ -55,10 +55,70 @@ Aplicación web full-stack para generar informes profesionales de investigacione
   - Footers con numeración de páginas
   - Relatos con imágenes dispuestas lado a lado cuando aplicable
   - Tipografía formal (Helvetica)
+  - Firma digital electrónica usando certificado P12
 - **Vista previa en texto**: Permite revisar el contenido antes de generar el PDF.
 - **Upload de evidencias**: Subida de fotos y documentos complementarios.
 - **Archivos de respaldo**: Genera informes en formato TXT además del PDF.
 - **Firma digital**: Soporte para firma digital de PDFs usando certificado P12.
+
+## CAMPOS DEL FORMULARIO (BASADO EN EL PDF ANALIZADO)
+*(Organizados por secciones, con nombres de variables sugeridos)*
+
+### A. METADATOS / ENCABEZADO
+- `numero_reclamo` (Ej: "24-01-VH-7059206")
+- `fecha_informe` (Fecha de elaboración del informe)
+- `pagina_total / pagina_actual` (Para el pie de página)
+- `investigador_nombre`
+- `investigador_email`
+- `investigador_telefono`
+- `investigador_empresa` ("INVESTIGACIÓN Y RECUPERACIÓN VEHICULAR")
+
+### B. DATOS DEL SINIESTRO
+- `compania_seguros`
+- `fecha_siniestro`
+- `direccion_siniestro`
+- `ubicacion_gps` (URL de Google Maps)
+- `fecha_radicado`
+- `danos_a_terceros` (Si/No)
+- `ejecutivo_a_cargo`
+- `fecha_designacion`
+
+### C. DATOS DE PERSONAS
+**Asegurado:**
+- `asegurado_nombre`
+- `asegurado_cedula`
+- `asegurado_domicilio`
+- `asegurado_celular`
+
+**Conductor (si es diferente):**
+- `conductor_nombre`
+- `conductor_cedula`
+- `conductor_celular`
+
+### D. OBJETO ASEGURADO (VEHÍCULO)
+- `vehiculo_placa`
+- `vehiculo_marca`
+- `vehiculo_modelo`
+- `vehiculo_color`
+- `vehiculo_anio`
+- `vehiculo_motor`
+- `vehiculo_chasis`
+
+### E. CONTENIDO DEL INFORME (CAMPOS DE TEXTO LARGO - EDITABLES)
+- `antecedentes` (Texto con el aviso de siniestro y alcances)
+- `inspeccion_lugar` (Lista de hallazgos, con puntos 1, 2, 3...)
+- `entrevista_asegurado` (Lista numerada de manifestaciones)
+- `version_terceros` (Subsecciones para cada tercero: Administrador Supermaxi, Presunto Causante, Conductor)
+- `otras_diligencias` (Ej: verificación en AMT)
+- `observaciones` (Lista de puntos contradictorios o relevantes)
+- `conclusiones` (Texto final con recomendación)
+
+### F. DATOS DE TERCEROS INVOLUCRADOS (Estructura repetible)
+- `terceros[]` (Array de objetos con: nombre, telefono, placa(si aplica), relacion, declaracion)
+
+### G. FIRMAS Y ADJUNTOS
+- `firma_investigador` (Podría ser una imagen o texto)
+- `adjuntos` (Campo para listar archivos adjuntos, ej: "Audio de entrevista")
 
 ## Arquitectura Técnica
 - **Frontend**: React.js con TypeScript para formularios dinámicos avanzados
