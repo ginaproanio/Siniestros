@@ -15,10 +15,13 @@
   },
   "typescript.preferences.includePackageJsonAutoImports": "auto",
   "typescript.preferences.importModuleSpecifier": "relative",
+  "typescript.preferences.preferTypeOnlyAutoImports": true,
   "emmet.includeLanguages": {
     "typescript": "html",
     "typescriptreact": "html"
   },
+  "python.analysis.typeCheckingMode": "basic",
+  "python.analysis.autoImportCompletions": true,
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit",

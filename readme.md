@@ -5,16 +5,33 @@ Aplicación web en Streamlit para generar informes profesionales de investigacio
 **Rama**: main
 
 ## Instalación Local
-1. Instala Python 3.8 o superior desde python.org.
-2. Instala las dependencias:
+1. **Instala Python 3.8+** desde python.org
+2. **Instala Node.js 18+** desde nodejs.org
+3. **Instala dependencias** (ejecuta el script automático):
    ```bash
+   install-dependencies.bat
+   ```
+   O manualmente:
+   ```bash
+   # Backend
    pip install -r requirements.txt
+
+   # Frontend
+   cd frontend && npm install
    ```
-3. Ejecuta la aplicación:
+4. **Ejecuta el backend**:
    ```bash
-   streamlit run app_informes.py
+   cd backend
+   uvicorn app.main:app --reload
    ```
-   Se abrirá en http://localhost:8501.
+   API disponible en http://localhost:8000
+
+5. **Ejecuta el frontend** (en otra terminal):
+   ```bash
+   cd frontend
+   npm start
+   ```
+   Frontend disponible en http://localhost:3000
 
 ## Despliegue en Railway
 1. Sube este proyecto a un repositorio Git (GitHub, GitLab, etc.).
