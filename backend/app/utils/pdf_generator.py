@@ -10,7 +10,7 @@ from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
 from staticmap import StaticMap, CircleMarker
 import requests
 from PIL import Image as PILImage
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from app import models
 
 class SiniestroPDFGenerator:
@@ -318,7 +318,18 @@ class SiniestroPDFGenerator:
 
 def generate_siniestro_pdf(siniestro_id: int, db: Session) -> bytes:
     """Función principal para generar PDF de siniestro"""
-    siniestro = db.query(models.Siniestro).filter(models.Siniestro.id == siniestro_id).first()
+    siniestro = db.query(models.Siniestro).options(
+        joinedload(models.Siniestro.asegurado),
+        joinedload(models.Siniestro.conductor),
+        joinedload(models.Siniestro.objeto_asegurado),
+        joinedload(models.Siniestro.antecedentes),
+        joinedload(models.Siniestro.relatos_asegurado),
+        joinedload(models.Siniestro.inspecciones),
+        joinedload(models.Siniestro.testigos),
+        joinedload(models.Siniestro.visita_taller),
+        joinedload(models.Siniestro.dinamica_accidente)
+    ).filter(models.Siniestro.id == siniestro_id).first()
+
     if not siniestro:
         raise ValueError("Siniestro no encontrado")
 
