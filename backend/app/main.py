@@ -30,7 +30,8 @@ app.add_middleware(
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
     logger.info(f"📨 {request.method} {request.url}")
-    if request.method in ["POST", "PUT", "PATCH"]:
+    # Solo loguear body en desarrollo, no en producción por seguridad
+    if os.getenv("LOG_BODY", "true").lower() == "true" and request.method in ["POST", "PUT", "PATCH"]:
         try:
             body = await request.body()
             logger.info(f"📦 Body: {body.decode()}")

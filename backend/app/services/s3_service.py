@@ -87,7 +87,8 @@ async def upload_file_to_s3(file: UploadFile) -> str:
             Bucket=S3_BUCKET_NAME,
             Key=s3_key,
             Body=content,
-            ContentType=file.content_type
+            ContentType=file.content_type,
+            ACL='private'  # Explícitamente privado
         )
         logger.info(f"Archivo subido a S3: s3://{S3_BUCKET_NAME}/{s3_key}")
 

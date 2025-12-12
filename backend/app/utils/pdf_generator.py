@@ -162,6 +162,9 @@ def generate_simple_pdf(siniestro: models.Siniestro) -> bytes:
             print("🔐 Firmando PDF con certificado digital...")
             pdf_data = sign_pdf(pdf_data, cert_path)
         else:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning("Certificado digital no encontrado en Railway. PDF generado sin firma digital.")
             print("⚠️  Certificado no encontrado, PDF sin firma")
 
         return pdf_data

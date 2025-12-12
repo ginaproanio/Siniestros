@@ -6,8 +6,13 @@ import os
 
 def normalize_database_url(url: str) -> str:
     """Normaliza URL de base de datos para compatibilidad con Railway"""
+    import logging
+    logger = logging.getLogger(__name__)
+
     if url and url.startswith("postgres://"):
-        return url.replace("postgres://", "postgresql+psycopg2://", 1)
+        normalized = url.replace("postgres://", "postgresql+psycopg2://", 1)
+        logger.info(f"Normalized DB URL to: {normalized[:20]}...")
+        return normalized
     return url
 
 
