@@ -50,7 +50,38 @@ const SiniestroDetail: React.FC = () => {
         <div><strong>Fecha del Siniestro:</strong> {new Date(siniestro.fecha_siniestro).toLocaleDateString()}</div>
         <div><strong>Tipo:</strong> {siniestro.tipo_siniestro}</div>
       </div>
-      <button onClick={() => window.history.back()}>← Volver</button>
+      <div style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
+        <button onClick={() => window.history.back()}>← Volver</button>
+        <button
+          onClick={async () => {
+            try {
+              const response = await fetch(`/api/v1/${siniestro.id}/generar-pdf`, {
+                method: 'POST',
+              });
+
+              if (response.ok) {
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `siniestro_${siniestro.id}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+              } else {
+                alert('Error generando PDF');
+              }
+            } catch (error) {
+              console.error('Error:', error);
+              alert('Error generando PDF');
+            }
+          }}
+          style={{ backgroundColor: '#28a745' }}
+        >
+          📄 Generar PDF
+        </button>
+      </div>
     </div>
   );
 };

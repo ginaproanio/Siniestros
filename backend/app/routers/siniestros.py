@@ -143,5 +143,21 @@ async def create_testigo(siniestro_id: int, testigo: schemas.TestigoCreate, db: 
 @router.post("/{siniestro_id}/generar-pdf")
 async def generar_pdf(siniestro_id: int, db: Session = Depends(get_db)):
     """Generar PDF del informe de siniestro"""
-    # TODO: Implement PDF generation with ReportLab
-    return {"message": f"PDF generado para siniestro {siniestro_id} - pendiente implementación completa"}
+    try:
+        from app.utils.pdf_generator import generate_siniestro_pdf
+        pdf_data = generate_siniestro_pdf(siniestro_id, db)
+
+        from fastapi.responses import StreamingResponse
+        import io
+
+        # Crear respuesta con el PDF
+        def iter_pdf():
+            yield pdf_data
+
+        return StreamingResponse(
+            iter_pdf(),
+            media_type="application/pdf",
+            headers={"Content-Disposition": f"attachment; filename=siniestro_{siniestro_id}.pdf"}
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error generando PDF: {str(e)}")
