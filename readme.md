@@ -1,5 +1,5 @@
 # Sistema de Informes de Siniestros
-Aplicación web en Streamlit para generar informes profesionales de investigaciones de siniestros en seguros. Utiliza ReportLab para crear PDFs con diseño corporativo, incluyendo mapas integrados y headers/footers automáticos.
+Aplicación web full-stack para generar informes profesionales de investigaciones de siniestros en seguros. Utiliza React para el frontend, FastAPI para el backend, y ReportLab para crear PDFs con diseño corporativo, incluyendo mapas integrados y headers/footers automáticos.
 
 **Repositorio**: https://github.com/ginaproanio/Siniestros
 **Rama**: main
@@ -29,17 +29,17 @@ Aplicación web en Streamlit para generar informes profesionales de investigacio
 5. **Ejecuta el frontend** (en otra terminal):
    ```bash
    cd frontend
-   npm start
+   npm run dev
    ```
    Frontend disponible en http://localhost:3000
 
 ## Despliegue en Railway
 1. Sube este proyecto a un repositorio Git (GitHub, GitLab, etc.).
 2. Conecta el repositorio a Railway.app.
-3. Railway detectará automáticamente el Procfile y requirements.txt para desplegar la app.
+3. Railway detectará automáticamente el Procfile y railway.toml para desplegar la app.
 4. La app estará disponible en la URL proporcionada por Railway.
 
-**Nota**: Los archivos subidos e informes se guardan localmente en la carpeta 'informes'. En Railway, estos son temporales; considera integrar almacenamiento en la nube (AWS S3, etc.) para persistencia.
+**Nota**: Los archivos subidos e informes se guardan en la base de datos PostgreSQL. En Railway, la BD es persistente.
 
 ## Funcionalidades
 - **Formulario estructurado**: Recolección completa de datos del siniestro, asegurado, conductor, vehículo y terceros afectados.
@@ -61,58 +61,55 @@ Aplicación web en Streamlit para generar informes profesionales de investigacio
 - **Firma digital**: Soporte para firma digital de PDFs usando certificado P12.
 
 ## Arquitectura Técnica
-- **Frontend**: Streamlit para interfaz web con formularios dinámicos y manejo de estado de sesión
+- **Frontend**: React.js con TypeScript para formularios dinámicos avanzados
+- **Backend**: FastAPI con SQLAlchemy y PostgreSQL
 - **Generación de PDFs**: ReportLab con diseño profesional, tablas estructuradas, headers/footers automáticos, y disposición inteligente de imágenes y texto
 - **Mapas**: StaticMap para generación de mapas estáticos integrados en PDF
 - **Firma Digital**: Endesive para firma digital de PDFs
-- **Almacenamiento**: Sistema de archivos local (carpeta `informes/`)
+- **Almacenamiento**: Base de datos PostgreSQL para datos, archivos en Railway volumes o AWS S3
 
-## Limitaciones y Recomendaciones Arquitectónicas
-Esta implementación inicial utiliza Streamlit como framework principal, pero presenta limitaciones significativas para formularios complejos y dinámicos:
+## Arquitectura Implementada
+Esta implementación utiliza una arquitectura full-stack moderna para superar las limitaciones de la versión anterior con Streamlit:
 
-### Limitaciones Identificadas
-1. **Restricciones de st.form()**:
-   - No permite botones interactivos (st.button) dentro del formulario. Solo st.form_submit_button() para envío completo.
-   - Los botones para añadir elementos dinámicos (relatos, descripciones) deben estar FUERA del formulario, causando UX pobre en formularios largos.
-   - Errores "DuplicateWidgetID" si se duplican estructuras de widgets.
+### Ventajas de la Nueva Arquitectura
+1. **Formularios Dinámicos Avanzados**:
+   - Componentes React permiten botones interactivos dentro de formularios.
+   - Secciones expansibles con "Añadir Otro" sin recargas de página.
+   - Validación en tiempo real con feedback inmediato.
 
-2. **Manejo de Estado de Sesión**:
-   - Estado limitado para elementos dinámicos; requiere recargas de página (st.rerun()).
-   - No persiste datos entre sesiones sin base de datos.
+2. **Manejo de Estado Robusto**:
+   - Estado global con React Query para cache y sincronización.
+   - Persistencia automática en base de datos PostgreSQL.
+   - Sesiones independientes por usuario.
 
 3. **Escalabilidad y Rendimiento**:
-   - Formularios largos causan scrolling excesivo y UX deficiente.
-   - Generación de PDFs complejos puede ser lenta en entornos serverless como Railway.
+   - Separación frontend/backend permite despliegue independiente.
+   - API REST eficiente con FastAPI.
+   - Generación de PDFs asíncrona.
 
-4. **Almacenamiento**:
-   - Archivos temporales en Railway; se pierden al redeploy.
-   - No hay persistencia de datos ni historial de informes.
+4. **Almacenamiento Persistente**:
+   - Base de datos PostgreSQL integrada en Railway.
+   - Archivos en la nube con Railway volumes o AWS S3.
+   - Historial completo de informes y versiones.
 
-### Recomendaciones para Mejora Arquitectónica
-Para un sistema de informes de siniestros más robusto y escalable, se recomienda migrar a una arquitectura full-stack:
+### Componentes Técnicos
+1. **Backend (FastAPI)**:
+   - **Modelos SQLAlchemy**: Definición completa de entidades con relaciones.
+   - **Schemas Pydantic**: Validación automática de datos.
+   - **Endpoints REST**: CRUD completo para todas las entidades.
+   - **Base de Datos**: PostgreSQL con migraciones Alembic.
 
-1. **Backend con Base de Datos**:
-   - **API REST/GraphQL**: FastAPI o Django REST Framework para lógica de negocio.
-   - **Base de Datos**: PostgreSQL o MongoDB para persistencia de informes, usuarios y archivos.
-   - **Autenticación**: JWT o OAuth para usuarios múltiples.
+2. **Frontend (React + TypeScript)**:
+   - **Componentes Reutilizables**: Para secciones dinámicas.
+   - **React Router**: Navegación SPA sin recargas.
+   - **Axios + React Query**: API calls con cache inteligente.
+   - **Estado Local**: React hooks para formularios complejos.
 
-2. **Frontend Mejorado**:
-   - **React/Vue.js**: Para formularios dinámicos avanzados sin limitaciones de widgets.
-   - **Componentes Reutilizables**: Para secciones de relatos con botones internos.
-   - **Estado Global**: Redux o Context API para manejo complejo de estado.
-
-3. **Almacenamiento en la Nube**:
-   - **AWS S3 / Google Cloud Storage**: Para archivos permanentes.
-   - **CDN**: Para distribución de PDFs generados.
-
-4. **Microservicios**:
-   - **Servicio de PDFs**: Separado para generación asíncrona.
-   - **Servicio de Mapas**: Para mapas dinámicos.
-   - **Servicio de Firma Digital**: Integración con servicios de certificación.
-
-5. **Despliegue**:
-   - **Docker/Kubernetes**: Para escalabilidad.
-   - **CI/CD**: Pipelines automatizados con GitHub Actions.
+3. **Despliegue en Railway**:
+   - **Frontend**: Build estático servido con `serve`.
+   - **Backend**: FastAPI con Uvicorn.
+   - **Base de Datos**: PostgreSQL integrada.
+   - **Variables de Entorno**: Configuración segura.
 
 ### Nueva Arquitectura Propuesta y Plan de Desarrollo
 Dado las limitaciones identificadas, se implementará una nueva arquitectura full-stack para superar las restricciones de Streamlit:
