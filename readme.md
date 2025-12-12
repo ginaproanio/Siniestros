@@ -97,13 +97,113 @@ Para un sistema de informes de siniestros más robusto y escalable, se recomiend
    - **Docker/Kubernetes**: Para escalabilidad.
    - **CI/CD**: Pipelines automatizados con GitHub Actions.
 
-### Próximos Pasos Sugeridos
-- Evaluar migración a React + FastAPI para superar limitaciones de Streamlit.
-- Implementar base de datos para persistencia y consultas.
-- Desarrollar API para integración con sistemas de seguros existentes.
-- Considerar autenticación multi-usuario para equipos de investigación.
+### Nueva Arquitectura Propuesta y Plan de Desarrollo
+Dado las limitaciones identificadas, se implementará una nueva arquitectura full-stack para superar las restricciones de Streamlit:
 
-Esta versión actual es funcional para prototipado rápido, pero no escalable para producción con múltiples usuarios e informes complejos.
+#### Arquitectura Objetivo
+- **Frontend**: React.js con TypeScript para formularios dinámicos avanzados
+- **Backend**: FastAPI (Python) con base de datos PostgreSQL
+- **Despliegue**: Railway para frontend (Vite) y backend (FastAPI) con BD integrada
+- **Almacenamiento**: Railway volumes o AWS S3 para archivos
+- **Autenticación**: JWT con roles (Investigador, Administrador)
+
+#### Estructura del Proyecto
+```
+siniestros-app/
+├── frontend/              # React + TypeScript
+│   ├── src/
+│   │   ├── components/    # Componentes reutilizables
+│   │   │   ├── RelatoForm.tsx
+│   │   │   ├── ImageUpload.tsx
+│   │   │   └── DynamicSection.tsx
+│   │   ├── pages/
+│   │   │   ├── FormularioSiniestro.tsx
+│   │   │   └── Dashboard.tsx
+│   │   ├── hooks/         # Custom hooks para formularios
+│   │   ├── services/      # API calls
+│   │   └── types/         # TypeScript interfaces
+│   ├── public/
+│   └── package.json
+├── backend/               # FastAPI + SQLAlchemy
+│   ├── app/
+│   │   ├── models/        # SQLAlchemy models
+│   │   ├── schemas/       # Pydantic schemas
+│   │   ├── routers/       # API endpoints
+│   │   ├── services/      # Business logic
+│   │   └── utils/         # PDF generation, file handling
+│   ├── tests/
+│   └── requirements.txt
+├── database/              # Railway PostgreSQL
+├── docker/                # Dockerfiles para Railway
+└── docs/                  # Documentación API
+```
+
+#### Funcionalidades Clave a Implementar
+1. **Formulario Dinámico**:
+   - Componentes React para secciones expansibles
+   - Botones "Añadir Otro" dentro de cada sección
+   - Validación en tiempo real
+
+2. **Manejo de Archivos**:
+   - Upload múltiple con preview
+   - Almacenamiento en S3/Railway volumes
+   - Asociación con registros de BD
+
+3. **Generación de PDF**:
+   - Servicio backend asíncrono
+   - Templates profesionales con ReportLab
+   - Descarga directa desde frontend
+
+4. **Base de Datos**:
+   - Tablas: siniestros, relatos, imagenes, usuarios
+   - Relaciones many-to-one/many-to-many
+   - Migraciones con Alembic
+
+#### Plan de Desarrollo por Fases
+**Fase 1: Setup e Infraestructura**
+- Configurar repositorio con monorepo (frontend/backend)
+- Desplegar PostgreSQL en Railway
+- Configurar CI/CD con Railway
+
+**Fase 2: Backend Core**
+- Modelos de BD y esquemas Pydantic
+- Endpoints CRUD para siniestros
+- Servicio de generación PDF
+- Autenticación básica
+
+**Fase 3: Frontend Core**
+- Componentes base del formulario
+- Integración con API backend
+- Manejo de estado con React Query
+- UI/UX responsive
+
+**Fase 4: Funcionalidades Avanzadas**
+- Upload de archivos con drag&drop
+- Previews de imágenes
+- Formularios dinámicos anidados
+- Dashboard de informes
+
+**Fase 5: Testing y Optimización**
+- Tests unitarios e integración
+- Optimización de rendimiento
+- Documentación completa
+- Despliegue en producción
+
+#### Despliegue en Railway
+- **Frontend**: Railway detectará package.json y desplegará con Vite
+- **Backend**: Railway usará requirements.txt y Procfile para FastAPI
+- **Base de Datos**: Railway PostgreSQL integrada
+- **Variables de Entorno**: Configurar en Railway dashboard
+
+Esta nueva arquitectura permitirá formularios complejos sin limitaciones, persistencia de datos, y escalabilidad para múltiples usuarios.
+
+### Próximos Pasos Sugeridos
+- Crear nuevo repositorio para la arquitectura full-stack
+- Implementar Fase 1: Setup de infraestructura
+- Desarrollar backend primero, luego frontend
+- Mantener despliegue continuo en Railway
+
+La versión Streamlit actual queda como prototipo funcional, pero se recomienda migrar a la nueva arquitectura para producción.
 
 ## Requisitos del Sistema
 - Python 3.8+
