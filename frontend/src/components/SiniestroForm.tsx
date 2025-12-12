@@ -56,6 +56,10 @@ const SiniestroForm: React.FC = () => {
       console.log('✅ Respuesta del servidor:', response);
       console.log('📋 Datos de respuesta:', response.data);
       setMessage('Siniestro creado exitosamente!');
+      // Redirect to list after 2 seconds
+      setTimeout(() => {
+        window.location.href = '/siniestros';
+      }, 2000);
     } catch (error: any) {
       console.error('❌ Error completo:', error);
       console.error('❌ Respuesta del servidor:', error.response);
