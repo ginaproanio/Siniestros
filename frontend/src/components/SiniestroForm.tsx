@@ -61,13 +61,36 @@ const SiniestroForm: React.FC = () => {
       console.error('❌ Datos del error:', error.response?.data);
       console.error('❌ Status del error:', error.response?.status);
 
-      if (error.response?.data?.detail) {
-        setMessage(`Error: ${error.response.data.detail}`);
-      } else if (error.response?.data?.message) {
-        setMessage(`Error: ${error.response.data.message}`);
+      // Mostrar errores detallados en el formulario
+      let errorMessage = 'Error al crear el siniestro';
+
+      if (error.response) {
+        const status = error.response.status;
+        const data = error.response.data;
+
+        switch (status) {
+          case 400:
+            errorMessage = `Datos inválidos: ${data.detail || 'Verifica los campos requeridos'}`;
+            break;
+          case 405:
+            errorMessage = `Error 405: Método no permitido. URL: ${axios.defaults.baseURL}/api/v1/`;
+            break;
+          case 404:
+            errorMessage = `Error 404: Endpoint no encontrado. Verifica la URL de la API`;
+            break;
+          case 500:
+            errorMessage = `Error del servidor: ${data.detail || data.message || 'Error interno'}`;
+            break;
+          default:
+            errorMessage = `Error ${status}: ${data.detail || data.message || 'Error desconocido'}`;
+        }
+      } else if (error.request) {
+        errorMessage = 'No se pudo conectar al servidor. Verifica tu conexión a internet.';
       } else {
-        setMessage('Error al crear el siniestro - revisa la consola para más detalles');
+        errorMessage = `Error de configuración: ${error.message}`;
       }
+
+      setMessage(errorMessage);
     } finally {
       setLoading(false);
     }
