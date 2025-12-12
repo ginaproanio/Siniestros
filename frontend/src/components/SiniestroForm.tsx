@@ -381,11 +381,218 @@ const SiniestroForm: React.FC = () => {
           ))}
         </div>
 
+        {/* INSPECCIÓN DEL LUGAR */}
+        <div style={{ marginBottom: '30px', padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
+          <h3 style={{ color: '#0f172a', marginBottom: '15px' }}>🔍 Inspección del Lugar</h3>
+          <div style={{ marginBottom: '15px' }}>
+            <button
+              type="button"
+              onClick={() => {
+                const currentInspecciones = formData.inspecciones || [];
+                const nextNumero = currentInspecciones.length + 1;
+                setFormData((prev) => ({
+                  ...prev,
+                  inspecciones: [
+                    ...currentInspecciones,
+                    { numero_inspeccion: nextNumero, descripcion: "", imagen_url: "" }
+                  ]
+                }));
+              }}
+              style={{ backgroundColor: '#28a745', marginBottom: '10px' }}
+            >
+              ➕ Agregar Inspección
+            </button>
+          </div>
+
+          {formData.inspecciones?.map((inspeccion, index) => (
+            <div key={index} style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#ffffff', borderRadius: '5px', border: '1px solid #e2e8f0' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                <h4 style={{ color: '#0f172a', margin: 0 }}>Inspección {inspeccion.numero_inspeccion}</h4>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      inspecciones: prev.inspecciones?.filter((_, i) => i !== index) || []
+                    }));
+                  }}
+                  style={{ backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '3px', padding: '5px 10px', cursor: 'pointer' }}
+                >
+                  ❌ Eliminar
+                </button>
+              </div>
+
+              <div className="form-group">
+                <label>Descripción de la inspección:</label>
+                <textarea
+                  value={inspeccion.descripcion}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setFormData((prev) => ({
+                      ...prev,
+                      inspecciones: prev.inspecciones?.map((insp, i) =>
+                        i === index ? { ...insp, descripcion: value } : insp
+                      ) || []
+                    }));
+                  }}
+                  rows={3}
+                  placeholder="Describa los hallazgos de la inspección..."
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Imagen:</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      try {
+                        const formDataUpload = new FormData();
+                        formDataUpload.append('file', file);
+
+                        const response = await axios.post('/api/v1/upload-imagen', formDataUpload, {
+                          headers: { 'Content-Type': 'multipart/form-data' }
+                        });
+
+                        const imageUrl = response.data.url;
+                        setFormData((prev) => ({
+                          ...prev,
+                          inspecciones: prev.inspecciones?.map((insp, i) =>
+                            i === index ? { ...insp, imagen_url: imageUrl } : insp
+                          ) || []
+                        }));
+                      } catch (error) {
+                        console.error('Error subiendo imagen:', error);
+                        alert('Error al subir la imagen. Intente nuevamente.');
+                      }
+                    }
+                  }}
+                />
+                {inspeccion.imagen_url && (
+                  <div style={{ marginTop: '5px' }}>
+                    <img
+                      src={`http://localhost:8000${inspeccion.imagen_url}`}
+                      alt={`Inspección ${inspeccion.numero_inspeccion}`}
+                      style={{ maxWidth: '200px', maxHeight: '150px', border: '1px solid #ddd' }}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* TESTIGOS */}
+        <div style={{ marginBottom: '30px', padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
+          <h3 style={{ color: '#0f172a', marginBottom: '15px' }}>👥 Testigos</h3>
+          <div style={{ marginBottom: '15px' }}>
+            <button
+              type="button"
+              onClick={() => {
+                const currentTestigos = formData.testigos || [];
+                const nextNumero = currentTestigos.length + 1;
+                setFormData((prev) => ({
+                  ...prev,
+                  testigos: [
+                    ...currentTestigos,
+                    { numero_relato: nextNumero, texto: "", imagen_url: "" }
+                  ]
+                }));
+              }}
+              style={{ backgroundColor: '#28a745', marginBottom: '10px' }}
+            >
+              ➕ Agregar Testigo
+            </button>
+          </div>
+
+          {formData.testigos?.map((testigo, index) => (
+            <div key={index} style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#ffffff', borderRadius: '5px', border: '1px solid #e2e8f0' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                <h4 style={{ color: '#0f172a', margin: 0 }}>Testigo {testigo.numero_relato}</h4>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      testigos: prev.testigos?.filter((_, i) => i !== index) || []
+                    }));
+                  }}
+                  style={{ backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '3px', padding: '5px 10px', cursor: 'pointer' }}
+                >
+                  ❌ Eliminar
+                </button>
+              </div>
+
+              <div className="form-group">
+                <label>Declaración del testigo:</label>
+                <textarea
+                  value={testigo.texto}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setFormData((prev) => ({
+                      ...prev,
+                      testigos: prev.testigos?.map((test, i) =>
+                        i === index ? { ...test, texto: value } : test
+                      ) || []
+                    }));
+                  }}
+                  rows={3}
+                  placeholder="Escriba la declaración del testigo..."
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Imagen:</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      try {
+                        const formDataUpload = new FormData();
+                        formDataUpload.append('file', file);
+
+                        const response = await axios.post('/api/v1/upload-imagen', formDataUpload, {
+                          headers: { 'Content-Type': 'multipart/form-data' }
+                        });
+
+                        const imageUrl = response.data.url;
+                        setFormData((prev) => ({
+                          ...prev,
+                          testigos: prev.testigos?.map((test, i) =>
+                            i === index ? { ...test, imagen_url: imageUrl } : test
+                          ) || []
+                        }));
+                      } catch (error) {
+                        console.error('Error subiendo imagen:', error);
+                        alert('Error al subir la imagen. Intente nuevamente.');
+                      }
+                    }
+                  }}
+                />
+                {testigo.imagen_url && (
+                  <div style={{ marginTop: '5px' }}>
+                    <img
+                      src={`http://localhost:8000${testigo.imagen_url}`}
+                      alt={`Testigo ${testigo.numero_relato}`}
+                      style={{ maxWidth: '200px', maxHeight: '150px', border: '1px solid #ddd' }}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
         <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
           <button
             type="button"
             onClick={() => {
-              setFormData({
+              setFormData((prev) => ({
+                ...prev,
                 // Datos básicos del siniestro
                 compania_seguros: "Zurich Seguros Ecuador S.A.",
                 reclamo_num: `TEST-${Date.now()}`,
@@ -397,7 +604,7 @@ const SiniestroForm: React.FC = () => {
                 ejecutivo_cargo: "Juan Pérez",
                 fecha_designacion: "2025-12-11",
                 tipo_siniestro: "Vehicular",
-              });
+              }));
             }}
             style={{ backgroundColor: "#6c757d" }}
           >
