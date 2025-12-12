@@ -312,9 +312,21 @@ class SiniestroPDFGenerator:
             story.append(Spacer(1, 20))
 
         # Generar PDF
-        doc.build(story)
-        buffer.seek(0)
-        return buffer.getvalue()
+        try:
+            doc.build(story)
+            buffer.seek(0)
+            pdf_data = buffer.getvalue()
+            print(f"PDF generado exitosamente, tamaño: {len(pdf_data)} bytes")
+            return pdf_data
+        except Exception as e:
+            print(f"Error building PDF: {e}")
+            # Return a minimal PDF as fallback
+            buffer = io.BytesIO()
+            doc = SimpleDocTemplate(buffer, pagesize=letter)
+            story = [Paragraph("Error generando PDF completo. Intente nuevamente.", self.normal_style)]
+            doc.build(story)
+            buffer.seek(0)
+            return buffer.getvalue()
 
 def generate_siniestro_pdf(siniestro_id: int, db: Session) -> bytes:
     """Función principal para generar PDF de siniestro"""
