@@ -19,14 +19,14 @@ interface FormData {
 const SiniestroForm: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({
     compania_seguros: 'Zurich Seguros Ecuador S.A.',
-    reclamo_num: '',
-    fecha_siniestro: '',
+    reclamo_num: '25-01-VH-7079448',
+    fecha_siniestro: '2023-10-15',
     direccion_siniestro: 'Av. Amazonas y Naciones Unidas, Quito',
     ubicacion_geo_lat: -0.1807,
     ubicacion_geo_lng: -78.4678,
-    danos_terceros: false,
+    danos_terceros: true,
     ejecutivo_cargo: 'Juan Pérez',
-    fecha_designacion: '',
+    fecha_designacion: '2025-12-11',
   });
 
   const [loading, setLoading] = useState(false);
@@ -180,9 +180,27 @@ const SiniestroForm: React.FC = () => {
           </div>
         </div>
 
-        <button type="submit" disabled={loading}>
-          {loading ? 'Guardando...' : 'Crear Siniestro'}
-        </button>
+        <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+          <button type="button" onClick={() => {
+            setFormData({
+              compania_seguros: 'Zurich Seguros Ecuador S.A.',
+              reclamo_num: `TEST-${Date.now()}`,
+              fecha_siniestro: '2023-10-15',
+              direccion_siniestro: 'Av. Amazonas y Naciones Unidas, Quito',
+              ubicacion_geo_lat: -0.1807,
+              ubicacion_geo_lng: -78.4678,
+              danos_terceros: true,
+              ejecutivo_cargo: 'Juan Pérez',
+              fecha_designacion: '2025-12-11',
+            });
+          }} style={{ backgroundColor: '#6c757d' }}>
+            Llenar con Datos de Prueba
+          </button>
+
+          <button type="submit" disabled={loading}>
+            {loading ? 'Guardando...' : 'Crear Siniestro'}
+          </button>
+        </div>
 
         {message && (
           <div className={`message ${message.includes('Error') ? 'error' : 'success'}`}>
