@@ -8,7 +8,7 @@ const BACKEND_URL =
 axios.defaults.baseURL = BACKEND_URL;
 
 interface AseguradoData {
-  tipo: 'Natural' | 'Jurídica';
+  tipo: "Natural" | "Jurídica";
   cedula?: string;
   nombre?: string;
   celular?: string;
@@ -38,60 +38,61 @@ interface VehiculoData {
   chasis?: string;
 }
 
-interface FormData {
-  // Metadatos
-  numero_reclamo: string;
-  fecha_informe: string;
-  investigador_nombre: string;
-  investigador_email: string;
-  investigador_telefono: string;
-  investigador_empresa: string;
+interface RelatoData {
+  numero_relato: number;
+  texto: string;
+  imagen_url?: string;
+}
 
-  // Datos del siniestro
+interface InspeccionData {
+  numero_inspeccion: number;
+  descripcion: string;
+  imagen_url?: string;
+}
+
+interface TestigoData {
+  numero_relato: number;
+  texto: string;
+  imagen_url?: string;
+}
+
+interface AntecedenteData {
+  descripcion: string;
+}
+
+interface FormData {
+  // Datos básicos del siniestro (según backend schema)
   compania_seguros: string;
+  reclamo_num: string;
   fecha_siniestro: string;
   direccion_siniestro: string;
-  ubicacion_gps?: string;
-  fecha_radicado: string;
-  danos_a_terceros: boolean;
-  ejecutivo_a_cargo: string;
-  fecha_designacion: string;
-
-  // Datos de personas
-  asegurado?: AseguradoData;
-  conductor?: ConductorData;
-
-  // Objeto asegurado
-  vehiculo?: VehiculoData;
-
-  // Ubicación geográfica
   ubicacion_geo_lat?: number;
   ubicacion_geo_lng?: number;
+  danos_terceros: boolean;
+  ejecutivo_cargo?: string;
+  fecha_designacion?: string;
+  tipo_siniestro?: string;
+
+  // Secciones dinámicas
+  antecedentes?: AntecedenteData[];
+  relatos_asegurado?: RelatoData[];
+  inspecciones?: InspeccionData[];
+  testigos?: TestigoData[];
 }
 
 const SiniestroForm: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({
-    // Metadatos
-    numero_reclamo: "25-01-VH-7079448",
-    fecha_informe: new Date().toISOString().split('T')[0],
-    investigador_nombre: "MARIA SUSANA ESPINOSA LOZADA",
-    investigador_email: "susi.espinosa@hotmail.com",
-    investigador_telefono: "0999846432",
-    investigador_empresa: "INVESTIGACIÓN Y RECUPERACIÓN VEHICULAR",
-
-    // Datos del siniestro
+    // Datos básicos según backend schema
     compania_seguros: "Zurich Seguros Ecuador S.A.",
+    reclamo_num: "25-01-VH-7079448",
     fecha_siniestro: "2023-10-15",
     direccion_siniestro: "Av. Amazonas y Naciones Unidas, Quito",
-    ubicacion_gps: "https://maps.app.goo.gl/example",
-    fecha_radicado: "2023-10-16",
-    danos_a_terceros: true,
-    ejecutivo_a_cargo: "Juan Pérez",
-    fecha_designacion: "2025-12-11",
-
-    // Ubicación geográfica
     ubicacion_geo_lat: -0.1807,
     ubicacion_geo_lng: -78.4678,
+    danos_terceros: true,
+    ejecutivo_cargo: "Juan Pérez",
+    fecha_designacion: "2025-12-11",
+    tipo_siniestro: "Vehicular",
   });
 
   const [loading, setLoading] = useState(false);
@@ -178,193 +179,209 @@ const SiniestroForm: React.FC = () => {
 
   return (
     <div className="form-container">
-      <h2>Registro de Informe de Investigación de Siniestro</h2>
+      <h2>Registro de Siniestro</h2>
       <form onSubmit={handleSubmit}>
-
-        {/* METADATOS DEL INFORME */}
-        <div style={{ marginBottom: '30px', padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
-          <h3 style={{ color: '#0f172a', marginBottom: '15px' }}>📋 Metadatos del Informe</h3>
-          <div className="form-row">
-            <div className="form-group">
-              <label>Número de Reclamo:</label>
-              <input
-                type="text"
-                name="numero_reclamo"
-                value={formData.numero_reclamo}
-                onChange={handleInputChange}
-                required
-                placeholder="Ej: 24-01-VH-7059206"
-              />
-            </div>
-            <div className="form-group">
-              <label>Fecha del Informe:</label>
-              <input
-                type="date"
-                name="fecha_informe"
-                value={formData.fecha_informe}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-          </div>
-          <div className="form-row">
-            <div className="form-group">
-              <label>Investigador:</label>
-              <input
-                type="text"
-                name="investigador_nombre"
-                value={formData.investigador_nombre}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label>Email del Investigador:</label>
-              <input
-                type="email"
-                name="investigador_email"
-                value={formData.investigador_email}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-          </div>
-          <div className="form-row">
-            <div className="form-group">
-              <label>Teléfono del Investigador:</label>
-              <input
-                type="tel"
-                name="investigador_telefono"
-                value={formData.investigador_telefono}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label>Empresa del Investigador:</label>
-              <input
-                type="text"
-                name="investigador_empresa"
-                value={formData.investigador_empresa}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* DATOS DEL SINIESTRO */}
-        <div style={{ marginBottom: '30px', padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
-          <h3 style={{ color: '#0f172a', marginBottom: '15px' }}>🚨 Datos del Siniestro</h3>
-          <div className="form-row">
-            <div className="form-group">
-              <label>Compañía de Seguros:</label>
-              <input
-                type="text"
-                name="compania_seguros"
-                value={formData.compania_seguros}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label>Fecha del Siniestro:</label>
-              <input
-                type="date"
-                name="fecha_siniestro"
-                value={formData.fecha_siniestro}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-          </div>
-          <div className="form-row">
-            <div className="form-group">
-              <label>Fecha de Radicado:</label>
-              <input
-                type="date"
-                name="fecha_radicado"
-                value={formData.fecha_radicado}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label>Fecha de Designación:</label>
-              <input
-                type="date"
-                name="fecha_designacion"
-                value={formData.fecha_designacion}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-          </div>
+        <div className="form-row">
           <div className="form-group">
-            <label>Dirección del Siniestro:</label>
-            <textarea
-              name="direccion_siniestro"
-              value={formData.direccion_siniestro}
+            <label>Compañía de Seguros:</label>
+            <input
+              type="text"
+              name="compania_seguros"
+              value={formData.compania_seguros}
               onChange={handleInputChange}
-              rows={2}
               required
             />
           </div>
           <div className="form-group">
-            <label>URL de Ubicación GPS:</label>
+            <label>Número de Reclamo:</label>
             <input
-              type="url"
-              name="ubicacion_gps"
-              value={formData.ubicacion_gps || ""}
+              type="text"
+              name="reclamo_num"
+              value={formData.reclamo_num}
               onChange={handleInputChange}
-              placeholder="https://maps.app.goo.gl/..."
+              required
             />
           </div>
-          <div className="form-row">
-            <div className="form-group">
-              <label>Ejecutivo a Cargo:</label>
+        </div>
+
+        <div className="form-row">
+          <div className="form-group">
+            <label>Fecha del Siniestro:</label>
+            <input
+              type="date"
+              name="fecha_siniestro"
+              value={formData.fecha_siniestro}
+              onChange={handleInputChange}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label>Fecha de Designación:</label>
+            <input
+              type="date"
+              name="fecha_designacion"
+              value={formData.fecha_designacion}
+              onChange={handleInputChange}
+            />
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label>Dirección del Siniestro:</label>
+          <textarea
+            name="direccion_siniestro"
+            value={formData.direccion_siniestro}
+            onChange={handleInputChange}
+            rows={2}
+            required
+          />
+        </div>
+
+        <div className="form-row">
+          <div className="form-group">
+            <label>Latitud:</label>
+            <input
+              type="number"
+              step="0.0001"
+              name="ubicacion_geo_lat"
+              value={formData.ubicacion_geo_lat || ""}
+              onChange={handleInputChange}
+            />
+          </div>
+          <div className="form-group">
+            <label>Longitud:</label>
+            <input
+              type="number"
+              step="0.0001"
+              name="ubicacion_geo_lng"
+              value={formData.ubicacion_geo_lng || ""}
+              onChange={handleInputChange}
+            />
+          </div>
+        </div>
+
+        <div className="form-row">
+          <div className="form-group">
+            <label>Ejecutivo a Cargo:</label>
+            <input
+              type="text"
+              name="ejecutivo_cargo"
+              value={formData.ejecutivo_cargo}
+              onChange={handleInputChange}
+            />
+          </div>
+          <div className="form-group">
+            <label className="checkbox-label">
               <input
-                type="text"
-                name="ejecutivo_a_cargo"
-                value={formData.ejecutivo_a_cargo}
+                type="checkbox"
+                name="danos_terceros"
+                checked={formData.danos_terceros}
                 onChange={handleInputChange}
-                required
               />
-            </div>
-            <div className="form-group">
-              <label className="checkbox-label">
-                <input
-                  type="checkbox"
-                  name="danos_a_terceros"
-                  checked={formData.danos_a_terceros}
-                  onChange={handleInputChange}
+              Daños a Terceros
+            </label>
+          </div>
+        </div>
+
+        {/* ANTECEDENTES */}
+        <div style={{ marginBottom: '30px', padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
+          <h3 style={{ color: '#0f172a', marginBottom: '15px' }}>📋 Antecedentes</h3>
+          <div className="form-group">
+            <label>Descripción de los antecedentes:</label>
+            <textarea
+              name="antecedentes_descripcion"
+              value={(formData.antecedentes && formData.antecedentes[0]?.descripcion) || ""}
+              onChange={(e) => {
+                const value = e.target.value;
+                setFormData((prev) => ({
+                  ...prev,
+                  antecedentes: [{ descripcion: value }]
+                }));
+              }}
+              rows={4}
+              placeholder="Describa el aviso de siniestro, alcances de la investigación..."
+            />
+          </div>
+        </div>
+
+        {/* ENTREVISTA CON EL ASEGURADO */}
+        <div style={{ marginBottom: '30px', padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
+          <h3 style={{ color: '#0f172a', marginBottom: '15px' }}>🎤 Entrevista con el Asegurado</h3>
+          <div style={{ marginBottom: '15px' }}>
+            <button
+              type="button"
+              onClick={() => {
+                const currentRelatos = formData.relatos_asegurado || [];
+                const nextNumero = currentRelatos.length + 1;
+                setFormData((prev) => ({
+                  ...prev,
+                  relatos_asegurado: [
+                    ...currentRelatos,
+                    { numero_relato: nextNumero, texto: "", imagen_url: "" }
+                  ]
+                }));
+              }}
+              style={{ backgroundColor: '#28a745', marginBottom: '10px' }}
+            >
+              ➕ Agregar Relato
+            </button>
+          </div>
+
+          {formData.relatos_asegurado?.map((relato, index) => (
+            <div key={index} style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#ffffff', borderRadius: '5px', border: '1px solid #e2e8f0' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                <h4 style={{ color: '#0f172a', margin: 0 }}>Relato {relato.numero_relato}</h4>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      relatos_asegurado: prev.relatos_asegurado?.filter((_, i) => i !== index) || []
+                    }));
+                  }}
+                  style={{ backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '3px', padding: '5px 10px', cursor: 'pointer' }}
+                >
+                  ❌ Eliminar
+                </button>
+              </div>
+
+              <div className="form-group">
+                <label>Texto del relato:</label>
+                <textarea
+                  value={relato.texto}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setFormData((prev) => ({
+                      ...prev,
+                      relatos_asegurado: prev.relatos_asegurado?.map((r, i) =>
+                        i === index ? { ...r, texto: value } : r
+                      ) || []
+                    }));
+                  }}
+                  rows={3}
+                  placeholder="Escriba el relato del asegurado..."
                 />
-                Daños a Terceros
-              </label>
+              </div>
+
+              <div className="form-group">
+                <label>Imagen (URL):</label>
+                <input
+                  type="url"
+                  value={relato.imagen_url || ""}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setFormData((prev) => ({
+                      ...prev,
+                      relatos_asegurado: prev.relatos_asegurado?.map((r, i) =>
+                        i === index ? { ...r, imagen_url: value } : r
+                      ) || []
+                    }));
+                  }}
+                  placeholder="https://ejemplo.com/imagen.jpg"
+                />
+              </div>
             </div>
-          </div>
-          <div className="form-row">
-            <div className="form-group">
-              <label>Latitud:</label>
-              <input
-                type="number"
-                step="0.0001"
-                name="ubicacion_geo_lat"
-                value={formData.ubicacion_geo_lat || ""}
-                onChange={handleInputChange}
-              />
-            </div>
-            <div className="form-group">
-              <label>Longitud:</label>
-              <input
-                type="number"
-                step="0.0001"
-                name="ubicacion_geo_lng"
-                value={formData.ubicacion_geo_lng || ""}
-                onChange={handleInputChange}
-              />
-            </div>
-          </div>
+          ))}
         </div>
 
         <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
@@ -374,7 +391,7 @@ const SiniestroForm: React.FC = () => {
               setFormData({
                 // Metadatos
                 numero_reclamo: `TEST-${Date.now()}`,
-                fecha_informe: new Date().toISOString().split('T')[0],
+                fecha_informe: new Date().toISOString().split("T")[0],
                 investigador_nombre: "MARIA SUSANA ESPINOSA LOZADA",
                 investigador_email: "susi.espinosa@hotmail.com",
                 investigador_telefono: "0999846432",
