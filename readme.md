@@ -1,6 +1,22 @@
 # Sistema de Informes de Siniestros
 Aplicación web full-stack para generar informes profesionales de investigaciones de siniestros en seguros. Utiliza React para el frontend, FastAPI para el backend, y ReportLab para crear PDFs con diseño corporativo, incluyendo mapas integrados y headers/footers automáticos.
 
+## 🎯 OBJETIVOS PRINCIPALES
+
+### ✅ Funcionalidades Implementadas
+- **Formulario CRUD completo** para gestionar informes de investigación de siniestros
+- **Edición de Informes**: Buscar informes existentes y modificarlos
+- **Generación de PDFs confiable** (sin archivos dañados)
+- **Estructura de datos completa** basada en análisis del PDF de ejemplo
+- **Navegación completa**: Crear → Listar → Ver Detalles → Editar → Generar PDF
+
+### 🚧 Funcionalidades Pendientes
+- **Firma digital electrónica** con certificado P12
+- **Búsqueda avanzada** por número de reclamo, cédula, etc.
+- **Campos faltantes** del formulario (ver especificación detallada abajo)
+- **Upload de archivos** e imágenes
+- **Versionado de informes**
+
 **Repositorio**: https://github.com/ginaproanio/Siniestros
 **Rama**: main
 
