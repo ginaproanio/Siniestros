@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends, UploadFile, File
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import datetime
@@ -193,6 +194,58 @@ async def generar_pdf(siniestro_id: int, db: Session = Depends(get_db)):
         except Exception as e2:
             print(f"❌ Error generando PDF de error: {e2}")
             raise HTTPException(status_code=500, detail=f"Error crítico generando PDF: {str(e)}")
+
+@router.post("/upload-imagen")
+async def upload_imagen(file: UploadFile = File(...)):
+    """Subir imagen y devolver URL para almacenamiento"""
+    import os
+    import uuid
+    from pathlib import Path
+
+    # Crear directorio de uploads si no existe
+    upload_dir = Path("uploads")
+    upload_dir.mkdir(exist_ok=True)
+
+    # Validar tipo de archivo
+    allowed_types = ["image/jpeg", "image/png", "image/jpg", "image/webp"]
+    if file.content_type not in allowed_types:
+        raise HTTPException(status_code=400, detail="Tipo de archivo no permitido. Solo imágenes JPG, PNG, WEBP.")
+
+    # Generar nombre único para el archivo
+    file_extension = Path(file.filename).suffix.lower()
+    unique_filename = f"{uuid.uuid4()}{file_extension}"
+    file_path = upload_dir / unique_filename
+
+    try:
+        # Guardar archivo
+        with open(file_path, "wb") as buffer:
+            content = await file.read()
+            buffer.write(content)
+
+        # Devolver URL relativa (Railway maneja el serving)
+        file_url = f"/uploads/{unique_filename}"
+
+        return {
+            "filename": unique_filename,
+            "url": file_url,
+            "content_type": file.content_type,
+            "size": len(content)
+        }
+
+    except Exception as e:
+        print(f"❌ Error subiendo imagen: {e}")
+        raise HTTPException(status_code=500, detail=f"Error al subir la imagen: {str(e)}")
+
+@router.get("/uploads/{filename}")
+async def get_uploaded_file(filename: str):
+    """Servir archivos subidos"""
+    from pathlib import Path
+    file_path = Path("uploads") / filename
+
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="Archivo no encontrado")
+
+    return FileResponse(path=file_path, filename=filename)
 
 @router.get("/test-pdf")
 async def test_pdf():

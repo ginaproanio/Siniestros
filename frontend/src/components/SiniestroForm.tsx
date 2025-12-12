@@ -338,21 +338,44 @@ const SiniestroForm: React.FC = () => {
               </div>
 
               <div className="form-group">
-                <label>Imagen (URL):</label>
+                <label>Imagen:</label>
                 <input
-                  type="url"
-                  value={relato.imagen_url || ""}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setFormData((prev) => ({
-                      ...prev,
-                      relatos_asegurado: prev.relatos_asegurado?.map((r, i) =>
-                        i === index ? { ...r, imagen_url: value } : r
-                      ) || []
-                    }));
+                  type="file"
+                  accept="image/*"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      try {
+                        const formDataUpload = new FormData();
+                        formDataUpload.append('file', file);
+
+                        const response = await axios.post('/api/v1/upload-imagen', formDataUpload, {
+                          headers: { 'Content-Type': 'multipart/form-data' }
+                        });
+
+                        const imageUrl = response.data.url;
+                        setFormData((prev) => ({
+                          ...prev,
+                          relatos_asegurado: prev.relatos_asegurado?.map((r, i) =>
+                            i === index ? { ...r, imagen_url: imageUrl } : r
+                          ) || []
+                        }));
+                      } catch (error) {
+                        console.error('Error subiendo imagen:', error);
+                        alert('Error al subir la imagen. Intente nuevamente.');
+                      }
+                    }
                   }}
-                  placeholder="https://ejemplo.com/imagen.jpg"
                 />
+                {relato.imagen_url && (
+                  <div style={{ marginTop: '5px' }}>
+                    <img
+                      src={`http://localhost:8000${relato.imagen_url}`}
+                      alt={`Relato ${relato.numero_relato}`}
+                      style={{ maxWidth: '200px', maxHeight: '150px', border: '1px solid #ddd' }}
+                    />
+                  </div>
+                )}
               </div>
             </div>
           ))}

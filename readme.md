@@ -75,7 +75,7 @@ Aplicación web full-stack para generar informes profesionales de investigacione
   - Tipografía formal (Helvetica)
   - Firma digital electrónica usando certificado P12
 - **Vista previa en texto**: Permite revisar el contenido antes de generar el PDF.
-- **Campos de imagen**: URLs de imágenes para relatos e inspecciones.
+- **Upload de imágenes**: Subida automática de archivos con preview integrado.
 - **Archivos de respaldo**: Genera informes en formato TXT además del PDF.
 - **Firma digital**: Soporte para firma digital de PDFs usando certificado P12.
 

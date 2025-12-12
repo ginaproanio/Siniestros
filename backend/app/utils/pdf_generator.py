@@ -102,20 +102,38 @@ class SiniestroPDFGenerator:
         canvas.restoreState()
 
     def generate_pdf(self, siniestro: models.Siniestro, db: Session) -> bytes:
-        """Generar PDF completo del siniestro"""
-        try:
-            print(f"🔄 Iniciando generación de PDF para siniestro ID: {siniestro.id}")
-            buffer = io.BytesIO()
-            doc = SimpleDocTemplate(buffer, pagesize=letter, topMargin=1.5*inch, bottomMargin=1*inch)
-            doc.onFirstPage = self.create_header_footer
-            doc.onLaterPages = self.create_header_footer
+        """Generar PDF completo del siniestro - VERSIÓN DIAGNÓSTICA"""
+        print("🔍 INICIANDO DIAGNÓSTICO DE PDF"        print(f"� Siniestro ID: {siniestro.id}")
+        print(f"📋 Tipo siniestro: {siniestro.tipo_siniestro}")
+        print(f"📋 Compañía: {siniestro.compania_seguros}")
 
+        try:
+            # PRUEBA 1: PDF mínimo
+            print("🧪 PRUEBA 1: Creando PDF mínimo...")
+            buffer = io.BytesIO()
+            doc = SimpleDocTemplate(buffer, pagesize=letter)
             story = []
 
-            # Título principal
-            story.append(Paragraph("INFORME DE INVESTIGACIÓN DE SINIESTRO", self.title_style))
-            story.append(Spacer(1, 20))
-            print("✅ Título agregado")
+            # Solo texto básico para probar
+            story.append(Paragraph("PRUEBA PDF - SINIESTRO", self.title_style))
+            story.append(Spacer(1, 10))
+            story.append(Paragraph(f"ID: {siniestro.id}", self.normal_style))
+            story.append(Paragraph(f"Compañía: {siniestro.compania_seguros}", self.normal_style))
+
+            print("📄 Construyendo PDF mínimo...")
+            doc.build(story)
+            buffer.seek(0)
+            test_pdf = buffer.getvalue()
+            print(f"✅ PDF mínimo generado: {len(test_pdf)} bytes")
+
+            # PRUEBA 2: Agregar más contenido
+            print("🧪 PRUEBA 2: Agregando contenido adicional...")
+            buffer2 = io.BytesIO()
+            doc2 = SimpleDocTemplate(buffer2, pagesize=letter)
+            story2 = []
+
+            story2.append(Paragraph("INFORME DE INVESTIGACIÓN DE SINIESTRO", self.title_style))
+            story2.append(Spacer(1, 20))
         except Exception as e:
             print(f"Error inicializando PDF: {e}")
             # Return a minimal PDF if initialization fails
