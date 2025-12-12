@@ -1,6 +1,6 @@
 import React from 'react';
 import './App.css';
-import SiniestroForm from './components/SiniestroForm';
+import SiniestroForm from './components/SiniestroForm.tsx';
 
 function App() {
   return (
