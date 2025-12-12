@@ -12,16 +12,44 @@ router = APIRouter()
 @router.post("/", response_model=schemas.SiniestroResponse)
 async def create_siniestro(siniestro: schemas.SiniestroCreate, db: Session = Depends(get_db)):
     """Crear un nuevo siniestro"""
-    # Check if reclamo_num already exists
-    db_siniestro = db.query(models.Siniestro).filter(models.Siniestro.reclamo_num == siniestro.reclamo_num).first()
-    if db_siniestro:
-        raise HTTPException(status_code=400, detail="Número de reclamo ya existe")
+    import logging
+    logger = logging.getLogger(__name__)
 
-    db_siniestro = models.Siniestro(**siniestro.model_dump())
-    db.add(db_siniestro)
-    db.commit()
-    db.refresh(db_siniestro)
-    return db_siniestro
+    logger.info("🚀 Iniciando creación de siniestro")
+    logger.info(f"📋 Datos recibidos: {siniestro.model_dump()}")
+
+    try:
+        # Check if reclamo_num already exists
+        db_siniestro = db.query(models.Siniestro).filter(models.Siniestro.reclamo_num == siniestro.reclamo_num).first()
+        if db_siniestro:
+            logger.warning(f"⚠️ Número de reclamo ya existe: {siniestro.reclamo_num}")
+            raise HTTPException(status_code=400, detail="Número de reclamo ya existe")
+
+        logger.info("✅ Validación de reclamo_num pasada")
+
+        # Crear el siniestro
+        siniestro_data = siniestro.model_dump()
+        logger.info(f"📝 Creando siniestro con datos: {siniestro_data}")
+
+        db_siniestro = models.Siniestro(**siniestro_data)
+        db.add(db_siniestro)
+
+        logger.info("💾 Guardando en base de datos...")
+        db.commit()
+        db.refresh(db_siniestro)
+
+        logger.info(f"✅ Siniestro creado exitosamente con ID: {db_siniestro.id}")
+        return db_siniestro
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Error al crear siniestro: {e}")
+        logger.error(f"❌ Tipo de error: {type(e)}")
+        import traceback
+        logger.error(f"❌ Traceback: {traceback.format_exc()}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
 
 @router.get("/", response_model=List[schemas.SiniestroResponse])
 async def get_siniestros(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):

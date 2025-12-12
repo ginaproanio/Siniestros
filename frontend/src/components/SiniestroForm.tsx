@@ -47,13 +47,27 @@ const SiniestroForm: React.FC = () => {
     setLoading(true);
     setMessage('');
 
+    console.log('🚀 Enviando datos del formulario:', formData);
+    console.log('🌐 URL de destino:', axios.defaults.baseURL + '/api/v1/');
+
     try {
       const response = await axios.post('/api/v1/', formData);
+      console.log('✅ Respuesta del servidor:', response);
+      console.log('📋 Datos de respuesta:', response.data);
       setMessage('Siniestro creado exitosamente!');
-      console.log('Siniestro creado:', response.data);
-    } catch (error) {
-      setMessage('Error al crear el siniestro');
-      console.error('Error:', error);
+    } catch (error: any) {
+      console.error('❌ Error completo:', error);
+      console.error('❌ Respuesta del servidor:', error.response);
+      console.error('❌ Datos del error:', error.response?.data);
+      console.error('❌ Status del error:', error.response?.status);
+
+      if (error.response?.data?.detail) {
+        setMessage(`Error: ${error.response.data.detail}`);
+      } else if (error.response?.data?.message) {
+        setMessage(`Error: ${error.response.data.message}`);
+      } else {
+        setMessage('Error al crear el siniestro - revisa la consola para más detalles');
+      }
     } finally {
       setLoading(false);
     }
