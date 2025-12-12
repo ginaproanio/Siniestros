@@ -1,73 +1,141 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import axios from "axios";
+import React, { useState } from "react";
 
 // Configurar base URL para el backend - cambiar cuando se cree el servicio separado
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'https://siniestros-production.up.railway.app';
+const BACKEND_URL =
+  process.env.REACT_APP_BACKEND_URL ||
+  "https://siniestros-production.up.railway.app";
 axios.defaults.baseURL = BACKEND_URL;
 
+interface AseguradoData {
+  tipo: 'Natural' | 'Jurídica';
+  cedula?: string;
+  nombre?: string;
+  celular?: string;
+  direccion?: string;
+  parentesco?: string;
+  ruc?: string;
+  empresa?: string;
+  representante_legal?: string;
+  telefono?: string;
+}
+
+interface ConductorData {
+  nombre: string;
+  cedula: string;
+  celular?: string;
+  direccion?: string;
+  parentesco?: string;
+}
+
+interface VehiculoData {
+  placa: string;
+  marca?: string;
+  modelo?: string;
+  color?: string;
+  ano?: number;
+  serie_motor?: string;
+  chasis?: string;
+}
+
 interface FormData {
+  // Metadatos
+  numero_reclamo: string;
+  fecha_informe: string;
+  investigador_nombre: string;
+  investigador_email: string;
+  investigador_telefono: string;
+  investigador_empresa: string;
+
+  // Datos del siniestro
   compania_seguros: string;
-  reclamo_num: string;
   fecha_siniestro: string;
   direccion_siniestro: string;
-  ubicacion_geo_lat: number | null;
-  ubicacion_geo_lng: number | null;
-  danos_terceros: boolean;
-  ejecutivo_cargo: string;
+  ubicacion_gps?: string;
+  fecha_radicado: string;
+  danos_a_terceros: boolean;
+  ejecutivo_a_cargo: string;
   fecha_designacion: string;
+
+  // Datos de personas
+  asegurado?: AseguradoData;
+  conductor?: ConductorData;
+
+  // Objeto asegurado
+  vehiculo?: VehiculoData;
+
+  // Ubicación geográfica
+  ubicacion_geo_lat?: number;
+  ubicacion_geo_lng?: number;
 }
 
 const SiniestroForm: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({
-    compania_seguros: 'Zurich Seguros Ecuador S.A.',
-    reclamo_num: '25-01-VH-7079448',
-    fecha_siniestro: '2023-10-15',
-    direccion_siniestro: 'Av. Amazonas y Naciones Unidas, Quito',
+    // Metadatos
+    numero_reclamo: "25-01-VH-7079448",
+    fecha_informe: new Date().toISOString().split('T')[0],
+    investigador_nombre: "MARIA SUSANA ESPINOSA LOZADA",
+    investigador_email: "susi.espinosa@hotmail.com",
+    investigador_telefono: "0999846432",
+    investigador_empresa: "INVESTIGACIÓN Y RECUPERACIÓN VEHICULAR",
+
+    // Datos del siniestro
+    compania_seguros: "Zurich Seguros Ecuador S.A.",
+    fecha_siniestro: "2023-10-15",
+    direccion_siniestro: "Av. Amazonas y Naciones Unidas, Quito",
+    ubicacion_gps: "https://maps.app.goo.gl/example",
+    fecha_radicado: "2023-10-16",
+    danos_a_terceros: true,
+    ejecutivo_a_cargo: "Juan Pérez",
+    fecha_designacion: "2025-12-11",
+
+    // Ubicación geográfica
     ubicacion_geo_lat: -0.1807,
     ubicacion_geo_lng: -78.4678,
-    danos_terceros: true,
-    ejecutivo_cargo: 'Juan Pérez',
-    fecha_designacion: '2025-12-11',
   });
 
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
     const { name, value, type } = e.target;
     const checked = (e.target as HTMLInputElement).checked;
 
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === "checkbox" ? checked : value,
     }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setMessage('');
+    setMessage("");
 
-    console.log('🚀 Enviando datos del formulario:', formData);
-    console.log('🌐 URL de destino:', axios.defaults.baseURL + '/api/v1/');
+    console.log("🚀 Enviando datos del formulario:", formData);
+    console.log("🌐 URL de destino:", axios.defaults.baseURL + "/api/v1/");
 
     try {
-      const response = await axios.post('/api/v1/', formData);
-      console.log('✅ Respuesta del servidor:', response);
-      console.log('📋 Datos de respuesta:', response.data);
-      setMessage('Siniestro creado exitosamente!');
+      const response = await axios.post("/api/v1/", formData);
+      console.log("✅ Respuesta del servidor:", response);
+      console.log("📋 Datos de respuesta:", response.data);
+      setMessage("Siniestro creado exitosamente!");
       // Redirect to list after 2 seconds
       setTimeout(() => {
-        window.location.href = '/siniestros';
+        window.location.href = "/siniestros";
       }, 2000);
     } catch (error: any) {
-      console.error('❌ Error completo:', error);
-      console.error('❌ Respuesta del servidor:', error.response);
-      console.error('❌ Datos del error:', error.response?.data);
-      console.error('❌ Status del error:', error.response?.status);
+      console.error("❌ Error completo:", error);
+      console.error("❌ Respuesta del servidor:", error.response);
+      console.error("❌ Datos del error:", error.response?.data);
+      console.error("❌ Status del error:", error.response?.status);
 
       // Mostrar errores detallados en el formulario
-      let errorMessage = 'Error al crear el siniestro';
+      let errorMessage = "Error al crear el siniestro";
 
       if (error.response) {
         const status = error.response.status;
@@ -75,7 +143,9 @@ const SiniestroForm: React.FC = () => {
 
         switch (status) {
           case 400:
-            errorMessage = `Datos inválidos: ${data.detail || 'Verifica los campos requeridos'}`;
+            errorMessage = `Datos inválidos: ${
+              data.detail || "Verifica los campos requeridos"
+            }`;
             break;
           case 405:
             errorMessage = `Error 405: Método no permitido. URL: ${axios.defaults.baseURL}/api/v1/`;
@@ -84,13 +154,18 @@ const SiniestroForm: React.FC = () => {
             errorMessage = `Error 404: Endpoint no encontrado. Verifica la URL de la API`;
             break;
           case 500:
-            errorMessage = `Error del servidor: ${data.detail || data.message || 'Error interno'}`;
+            errorMessage = `Error del servidor: ${
+              data.detail || data.message || "Error interno"
+            }`;
             break;
           default:
-            errorMessage = `Error ${status}: ${data.detail || data.message || 'Error desconocido'}`;
+            errorMessage = `Error ${status}: ${
+              data.detail || data.message || "Error desconocido"
+            }`;
         }
       } else if (error.request) {
-        errorMessage = 'No se pudo conectar al servidor. Verifica tu conexión a internet.';
+        errorMessage =
+          "No se pudo conectar al servidor. Verifica tu conexión a internet.";
       } else {
         errorMessage = `Error de configuración: ${error.message}`;
       }
@@ -120,8 +195,8 @@ const SiniestroForm: React.FC = () => {
             <label>Número de Reclamo:</label>
             <input
               type="text"
-              name="reclamo_num"
-              value={formData.reclamo_num}
+              name="numero_reclamo"
+              value={formData.numero_reclamo}
               onChange={handleInputChange}
               required
             />
@@ -169,7 +244,7 @@ const SiniestroForm: React.FC = () => {
               type="number"
               step="0.0001"
               name="ubicacion_geo_lat"
-              value={formData.ubicacion_geo_lat || ''}
+              value={formData.ubicacion_geo_lat || ""}
               onChange={handleInputChange}
             />
           </div>
@@ -179,7 +254,7 @@ const SiniestroForm: React.FC = () => {
               type="number"
               step="0.0001"
               name="ubicacion_geo_lng"
-              value={formData.ubicacion_geo_lng || ''}
+              value={formData.ubicacion_geo_lng || ""}
               onChange={handleInputChange}
             />
           </div>
@@ -190,8 +265,8 @@ const SiniestroForm: React.FC = () => {
             <label>Ejecutivo a Cargo:</label>
             <input
               type="text"
-              name="ejecutivo_cargo"
-              value={formData.ejecutivo_cargo}
+              name="ejecutivo_a_cargo"
+              value={formData.ejecutivo_a_cargo}
               onChange={handleInputChange}
             />
           </div>
@@ -199,8 +274,8 @@ const SiniestroForm: React.FC = () => {
             <label className="checkbox-label">
               <input
                 type="checkbox"
-                name="danos_terceros"
-                checked={formData.danos_terceros}
+                name="danos_a_terceros"
+                checked={formData.danos_a_terceros}
                 onChange={handleInputChange}
               />
               Daños a Terceros
@@ -208,30 +283,50 @@ const SiniestroForm: React.FC = () => {
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-          <button type="button" onClick={() => {
-            setFormData({
-              compania_seguros: 'Zurich Seguros Ecuador S.A.',
-              reclamo_num: `TEST-${Date.now()}`,
-              fecha_siniestro: '2023-10-15',
-              direccion_siniestro: 'Av. Amazonas y Naciones Unidas, Quito',
-              ubicacion_geo_lat: -0.1807,
-              ubicacion_geo_lng: -78.4678,
-              danos_terceros: true,
-              ejecutivo_cargo: 'Juan Pérez',
-              fecha_designacion: '2025-12-11',
-            });
-          }} style={{ backgroundColor: '#6c757d' }}>
+        <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
+          <button
+            type="button"
+            onClick={() => {
+              setFormData({
+                // Metadatos
+                numero_reclamo: `TEST-${Date.now()}`,
+                fecha_informe: new Date().toISOString().split('T')[0],
+                investigador_nombre: "MARIA SUSANA ESPINOSA LOZADA",
+                investigador_email: "susi.espinosa@hotmail.com",
+                investigador_telefono: "0999846432",
+                investigador_empresa: "INVESTIGACIÓN Y RECUPERACIÓN VEHICULAR",
+
+                // Datos del siniestro
+                compania_seguros: "Zurich Seguros Ecuador S.A.",
+                fecha_siniestro: "2023-10-15",
+                direccion_siniestro: "Av. Amazonas y Naciones Unidas, Quito",
+                ubicacion_gps: "https://maps.app.goo.gl/example",
+                fecha_radicado: "2023-10-16",
+                danos_a_terceros: true,
+                ejecutivo_a_cargo: "Juan Pérez",
+                fecha_designacion: "2025-12-11",
+
+                // Ubicación geográfica
+                ubicacion_geo_lat: -0.1807,
+                ubicacion_geo_lng: -78.4678,
+              });
+            }}
+            style={{ backgroundColor: "#6c757d" }}
+          >
             Llenar con Datos de Prueba
           </button>
 
           <button type="submit" disabled={loading}>
-            {loading ? 'Guardando...' : 'Crear Siniestro'}
+            {loading ? "Guardando..." : "Crear Siniestro"}
           </button>
         </div>
 
         {message && (
-          <div className={`message ${message.includes('Error') ? 'error' : 'success'}`}>
+          <div
+            className={`message ${
+              message.includes("Error") ? "error" : "success"
+            }`}
+          >
             {message}
           </div>
         )}
