@@ -171,7 +171,7 @@ with st.form(key='form_informe'):
 
 
     # ENTREVISTA CON EL ASEGURADO
-    st.header("ENTREVISTA CON EL ASEGURADO")
+    st.markdown('<span style="background-color: yellow;">ENTREVISTA CON EL ASEGURADO</span>', unsafe_allow_html=True)
 
     relatos_asegurado = []
 
