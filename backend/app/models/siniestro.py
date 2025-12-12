@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, Text, Boolean, Float, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, Text, Boolean, Float, ForeignKey, func
 from sqlalchemy.orm import relationship
 from app.database import Base
 
@@ -8,33 +8,33 @@ class Siniestro(Base):
     id = Column(Integer, primary_key=True, index=True)
     compania_seguros = Column(String(255), nullable=False)
     reclamo_num = Column(String(100), unique=True, nullable=False)
-    fecha_siniestro = Column(DateTime, nullable=False)
+    fecha_siniestro = Column(DateTime(timezone=True), nullable=False)
     direccion_siniestro = Column(String(500), nullable=False)
     ubicacion_geo_lat = Column(Float)
     ubicacion_geo_lng = Column(Float)
     danos_terceros = Column(Boolean, default=False)
     ejecutivo_cargo = Column(String(255))
-    fecha_designacion = Column(DateTime)
+    fecha_designacion = Column(DateTime(timezone=True))
     tipo_siniestro = Column(String(100), default="Vehicular")
-    created_at = Column(DateTime, server_default="now()")
-    updated_at = Column(DateTime, server_default="now()", onupdate="now()")
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     # Relationships
-    asegurado = relationship("Asegurado", back_populates="siniestro", uselist=False)
-    conductor = relationship("Conductor", back_populates="siniestro", uselist=False)
-    objeto_asegurado = relationship("ObjetoAsegurado", back_populates="siniestro", uselist=False)
+    asegurado = relationship("Asegurado", back_populates="siniestro", uselist=False, cascade="all, delete-orphan")
+    conductor = relationship("Conductor", back_populates="siniestro", uselist=False, cascade="all, delete-orphan")
+    objeto_asegurado = relationship("ObjetoAsegurado", back_populates="siniestro", uselist=False, cascade="all, delete-orphan")
+    visita_taller = relationship("VisitaTaller", back_populates="siniestro", uselist=False, cascade="all, delete-orphan")
+    dinamica_accidente = relationship("DinamicaAccidente", back_populates="siniestro", uselist=False, cascade="all, delete-orphan")
     antecedentes = relationship("Antecedente", back_populates="siniestro")
     relatos_asegurado = relationship("RelatoAsegurado", back_populates="siniestro")
     inspecciones = relationship("Inspeccion", back_populates="siniestro")
     testigos = relationship("Testigo", back_populates="siniestro")
-    visita_taller = relationship("VisitaTaller", back_populates="siniestro", uselist=False)
-    dinamica_accidente = relationship("DinamicaAccidente", back_populates="siniestro", uselist=False)
 
 class Asegurado(Base):
     __tablename__ = "asegurados"
 
     id = Column(Integer, primary_key=True, index=True)
-    siniestro_id = Column(Integer, ForeignKey("siniestros.id"))
+    siniestro_id = Column(Integer, ForeignKey("siniestros.id"), unique=True)
     tipo = Column(String(50))  # Natural o Jurídica
     cedula = Column(String(20))
     nombre = Column(String(255))
@@ -53,7 +53,7 @@ class Conductor(Base):
     __tablename__ = "conductores"
 
     id = Column(Integer, primary_key=True, index=True)
-    siniestro_id = Column(Integer, ForeignKey("siniestros.id"))
+    siniestro_id = Column(Integer, ForeignKey("siniestros.id"), unique=True)
     nombre = Column(String(255), nullable=False)
     cedula = Column(String(20), nullable=False)
     celular = Column(String(20))
@@ -66,7 +66,7 @@ class ObjetoAsegurado(Base):
     __tablename__ = "objetos_asegurados"
 
     id = Column(Integer, primary_key=True, index=True)
-    siniestro_id = Column(Integer, ForeignKey("siniestros.id"))
+    siniestro_id = Column(Integer, ForeignKey("siniestros.id"), unique=True)
     placa = Column(String(20), nullable=False)
     marca = Column(String(100))
     modelo = Column(String(100))
@@ -123,7 +123,7 @@ class VisitaTaller(Base):
     __tablename__ = "visitas_taller"
 
     id = Column(Integer, primary_key=True, index=True)
-    siniestro_id = Column(Integer, ForeignKey("siniestros.id"))
+    siniestro_id = Column(Integer, ForeignKey("siniestros.id"), unique=True)
     descripcion = Column(Text, nullable=False)
 
     siniestro = relationship("Siniestro", back_populates="visita_taller")
@@ -132,7 +132,7 @@ class DinamicaAccidente(Base):
     __tablename__ = "dinamicas_accidente"
 
     id = Column(Integer, primary_key=True, index=True)
-    siniestro_id = Column(Integer, ForeignKey("siniestros.id"))
+    siniestro_id = Column(Integer, ForeignKey("siniestros.id"), unique=True)
     descripcion = Column(Text, nullable=False)
 
     siniestro = relationship("Siniestro", back_populates="dinamica_accidente")

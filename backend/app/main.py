@@ -8,12 +8,8 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Crear tablas en la base de datos
-try:
-    Base.metadata.create_all(bind=engine)
-    logger.info("✅ Tablas de base de datos creadas exitosamente")
-except Exception as e:
-    logger.error(f"❌ Error al crear tablas: {e}")
+# Las tablas se crean automáticamente con Alembic migrations
+# Base.metadata.create_all(bind=engine) # Eliminado para evitar conflictos con Alembic
 
 app = FastAPI(
     title="Sistema de Informes de Siniestros API",

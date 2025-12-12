@@ -6,7 +6,10 @@ import os
 # Database URL from environment variable (Railway provides DATABASE_URL)
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-if not DATABASE_URL:
+if DATABASE_URL:
+    # Convert postgres:// to postgresql+psycopg2:// for Railway/Heroku compatibility
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg2://")
+else:
     # Fallback for local development
     DATABASE_URL = "postgresql://user:password@localhost/siniestros_db"
 

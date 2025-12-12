@@ -68,7 +68,10 @@ def run_migrations_online() -> None:
     """
     # Get database URL from environment or config
     database_url = os.getenv("DATABASE_URL")
-    if not database_url:
+    if database_url:
+        # Convert postgres:// to postgresql+psycopg2:// for Railway/Heroku compatibility
+        database_url = database_url.replace("postgres://", "postgresql+psycopg2://")
+    else:
         database_url = "postgresql://user:password@localhost/siniestros_db"
 
     # Configure the context
