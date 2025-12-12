@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Switch, Route, Link } from 'react-router-dom';
 import './App.css';
 import SiniestroForm from './components/SiniestroForm';
 import SiniestrosList from './components/SiniestrosList';
+import SiniestroDetail from './components/SiniestroDetail';
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
           <Switch>
             <Route exact path="/" component={SiniestroForm} />
             <Route path="/siniestros" component={SiniestrosList} />
+            <Route path="/siniestro/:id" component={SiniestroDetail} />
           </Switch>
         </main>
       </div>
