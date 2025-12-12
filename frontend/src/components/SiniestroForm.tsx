@@ -7,36 +7,10 @@ const BACKEND_URL =
   "https://siniestros-production.up.railway.app";
 axios.defaults.baseURL = BACKEND_URL;
 
-interface AseguradoData {
-  tipo: "Natural" | "Jurídica";
-  cedula?: string;
-  nombre?: string;
-  celular?: string;
-  direccion?: string;
-  parentesco?: string;
-  ruc?: string;
-  empresa?: string;
-  representante_legal?: string;
-  telefono?: string;
-}
-
-interface ConductorData {
-  nombre: string;
-  cedula: string;
-  celular?: string;
-  direccion?: string;
-  parentesco?: string;
-}
-
-interface VehiculoData {
-  placa: string;
-  marca?: string;
-  modelo?: string;
-  color?: string;
-  ano?: number;
-  serie_motor?: string;
-  chasis?: string;
-}
+// Interfaces para futuras expansiones del formulario
+// interface AseguradoData { ... }
+// interface ConductorData { ... }
+// interface VehiculoData { ... }
 
 interface RelatoData {
   numero_relato: number;
@@ -389,27 +363,17 @@ const SiniestroForm: React.FC = () => {
             type="button"
             onClick={() => {
               setFormData({
-                // Metadatos
-                numero_reclamo: `TEST-${Date.now()}`,
-                fecha_informe: new Date().toISOString().split("T")[0],
-                investigador_nombre: "MARIA SUSANA ESPINOSA LOZADA",
-                investigador_email: "susi.espinosa@hotmail.com",
-                investigador_telefono: "0999846432",
-                investigador_empresa: "INVESTIGACIÓN Y RECUPERACIÓN VEHICULAR",
-
-                // Datos del siniestro
+                // Datos básicos del siniestro
                 compania_seguros: "Zurich Seguros Ecuador S.A.",
+                reclamo_num: `TEST-${Date.now()}`,
                 fecha_siniestro: "2023-10-15",
                 direccion_siniestro: "Av. Amazonas y Naciones Unidas, Quito",
-                ubicacion_gps: "https://maps.app.goo.gl/example",
-                fecha_radicado: "2023-10-16",
-                danos_a_terceros: true,
-                ejecutivo_a_cargo: "Juan Pérez",
-                fecha_designacion: "2025-12-11",
-
-                // Ubicación geográfica
                 ubicacion_geo_lat: -0.1807,
                 ubicacion_geo_lng: -78.4678,
+                danos_terceros: true,
+                ejecutivo_cargo: "Juan Pérez",
+                fecha_designacion: "2025-12-11",
+                tipo_siniestro: "Vehicular",
               });
             }}
             style={{ backgroundColor: "#6c757d" }}
