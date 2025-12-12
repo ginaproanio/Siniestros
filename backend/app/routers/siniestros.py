@@ -238,11 +238,7 @@ async def upload_imagen(file: UploadFile = File(...)):
         print(f"❌ Error subiendo imagen: {e}")
         raise HTTPException(status_code=500, detail=f"Error al subir la imagen: {str(e)}")
 
-@router.get("/uploads/{filename}")
-async def get_uploaded_file(filename: str):
-    """Redirigir a archivos en S3 (para compatibilidad con URLs antiguas)"""
-    # Esta función se mantiene por compatibilidad, pero ahora los archivos están en S3
-    raise HTTPException(status_code=410, detail="Los archivos ahora se almacenan en AWS S3. Use las URLs de S3 directamente.")
+
 
 @router.get("/test-pdf")
 async def test_pdf():

@@ -66,3 +66,6 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+
+# Local uploads directory (now using AWS S3)
+uploads/
