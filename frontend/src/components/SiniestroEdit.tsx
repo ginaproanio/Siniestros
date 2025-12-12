@@ -36,7 +36,7 @@ const SiniestroEdit: React.FC = () => {
     if (id) {
       fetchSiniestro();
     }
-  }, [id]);
+  }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchSiniestro = async () => {
     try {
