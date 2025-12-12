@@ -138,7 +138,7 @@ async def create_testigo(siniestro_id: int, testigo: schemas.TestigoCreate, db: 
     db.refresh(db_testigo)
     return db_testigo
 
-# PDF generation endpoint (placeholder for now)
+# PDF generation endpoint
 @router.post("/{siniestro_id}/generar-pdf")
 async def generar_pdf(siniestro_id: int, db: Session = Depends(get_db)):
     """Generar PDF del informe de siniestro"""
@@ -198,6 +198,37 @@ async def generar_pdf(siniestro_id: int, db: Session = Depends(get_db)):
         except Exception as e2:
             print(f"❌ Error generando PDF de error: {e2}")
             raise HTTPException(status_code=500, detail=f"Error crítico generando PDF: {str(e)}")
+
+@router.post("/{siniestro_id}/generar-pdf-sin-firma")
+async def generar_pdf_sin_firma(siniestro_id: int, db: Session = Depends(get_db)):
+    """Generar PDF del informe de siniestro SIN FIRMA DIGITAL (para pruebas)"""
+    try:
+        print(f"🔍 GENERANDO PDF SIN FIRMA - Siniestro ID: {siniestro_id}")
+        from app.utils.pdf_generator import generate_unsigned_pdf
+
+        # Get siniestro data first
+        siniestro = db.query(models.Siniestro).filter(models.Siniestro.id == siniestro_id).first()
+        if not siniestro:
+            raise HTTPException(status_code=404, detail="Siniestro no encontrado")
+
+        pdf_data = generate_unsigned_pdf(siniestro)
+        print(f"✅ PDF sin firma generado exitosamente: {len(pdf_data)} bytes")
+
+        from fastapi.responses import Response
+
+        return Response(
+            content=pdf_data,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f"attachment; filename=siniestro_sin_firma_{siniestro_id}.pdf",
+                "Content-Length": str(len(pdf_data))
+            }
+        )
+    except Exception as e:
+        print(f"❌ Error generando PDF sin firma: {e}")
+        import traceback
+        print(f"❌ Traceback: {traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Error generando PDF sin firma: {str(e)}")
 
 @router.post("/upload-image")
 async def upload_image(file: UploadFile = File(...)):

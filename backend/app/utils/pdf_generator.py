@@ -178,12 +178,26 @@ def generate_simple_pdf(siniestro: models.Siniestro) -> bytes:
         print(f"✅ PDF generado exitosamente: {len(pdf_data)} bytes")
         logger.info(f"PDF bytes before signing: {len(pdf_data)}")
 
+        # Validar que el PDF sea válido (debe empezar con %PDF-)
+        if not pdf_data.startswith(b'%PDF-'):
+            logger.error("PDF generado es inválido - no empieza con %PDF-")
+            raise Exception("PDF generado es corrupto - no cumple formato PDF estándar")
+
         # Intentar firmar PDF usando certificado desde S3
         cert_data = load_certificate_from_s3()
         if cert_data:
             print("🔐 Firmando PDF con certificado digital desde S3...")
-            pdf_data = sign_pdf(pdf_data, cert_data)
-            logger.info(f"PDF bytes after signing: {len(pdf_data)}")
+            try:
+                signed_pdf = sign_pdf(pdf_data, cert_data)
+                # Validar que el PDF firmado siga siendo válido
+                if signed_pdf.startswith(b'%PDF-'):
+                    pdf_data = signed_pdf
+                    logger.info(f"PDF bytes after signing: {len(pdf_data)}")
+                else:
+                    logger.warning("PDF firmado es inválido - usando PDF sin firma")
+            except Exception as e:
+                logger.error(f"Error durante firma digital: {e}")
+                logger.warning("Continuando con PDF sin firma digital")
         else:
             logger.warning("Certificado digital no encontrado en S3. PDF generado sin firma digital.")
             print("⚠️  Certificado no encontrado en S3, PDF sin firma")
@@ -201,9 +215,130 @@ def generate_simple_pdf(siniestro: models.Siniestro) -> bytes:
         return buffer.getvalue()
 
 
+def generate_unsigned_pdf(siniestro: models.Siniestro) -> bytes:
+    """Generar PDF sin firma digital para pruebas"""
+    print(f"🔄 Generando PDF SIN FIRMA para siniestro ID: {siniestro.id}")
+
+    try:
+        # Crear buffer para el PDF
+        buffer = io.BytesIO()
+
+        # Crear documento
+        doc = SimpleDocTemplate(
+            buffer,
+            pagesize=letter,
+            topMargin=1 * inch,
+            bottomMargin=1 * inch,
+            leftMargin=1 * inch,
+            rightMargin=1 * inch,
+        )
+        styles = getSampleStyleSheet()
+
+        # Estilos personalizados
+        title_style = ParagraphStyle(
+            "Title",
+            parent=styles["Heading1"],
+            fontSize=18,
+            alignment=TA_CENTER,
+            spaceAfter=30,
+            fontName="Helvetica-Bold",
+        )
+
+        normal_style = ParagraphStyle(
+            "Normal", parent=styles["Normal"], fontSize=10, fontName="Helvetica"
+        )
+
+        story = []
+
+        # Título principal
+        title = Paragraph("INFORME DE INVESTIGACIÓN DE SINIESTRO (SIN FIRMA)", title_style)
+        story.append(title)
+
+        # Tabla con datos básicos
+        data = [
+            ["Compañía de Seguros:", siniestro.compania_seguros or "No especificada"],
+            ["Número de Reclamo:", siniestro.reclamo_num or "No especificado"],
+            [
+                "Fecha del Siniestro:",
+                (
+                    siniestro.fecha_siniestro.strftime("%d/%m/%Y")
+                    if siniestro.fecha_siniestro
+                    else "No especificada"
+                ),
+            ],
+            ["Dirección:", siniestro.direccion_siniestro or "No especificada"],
+            ["Tipo de Siniestro:", siniestro.tipo_siniestro or "No especificado"],
+        ]
+
+        table = Table(data, colWidths=[2.5 * inch, 4 * inch])
+        table.setStyle(
+            TableStyle(
+                [
+                    ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
+                    ("FONTSIZE", (0, 0), (-1, -1), 10),
+                    ("GRID", (0, 0), (-1, -1), 1, colors.black),
+                    ("ALIGN", (0, 0), (0, -1), "LEFT"),
+                    ("ALIGN", (1, 0), (1, -1), "LEFT"),
+                    ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
+                ]
+            )
+        )
+        story.append(table)
+        story.append(Spacer(1, 20))
+
+        # Nota sobre falta de firma
+        nota_style = ParagraphStyle(
+            "Nota", parent=styles["Normal"], fontSize=8, textColor=colors.red
+        )
+        nota = Paragraph("NOTA: Este PDF fue generado sin firma digital para pruebas.", nota_style)
+        story.append(nota)
+        story.append(Spacer(1, 10))
+
+        # Fecha de generación
+        fecha_gen = Paragraph(
+            f"Fecha de Generación: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}",
+            normal_style,
+        )
+        story.append(fecha_gen)
+        story.append(Spacer(1, 10))
+
+        # Generar PDF
+        doc.build(story)
+
+        # Asegurar que el buffer esté completo antes de obtener datos
+        buffer.flush()
+
+        # Obtener datos del buffer
+        buffer.seek(0)
+        pdf_data = buffer.getvalue()
+
+        print(f"✅ PDF sin firma generado exitosamente: {len(pdf_data)} bytes")
+
+        # Validar que el PDF sea válido
+        if not pdf_data.startswith(b'%PDF-'):
+            logger.error("PDF generado es inválido - no empieza con %PDF-")
+            raise Exception("PDF generado es corrupto - no cumple formato PDF estándar")
+
+        return pdf_data
+
+    except Exception as e:
+        print(f"❌ Error generando PDF sin firma: {e}")
+        # PDF de error mínimo
+        buffer = io.BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=letter)
+        story = [Paragraph("ERROR: No se pudo generar el PDF sin firma", styles["Normal"])]
+        doc.build(story)
+        buffer.seek(0)
+        return buffer.getvalue()
+
+
 class SiniestroPDFGenerator:
     """Generador de PDF con firma digital"""
 
     def generate_pdf(self, siniestro: models.Siniestro, db: Session) -> bytes:
         """Generar PDF del siniestro con firma digital"""
         return generate_simple_pdf(siniestro)
+
+    def generate_unsigned_pdf(self, siniestro: models.Siniestro, db: Session) -> bytes:
+        """Generar PDF del siniestro sin firma digital (para pruebas)"""
+        return generate_unsigned_pdf(siniestro)
