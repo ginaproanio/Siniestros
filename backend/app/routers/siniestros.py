@@ -203,39 +203,35 @@ async def generar_pdf(siniestro_id: int, db: Session = Depends(get_db)):
 
 @router.post("/upload-imagen")
 async def upload_imagen(file: UploadFile = File(...)):
-    """Subir imagen y devolver URL para almacenamiento"""
-    import os
-    import uuid
-    from pathlib import Path
-
-    # Crear directorio de uploads si no existe
-    upload_dir = Path("uploads")
-    upload_dir.mkdir(exist_ok=True)
-
+    """Subir imagen a AWS S3 y devolver URL para almacenamiento"""
     # Validar tipo de archivo
     allowed_types = ["image/jpeg", "image/png", "image/jpg", "image/webp"]
     if file.content_type not in allowed_types:
         raise HTTPException(status_code=400, detail="Tipo de archivo no permitido. Solo imágenes JPG, PNG, WEBP.")
 
-    # Generar nombre único para el archivo
-    file_extension = Path(file.filename).suffix.lower()
-    unique_filename = f"{uuid.uuid4()}{file_extension}"
-    file_path = upload_dir / unique_filename
-
     try:
-        # Guardar archivo
-        with open(file_path, "wb") as buffer:
-            content = await file.read()
-            buffer.write(content)
+        # Leer contenido del archivo
+        content = await file.read()
 
-        # Devolver URL relativa (Railway maneja el serving)
-        file_url = f"/uploads/{unique_filename}"
+        # Importar y usar servicio S3
+        from app.services.s3_service import s3_service
+
+        # Subir a S3
+        s3_url = s3_service.upload_file(
+            file_content=content,
+            filename=file.filename,
+            content_type=file.content_type
+        )
+
+        if not s3_url:
+            raise HTTPException(status_code=500, detail="Error al subir archivo a S3")
 
         return {
-            "filename": unique_filename,
-            "url": file_url,
+            "filename": file.filename,
+            "url": s3_url,
             "content_type": file.content_type,
-            "size": len(content)
+            "size": len(content),
+            "s3_url": s3_url
         }
 
     except Exception as e:
@@ -244,14 +240,9 @@ async def upload_imagen(file: UploadFile = File(...)):
 
 @router.get("/uploads/{filename}")
 async def get_uploaded_file(filename: str):
-    """Servir archivos subidos"""
-    from pathlib import Path
-    file_path = Path("uploads") / filename
-
-    if not file_path.exists():
-        raise HTTPException(status_code=404, detail="Archivo no encontrado")
-
-    return FileResponse(path=file_path, filename=filename)
+    """Redirigir a archivos en S3 (para compatibilidad con URLs antiguas)"""
+    # Esta función se mantiene por compatibilidad, pero ahora los archivos están en S3
+    raise HTTPException(status_code=410, detail="Los archivos ahora se almacenan en AWS S3. Use las URLs de S3 directamente.")
 
 @router.get("/test-pdf")
 async def test_pdf():
