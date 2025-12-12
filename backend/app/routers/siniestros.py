@@ -146,8 +146,14 @@ async def generar_pdf(siniestro_id: int, db: Session = Depends(get_db)):
     """Generar PDF del informe de siniestro"""
     try:
         print(f"🔍 INICIANDO GENERACIÓN PDF - Siniestro ID: {siniestro_id}")
-        from app.utils.pdf_generator import generate_siniestro_pdf
-        pdf_data = generate_siniestro_pdf(siniestro_id, db)
+        from app.utils.pdf_generator import generate_simple_pdf
+
+        # Get siniestro data first
+        siniestro = db.query(models.Siniestro).filter(models.Siniestro.id == siniestro_id).first()
+        if not siniestro:
+            raise HTTPException(status_code=404, detail="Siniestro no encontrado")
+
+        pdf_data = generate_simple_pdf(siniestro)
         print(f"✅ PDF generado exitosamente: {len(pdf_data)} bytes")
 
         from fastapi.responses import Response
