@@ -53,6 +53,12 @@ const SiniestroDetail: React.FC = () => {
       <div style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
         <button onClick={() => window.history.back()}>← Volver</button>
         <button
+          onClick={() => window.location.href = `/siniestro/${siniestro.id}/editar`}
+          style={{ backgroundColor: '#ffc107' }}
+        >
+          ✏️ Editar
+        </button>
+        <button
           onClick={async () => {
             try {
               const response = await fetch(`/api/v1/${siniestro.id}/generar-pdf`, {
