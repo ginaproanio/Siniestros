@@ -12,3 +12,4 @@ requests==2.32.3
 endesive
 cryptography
 asn1crypto
+pypdf>=3.0.0
