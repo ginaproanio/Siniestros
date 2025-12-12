@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 
-interface SiniestroDetail {
+interface SiniestroData {
   id: number;
   compania_seguros: string;
   reclamo_num: string;
@@ -13,17 +13,13 @@ interface SiniestroDetail {
 
 const SiniestroDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const [siniestro, setSiniestro] = useState<SiniestroDetail | null>(null);
+  const [siniestro, setSiniestro] = useState<SiniestroData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (id) {
-      fetchSiniestroDetail();
-    }
-  }, [id]);
-
   const fetchSiniestroDetail = async () => {
+    if (!id) return;
+
     try {
       setLoading(true);
       const response = await axios.get(`/api/v1/${id}`);
@@ -35,6 +31,10 @@ const SiniestroDetail: React.FC = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchSiniestroDetail();
+  }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (loading) return <div>Cargando detalles...</div>;
   if (error) return <div className="error">{error}</div>;
