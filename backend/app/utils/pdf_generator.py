@@ -1,26 +1,46 @@
 import io
 import os
+import logging
 from datetime import datetime
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib import colors
-from reportlab.lib.enums import TA_CENTER, TA_LEFT
+from reportlab.lib.enums import TA_CENTER
 from sqlalchemy.orm import Session
 from app import models
 from endesive.pdf import cms
-import hashlib
+import boto3
+
+logger = logging.getLogger(__name__)
 
 
-def sign_pdf(pdf_data: bytes, certificate_path: str, password: str = None) -> bytes:
+def load_certificate_from_s3(cert_key: str = "certificates/maria_susana_espinosa_lozada.p12") -> bytes:
+    """Cargar certificado desde S3 para evitar problemas con filesystem efímero de Railway"""
+    try:
+        # Importar configuración de S3
+        from app.services.s3_service import get_s3_client, S3_BUCKET_NAME
+
+        s3_client = get_s3_client()
+        response = s3_client.get_object(Bucket=S3_BUCKET_NAME, Key=cert_key)
+        cert_data = response['Body'].read()
+
+        logger.info(f"Certificado cargado desde S3: {len(cert_data)} bytes")
+        return cert_data
+
+    except Exception as e:
+        logger.warning(f"No se pudo cargar certificado desde S3: {e}")
+        return None
+
+
+def sign_pdf(pdf_data: bytes, certificate_data: bytes = None, password: str = None) -> bytes:
     """Firmar PDF digitalmente usando certificado P12"""
     try:
-        print(f"🔐 Firmando PDF con certificado: {certificate_path}")
+        print(f"🔐 Firmando PDF con certificado digital")
 
-        # Leer certificado
-        with open(certificate_path, "rb") as f:
-            p12_data = f.read()
+        # Usar datos del certificado proporcionados
+        p12_data = certificate_data
 
         # Extraer clave privada y certificado
         from cryptography.hazmat.primitives import serialization
@@ -148,24 +168,25 @@ def generate_simple_pdf(siniestro: models.Siniestro) -> bytes:
         # Generar PDF
         doc.build(story)
 
+        # Asegurar que el buffer esté completo antes de obtener datos
+        buffer.flush()
+
         # Obtener datos del buffer
         buffer.seek(0)
         pdf_data = buffer.getvalue()
 
         print(f"✅ PDF generado exitosamente: {len(pdf_data)} bytes")
+        logger.info(f"PDF bytes before signing: {len(pdf_data)}")
 
-        # Firmar PDF si existe certificado
-        cert_path = os.path.join(
-            os.path.dirname(__file__), "..", "..", "maria_susana_espinosa_lozada.p12"
-        )
-        if os.path.exists(cert_path):
-            print("🔐 Firmando PDF con certificado digital...")
-            pdf_data = sign_pdf(pdf_data, cert_path)
+        # Intentar firmar PDF usando certificado desde S3
+        cert_data = load_certificate_from_s3()
+        if cert_data:
+            print("🔐 Firmando PDF con certificado digital desde S3...")
+            pdf_data = sign_pdf(pdf_data, cert_data)
+            logger.info(f"PDF bytes after signing: {len(pdf_data)}")
         else:
-            import logging
-            logger = logging.getLogger(__name__)
-            logger.warning("Certificado digital no encontrado en Railway. PDF generado sin firma digital.")
-            print("⚠️  Certificado no encontrado, PDF sin firma")
+            logger.warning("Certificado digital no encontrado en S3. PDF generado sin firma digital.")
+            print("⚠️  Certificado no encontrado en S3, PDF sin firma")
 
         return pdf_data
 
