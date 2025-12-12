@@ -67,44 +67,44 @@ const SiniestroEdit: React.FC = () => {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
+    const fetchSiniestro = async () => {
+      try {
+        const response = await axios.get(`/api/v1/${id}`);
+        const data = response.data;
+
+        console.log("Datos cargados del siniestro:", data);
+
+        setFormData({
+          // Datos básicos
+          compania_seguros: data.compania_seguros || "Zurich Seguros Ecuador S.A.",
+          reclamo_num: data.reclamo_num || "",
+          fecha_siniestro: data.fecha_siniestro ? new Date(data.fecha_siniestro).toISOString().split('T')[0] : "",
+          direccion_siniestro: data.direccion_siniestro || "",
+          ubicacion_geo_lat: data.ubicacion_geo_lat || undefined,
+          ubicacion_geo_lng: data.ubicacion_geo_lng || undefined,
+          danos_terceros: data.danos_terceros || false,
+          ejecutivo_cargo: data.ejecutivo_cargo || "",
+          fecha_designacion: data.fecha_designacion ? new Date(data.fecha_designacion).toISOString().split('T')[0] : "",
+          tipo_siniestro: data.tipo_siniestro || "Vehicular",
+
+          // Secciones dinámicas
+          antecedentes: data.antecedentes || [],
+          relatos_asegurado: data.relatos_asegurado || [],
+          inspecciones: data.inspecciones || [],
+          testigos: data.testigos || [],
+        });
+      } catch (error) {
+        console.error('Error loading siniestro:', error);
+        setMessage('Error al cargar los datos del siniestro');
+      } finally {
+        setLoading(false);
+      }
+    };
+
     if (id) {
       fetchSiniestro();
     }
   }, [id]);
-
-  const fetchSiniestro = async () => {
-    try {
-      const response = await axios.get(`/api/v1/${id}`);
-      const data = response.data;
-
-      console.log("Datos cargados del siniestro:", data);
-
-      setFormData({
-        // Datos básicos
-        compania_seguros: data.compania_seguros || "Zurich Seguros Ecuador S.A.",
-        reclamo_num: data.reclamo_num || "",
-        fecha_siniestro: data.fecha_siniestro ? new Date(data.fecha_siniestro).toISOString().split('T')[0] : "",
-        direccion_siniestro: data.direccion_siniestro || "",
-        ubicacion_geo_lat: data.ubicacion_geo_lat || undefined,
-        ubicacion_geo_lng: data.ubicacion_geo_lng || undefined,
-        danos_terceros: data.danos_terceros || false,
-        ejecutivo_cargo: data.ejecutivo_cargo || "",
-        fecha_designacion: data.fecha_designacion ? new Date(data.fecha_designacion).toISOString().split('T')[0] : "",
-        tipo_siniestro: data.tipo_siniestro || "Vehicular",
-
-        // Secciones dinámicas
-        antecedentes: data.antecedentes || [],
-        relatos_asegurado: data.relatos_asegurado || [],
-        inspecciones: data.inspecciones || [],
-        testigos: data.testigos || [],
-      });
-    } catch (error) {
-      console.error('Error loading siniestro:', error);
-      setMessage('Error al cargar los datos del siniestro');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleInputChange = (
     e: React.ChangeEvent<
