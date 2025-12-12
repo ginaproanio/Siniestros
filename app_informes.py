@@ -46,6 +46,8 @@ if 'num_relatos_inspec' not in st.session_state:
 if 'num_relatos_testigos' not in st.session_state:
     st.session_state.num_relatos_testigos = 1
 
+
+
 # Sección: ASEGURADO (fuera del formulario para actualización dinámica)
 st.header("Asegurado")
 tipo_asegurado = st.radio("Tipo de Asegurado", options=["Persona Natural", "Persona Jurídica"], index=1, key="tipo_asegurado")
