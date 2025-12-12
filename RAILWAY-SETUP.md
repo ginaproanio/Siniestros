@@ -12,7 +12,8 @@ Railway está sirviendo el frontend React en lugar del backend FastAPI, causando
 4. **Elige el repositorio** "ginaproanio/Siniestros"
 5. **En "Root Directory"** escribe: `backend`
 6. **Deja la rama en "main"**
-7. **Railway creará** `https://backend-siniestros-[hash].up.railway.app/`
+7. **Railway detectará automáticamente** `backend/Procfile` y `backend/requirements.txt`
+8. **Railway creará** `https://backend-siniestros-[hash].up.railway.app/`
 
 ### Paso 2: Configurar Variable de Entorno
 1. **En el servicio backend** (el nuevo)
