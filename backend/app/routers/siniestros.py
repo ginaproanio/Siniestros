@@ -147,17 +147,16 @@ async def generar_pdf(siniestro_id: int, db: Session = Depends(get_db)):
         from app.utils.pdf_generator import generate_siniestro_pdf
         pdf_data = generate_siniestro_pdf(siniestro_id, db)
 
-        from fastapi.responses import StreamingResponse
-        import io
+        from fastapi.responses import Response
 
-        # Crear respuesta con el PDF
-        def iter_pdf():
-            yield pdf_data
-
-        return StreamingResponse(
-            iter_pdf(),
+        return Response(
+            content=pdf_data,
             media_type="application/pdf",
-            headers={"Content-Disposition": f"attachment; filename=siniestro_{siniestro_id}.pdf"}
+            headers={
+                "Content-Disposition": f"attachment; filename=siniestro_{siniestro_id}.pdf",
+                "Content-Length": str(len(pdf_data))
+            }
         )
     except Exception as e:
+        print(f"Error generando PDF: {e}")
         raise HTTPException(status_code=500, detail=f"Error generando PDF: {str(e)}")
