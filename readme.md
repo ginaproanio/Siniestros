@@ -6,16 +6,18 @@ Aplicación web full-stack para generar informes profesionales de investigacione
 ### ✅ Funcionalidades Implementadas
 - **Formulario CRUD completo** para gestionar informes de investigación de siniestros
 - **Edición de Informes**: Buscar informes existentes y modificarlos
-- **Generación de PDFs confiable** (sin archivos dañados)
-- **Estructura de datos completa** basada en análisis del PDF de ejemplo
-- **Navegación completa**: Crear → Listar → Ver Detalles → Editar → Generar PDF
+- **Secciones dinámicas**: Antecedentes + Entrevistas con relatos numerados e imágenes
+- **Navegación completa**: Crear → Listar → Ver Detalles → Editar
+- **Backend FastAPI** con PostgreSQL y Railway deployment
+- **Frontend React** con secciones dinámicas y diseño responsivo
 
 ### 🚧 Funcionalidades Pendientes
+- **Generación de PDFs** (diagnosticada, pendiente de resolución de corrupción)
 - **Firma digital electrónica** con certificado P12
-- **Búsqueda avanzada** por número de reclamo, cédula, etc.
-- **Campos faltantes** del formulario (ver especificación detallada abajo)
-- **Upload de archivos** e imágenes
-- **Versionado de informes**
+- **Búsqueda avanzada** por filtros
+- **Campos adicionales**: Asegurado, Conductor, Vehículo, Testigos, Inspecciones
+- **Upload real de archivos** (actualmente URLs)
+- **Dashboard administrativo**
 
 **Repositorio**: https://github.com/ginaproanio/Siniestros
 **Rama**: main
@@ -73,7 +75,7 @@ Aplicación web full-stack para generar informes profesionales de investigacione
   - Tipografía formal (Helvetica)
   - Firma digital electrónica usando certificado P12
 - **Vista previa en texto**: Permite revisar el contenido antes de generar el PDF.
-- **Upload de evidencias**: Subida de fotos y documentos complementarios.
+- **Campos de imagen**: URLs de imágenes para relatos e inspecciones.
 - **Archivos de respaldo**: Genera informes en formato TXT además del PDF.
 - **Firma digital**: Soporte para firma digital de PDFs usando certificado P12.
 
