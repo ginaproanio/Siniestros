@@ -1,4 +1,4 @@
-/* Corporate Color Palette */
+/* Corporate Color Palette - From DESIGN.md */
 :root {
   --color-negro-corporativo: #0f172a;
   --color-rojo-acento: #dc2626;
@@ -8,6 +8,17 @@
   --color-negro-hover: #1e293b;
   --color-rojo-hover: #b91c1c;
   --color-gris-hover: #64748b;
+
+  /* Espaciado base (4px) */
+  --spacing-xs: 0.25rem;  /* 4px */
+  --spacing-sm: 0.5rem;   /* 8px */
+  --spacing-md: 0.75rem;  /* 12px */
+  --spacing-lg: 1rem;     /* 16px */
+  --spacing-xl: 1.25rem;  /* 20px */
+  --spacing-2xl: 1.5rem;  /* 24px */
+
+  /* Bordes redondeados */
+  --border-radius: 0.25rem; /* 4px */
 }
 
 .App {
@@ -164,6 +175,113 @@ button[type="button"]:nth-child(2):hover {
   border: 1px solid #f5c6cb;
 }
 
+/* === SECCIONES DINÁMICAS - Siguiendo DESIGN.md === */
+
+/* Contenedores de secciones */
+.section-container {
+  margin-bottom: var(--spacing-2xl);
+  padding: var(--spacing-xl);
+  background-color: #f8f9fa;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--color-gris-borde);
+}
+
+.section-header {
+  color: var(--color-negro-corporativo);
+  margin-bottom: var(--spacing-md);
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* Items dinámicos (relatos, inspecciones, testigos) */
+.dynamic-item {
+  margin-bottom: var(--spacing-xl);
+  padding: var(--spacing-md);
+  background-color: var(--color-blanco-puro);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--color-gris-borde);
+}
+
+.dynamic-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-sm);
+}
+
+.dynamic-item-title {
+  color: var(--color-negro-corporativo);
+  margin: 0;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+/* Botones de acción */
+.btn-add {
+  background-color: #28a745; /* Verde para agregar */
+  color: var(--color-blanco-puro);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border: none;
+  border-radius: var(--border-radius);
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-bottom: var(--spacing-sm);
+}
+
+.btn-add:hover {
+  background-color: #218838;
+}
+
+.btn-delete {
+  background-color: var(--color-rojo-acento);
+  color: var(--color-blanco-puro);
+  border: none;
+  border-radius: var(--border-radius);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  cursor: pointer;
+  font-size: 12px;
+  transition: background-color 0.3s;
+}
+
+.btn-delete:hover {
+  background-color: var(--color-rojo-hover);
+}
+
+.btn-secondary {
+  background-color: var(--color-gris-texto);
+  color: var(--color-blanco-puro);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border: none;
+  border-radius: var(--border-radius);
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-gris-hover);
+}
+
+/* Preview de imágenes */
+.image-preview {
+  margin-top: var(--spacing-xs);
+  max-width: 200px;
+  max-height: 150px;
+  border: 1px solid var(--color-gris-borde);
+  border-radius: var(--border-radius);
+}
+
+/* Área de acciones del formulario */
+.form-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-xl);
+  flex-wrap: wrap;
+}
+
+/* === RESPONSIVE DESIGN - Siguiendo DESIGN.md === */
+
 @media (max-width: 768px) {
   .form-row {
     flex-direction: column;
@@ -171,10 +289,45 @@ button[type="button"]:nth-child(2):hover {
   }
 
   .App {
-    padding: 10px;
+    padding: var(--spacing-sm);
   }
 
   .form-container {
-    padding: 20px;
+    padding: var(--spacing-xl);
+  }
+
+  .section-container {
+    padding: var(--spacing-lg);
+  }
+
+  .dynamic-item {
+    padding: var(--spacing-sm);
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .btn-add,
+  .btn-secondary {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .App-header {
+    padding: var(--spacing-lg);
+  }
+
+  .App-header h1 {
+    font-size: 2rem;
+  }
+
+  .form-container {
+    padding: var(--spacing-lg);
+  }
+
+  .section-container {
+    padding: var(--spacing-md);
   }
 }

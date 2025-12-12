@@ -258,18 +258,22 @@ const SiniestroForm: React.FC = () => {
         </div>
 
         {/* ANTECEDENTES */}
-        <div style={{ marginBottom: '30px', padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
-          <h3 style={{ color: '#0f172a', marginBottom: '15px' }}>📋 Antecedentes</h3>
+        <div className="section-container">
+          <h3 className="section-header">📋 Antecedentes</h3>
           <div className="form-group">
             <label>Descripción de los antecedentes:</label>
             <textarea
               name="antecedentes_descripcion"
-              value={(formData.antecedentes && formData.antecedentes[0]?.descripcion) || ""}
+              value={
+                (formData.antecedentes &&
+                  formData.antecedentes[0]?.descripcion) ||
+                ""
+              }
               onChange={(e) => {
                 const value = e.target.value;
                 setFormData((prev) => ({
                   ...prev,
-                  antecedentes: [{ descripcion: value }]
+                  antecedentes: [{ descripcion: value }],
                 }));
               }}
               rows={4}
@@ -279,41 +283,43 @@ const SiniestroForm: React.FC = () => {
         </div>
 
         {/* ENTREVISTA CON EL ASEGURADO */}
-        <div style={{ marginBottom: '30px', padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
-          <h3 style={{ color: '#0f172a', marginBottom: '15px' }}>🎤 Entrevista con el Asegurado</h3>
-          <div style={{ marginBottom: '15px' }}>
-            <button
-              type="button"
-              onClick={() => {
-                const currentRelatos = formData.relatos_asegurado || [];
-                const nextNumero = currentRelatos.length + 1;
-                setFormData((prev) => ({
-                  ...prev,
-                  relatos_asegurado: [
-                    ...currentRelatos,
-                    { numero_relato: nextNumero, texto: "", imagen_url: "" }
-                  ]
-                }));
-              }}
-              style={{ backgroundColor: '#28a745', marginBottom: '10px' }}
-            >
-              ➕ Agregar Relato
-            </button>
-          </div>
+        <div className="section-container">
+          <h3 className="section-header">🎤 Entrevista con el Asegurado</h3>
+          <button
+            type="button"
+            className="btn-add"
+            onClick={() => {
+              const currentRelatos = formData.relatos_asegurado || [];
+              const nextNumero = currentRelatos.length + 1;
+              setFormData((prev) => ({
+                ...prev,
+                relatos_asegurado: [
+                  ...currentRelatos,
+                  { numero_relato: nextNumero, texto: "", imagen_url: "" },
+                ],
+              }));
+            }}
+          >
+            ➕ Agregar Relato
+          </button>
 
           {formData.relatos_asegurado?.map((relato, index) => (
-            <div key={index} style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#ffffff', borderRadius: '5px', border: '1px solid #e2e8f0' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                <h4 style={{ color: '#0f172a', margin: 0 }}>Relato {relato.numero_relato}</h4>
+            <div key={index} className="dynamic-item">
+              <div className="dynamic-item-header">
+                <h4 className="dynamic-item-title">
+                  Relato {relato.numero_relato}
+                </h4>
                 <button
                   type="button"
+                  className="btn-delete"
                   onClick={() => {
                     setFormData((prev) => ({
                       ...prev,
-                      relatos_asegurado: prev.relatos_asegurado?.filter((_, i) => i !== index) || []
+                      relatos_asegurado:
+                        prev.relatos_asegurado?.filter((_, i) => i !== index) ||
+                        [],
                     }));
                   }}
-                  style={{ backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '3px', padding: '5px 10px', cursor: 'pointer' }}
                 >
                   ❌ Eliminar
                 </button>
@@ -327,9 +333,10 @@ const SiniestroForm: React.FC = () => {
                     const value = e.target.value;
                     setFormData((prev) => ({
                       ...prev,
-                      relatos_asegurado: prev.relatos_asegurado?.map((r, i) =>
-                        i === index ? { ...r, texto: value } : r
-                      ) || []
+                      relatos_asegurado:
+                        prev.relatos_asegurado?.map((r, i) =>
+                          i === index ? { ...r, texto: value } : r
+                        ) || [],
                     }));
                   }}
                   rows={3}
@@ -347,32 +354,37 @@ const SiniestroForm: React.FC = () => {
                     if (file) {
                       try {
                         const formDataUpload = new FormData();
-                        formDataUpload.append('file', file);
+                        formDataUpload.append("file", file);
 
-                        const response = await axios.post('/api/v1/upload-imagen', formDataUpload, {
-                          headers: { 'Content-Type': 'multipart/form-data' }
-                        });
+                        const response = await axios.post(
+                          "/api/v1/upload-imagen",
+                          formDataUpload,
+                          {
+                            headers: { "Content-Type": "multipart/form-data" },
+                          }
+                        );
 
                         const imageUrl = response.data.url;
                         setFormData((prev) => ({
                           ...prev,
-                          relatos_asegurado: prev.relatos_asegurado?.map((r, i) =>
-                            i === index ? { ...r, imagen_url: imageUrl } : r
-                          ) || []
+                          relatos_asegurado:
+                            prev.relatos_asegurado?.map((r, i) =>
+                              i === index ? { ...r, imagen_url: imageUrl } : r
+                            ) || [],
                         }));
                       } catch (error) {
-                        console.error('Error subiendo imagen:', error);
-                        alert('Error al subir la imagen. Intente nuevamente.');
+                        console.error("Error subiendo imagen:", error);
+                        alert("Error al subir la imagen. Intente nuevamente.");
                       }
                     }
                   }}
                 />
                 {relato.imagen_url && (
-                  <div style={{ marginTop: '5px' }}>
+                  <div>
                     <img
                       src={`http://localhost:8000${relato.imagen_url}`}
                       alt={`Relato ${relato.numero_relato}`}
-                      style={{ maxWidth: '200px', maxHeight: '150px', border: '1px solid #ddd' }}
+                      className="image-preview"
                     />
                   </div>
                 )}
@@ -382,9 +394,18 @@ const SiniestroForm: React.FC = () => {
         </div>
 
         {/* INSPECCIÓN DEL LUGAR */}
-        <div style={{ marginBottom: '30px', padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
-          <h3 style={{ color: '#0f172a', marginBottom: '15px' }}>🔍 Inspección del Lugar</h3>
-          <div style={{ marginBottom: '15px' }}>
+        <div
+          style={{
+            marginBottom: "30px",
+            padding: "20px",
+            backgroundColor: "#f8f9fa",
+            borderRadius: "8px",
+          }}
+        >
+          <h3 style={{ color: "#0f172a", marginBottom: "15px" }}>
+            🔍 Inspección del Lugar
+          </h3>
+          <div style={{ marginBottom: "15px" }}>
             <button
               type="button"
               onClick={() => {
@@ -394,29 +415,59 @@ const SiniestroForm: React.FC = () => {
                   ...prev,
                   inspecciones: [
                     ...currentInspecciones,
-                    { numero_inspeccion: nextNumero, descripcion: "", imagen_url: "" }
-                  ]
+                    {
+                      numero_inspeccion: nextNumero,
+                      descripcion: "",
+                      imagen_url: "",
+                    },
+                  ],
                 }));
               }}
-              style={{ backgroundColor: '#28a745', marginBottom: '10px' }}
+              style={{ backgroundColor: "#28a745", marginBottom: "10px" }}
             >
               ➕ Agregar Inspección
             </button>
           </div>
 
           {formData.inspecciones?.map((inspeccion, index) => (
-            <div key={index} style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#ffffff', borderRadius: '5px', border: '1px solid #e2e8f0' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                <h4 style={{ color: '#0f172a', margin: 0 }}>Inspección {inspeccion.numero_inspeccion}</h4>
+            <div
+              key={index}
+              style={{
+                marginBottom: "20px",
+                padding: "15px",
+                backgroundColor: "#ffffff",
+                borderRadius: "5px",
+                border: "1px solid #e2e8f0",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: "10px",
+                }}
+              >
+                <h4 style={{ color: "#0f172a", margin: 0 }}>
+                  Inspección {inspeccion.numero_inspeccion}
+                </h4>
                 <button
                   type="button"
                   onClick={() => {
                     setFormData((prev) => ({
                       ...prev,
-                      inspecciones: prev.inspecciones?.filter((_, i) => i !== index) || []
+                      inspecciones:
+                        prev.inspecciones?.filter((_, i) => i !== index) || [],
                     }));
                   }}
-                  style={{ backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '3px', padding: '5px 10px', cursor: 'pointer' }}
+                  style={{
+                    backgroundColor: "#dc3545",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "3px",
+                    padding: "5px 10px",
+                    cursor: "pointer",
+                  }}
                 >
                   ❌ Eliminar
                 </button>
@@ -430,9 +481,10 @@ const SiniestroForm: React.FC = () => {
                     const value = e.target.value;
                     setFormData((prev) => ({
                       ...prev,
-                      inspecciones: prev.inspecciones?.map((insp, i) =>
-                        i === index ? { ...insp, descripcion: value } : insp
-                      ) || []
+                      inspecciones:
+                        prev.inspecciones?.map((insp, i) =>
+                          i === index ? { ...insp, descripcion: value } : insp
+                        ) || [],
                     }));
                   }}
                   rows={3}
@@ -450,32 +502,43 @@ const SiniestroForm: React.FC = () => {
                     if (file) {
                       try {
                         const formDataUpload = new FormData();
-                        formDataUpload.append('file', file);
+                        formDataUpload.append("file", file);
 
-                        const response = await axios.post('/api/v1/upload-imagen', formDataUpload, {
-                          headers: { 'Content-Type': 'multipart/form-data' }
-                        });
+                        const response = await axios.post(
+                          "/api/v1/upload-imagen",
+                          formDataUpload,
+                          {
+                            headers: { "Content-Type": "multipart/form-data" },
+                          }
+                        );
 
                         const imageUrl = response.data.url;
                         setFormData((prev) => ({
                           ...prev,
-                          inspecciones: prev.inspecciones?.map((insp, i) =>
-                            i === index ? { ...insp, imagen_url: imageUrl } : insp
-                          ) || []
+                          inspecciones:
+                            prev.inspecciones?.map((insp, i) =>
+                              i === index
+                                ? { ...insp, imagen_url: imageUrl }
+                                : insp
+                            ) || [],
                         }));
                       } catch (error) {
-                        console.error('Error subiendo imagen:', error);
-                        alert('Error al subir la imagen. Intente nuevamente.');
+                        console.error("Error subiendo imagen:", error);
+                        alert("Error al subir la imagen. Intente nuevamente.");
                       }
                     }
                   }}
                 />
                 {inspeccion.imagen_url && (
-                  <div style={{ marginTop: '5px' }}>
+                  <div style={{ marginTop: "5px" }}>
                     <img
                       src={`http://localhost:8000${inspeccion.imagen_url}`}
                       alt={`Inspección ${inspeccion.numero_inspeccion}`}
-                      style={{ maxWidth: '200px', maxHeight: '150px', border: '1px solid #ddd' }}
+                      style={{
+                        maxWidth: "200px",
+                        maxHeight: "150px",
+                        border: "1px solid #ddd",
+                      }}
                     />
                   </div>
                 )}
@@ -485,9 +548,18 @@ const SiniestroForm: React.FC = () => {
         </div>
 
         {/* TESTIGOS */}
-        <div style={{ marginBottom: '30px', padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
-          <h3 style={{ color: '#0f172a', marginBottom: '15px' }}>👥 Testigos</h3>
-          <div style={{ marginBottom: '15px' }}>
+        <div
+          style={{
+            marginBottom: "30px",
+            padding: "20px",
+            backgroundColor: "#f8f9fa",
+            borderRadius: "8px",
+          }}
+        >
+          <h3 style={{ color: "#0f172a", marginBottom: "15px" }}>
+            👥 Testigos
+          </h3>
+          <div style={{ marginBottom: "15px" }}>
             <button
               type="button"
               onClick={() => {
@@ -497,29 +569,55 @@ const SiniestroForm: React.FC = () => {
                   ...prev,
                   testigos: [
                     ...currentTestigos,
-                    { numero_relato: nextNumero, texto: "", imagen_url: "" }
-                  ]
+                    { numero_relato: nextNumero, texto: "", imagen_url: "" },
+                  ],
                 }));
               }}
-              style={{ backgroundColor: '#28a745', marginBottom: '10px' }}
+              style={{ backgroundColor: "#28a745", marginBottom: "10px" }}
             >
               ➕ Agregar Testigo
             </button>
           </div>
 
           {formData.testigos?.map((testigo, index) => (
-            <div key={index} style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#ffffff', borderRadius: '5px', border: '1px solid #e2e8f0' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                <h4 style={{ color: '#0f172a', margin: 0 }}>Testigo {testigo.numero_relato}</h4>
+            <div
+              key={index}
+              style={{
+                marginBottom: "20px",
+                padding: "15px",
+                backgroundColor: "#ffffff",
+                borderRadius: "5px",
+                border: "1px solid #e2e8f0",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: "10px",
+                }}
+              >
+                <h4 style={{ color: "#0f172a", margin: 0 }}>
+                  Testigo {testigo.numero_relato}
+                </h4>
                 <button
                   type="button"
                   onClick={() => {
                     setFormData((prev) => ({
                       ...prev,
-                      testigos: prev.testigos?.filter((_, i) => i !== index) || []
+                      testigos:
+                        prev.testigos?.filter((_, i) => i !== index) || [],
                     }));
                   }}
-                  style={{ backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '3px', padding: '5px 10px', cursor: 'pointer' }}
+                  style={{
+                    backgroundColor: "#dc3545",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "3px",
+                    padding: "5px 10px",
+                    cursor: "pointer",
+                  }}
                 >
                   ❌ Eliminar
                 </button>
@@ -533,9 +631,10 @@ const SiniestroForm: React.FC = () => {
                     const value = e.target.value;
                     setFormData((prev) => ({
                       ...prev,
-                      testigos: prev.testigos?.map((test, i) =>
-                        i === index ? { ...test, texto: value } : test
-                      ) || []
+                      testigos:
+                        prev.testigos?.map((test, i) =>
+                          i === index ? { ...test, texto: value } : test
+                        ) || [],
                     }));
                   }}
                   rows={3}
@@ -553,32 +652,43 @@ const SiniestroForm: React.FC = () => {
                     if (file) {
                       try {
                         const formDataUpload = new FormData();
-                        formDataUpload.append('file', file);
+                        formDataUpload.append("file", file);
 
-                        const response = await axios.post('/api/v1/upload-imagen', formDataUpload, {
-                          headers: { 'Content-Type': 'multipart/form-data' }
-                        });
+                        const response = await axios.post(
+                          "/api/v1/upload-imagen",
+                          formDataUpload,
+                          {
+                            headers: { "Content-Type": "multipart/form-data" },
+                          }
+                        );
 
                         const imageUrl = response.data.url;
                         setFormData((prev) => ({
                           ...prev,
-                          testigos: prev.testigos?.map((test, i) =>
-                            i === index ? { ...test, imagen_url: imageUrl } : test
-                          ) || []
+                          testigos:
+                            prev.testigos?.map((test, i) =>
+                              i === index
+                                ? { ...test, imagen_url: imageUrl }
+                                : test
+                            ) || [],
                         }));
                       } catch (error) {
-                        console.error('Error subiendo imagen:', error);
-                        alert('Error al subir la imagen. Intente nuevamente.');
+                        console.error("Error subiendo imagen:", error);
+                        alert("Error al subir la imagen. Intente nuevamente.");
                       }
                     }
                   }}
                 />
                 {testigo.imagen_url && (
-                  <div style={{ marginTop: '5px' }}>
+                  <div style={{ marginTop: "5px" }}>
                     <img
                       src={`http://localhost:8000${testigo.imagen_url}`}
                       alt={`Testigo ${testigo.numero_relato}`}
-                      style={{ maxWidth: '200px', maxHeight: '150px', border: '1px solid #ddd' }}
+                      style={{
+                        maxWidth: "200px",
+                        maxHeight: "150px",
+                        border: "1px solid #ddd",
+                      }}
                     />
                   </div>
                 )}
