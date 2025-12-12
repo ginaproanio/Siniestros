@@ -182,7 +182,7 @@ with st.form(key='form_informe'):
             relato_text = st.text_area(f"Texto del Relato {i+1}", value="" if i > 0 else "El asegurado declaró que el vehículo estaba estacionado cuando fue impactado por otro vehículo. No hubo testigos directos del incidente.", height=150, key=f"relato_aseg_text_{i}")
         with cols_relato[1]:
             st.write("Añadir Imagen (opcional)")
-            image_file = st.file_uploader(f"Seleccionar imagen {i+1}", type=['jpg', 'jpeg', 'png'], key=f"relato_aseg_img_{i}")
+            image_file = st.file_uploader(f"Cargar Imagen {i+1}", type=['jpg', 'jpeg', 'png'], key=f"relato_aseg_img_{i}")
 
 
 
