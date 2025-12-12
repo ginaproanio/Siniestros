@@ -159,35 +159,37 @@ siniestros-app/
    - Relaciones many-to-one/many-to-many
    - Migraciones con Alembic
 
-#### Plan de Desarrollo por Fases
-**Fase 1: Setup e Infraestructura**
-- Configurar repositorio con monorepo (frontend/backend)
-- Desplegar PostgreSQL en Railway
-- Configurar CI/CD con Railway
+#### Estado Actual del Desarrollo
+✅ **Fase 1: Setup e Infraestructura** - COMPLETADA
+- ✅ Configurar repositorio con estructura backend
+- ✅ Desplegar PostgreSQL en Railway
+- ✅ Configurar CI/CD con Railway (FastAPI funcionando)
 
-**Fase 2: Backend Core**
-- Modelos de BD y esquemas Pydantic
-- Endpoints CRUD para siniestros
-- Servicio de generación PDF
-- Autenticación básica
+✅ **Fase 2: Backend Core** - COMPLETADA
+- ✅ Modelos SQLAlchemy completos para todas las entidades
+- ✅ Schemas Pydantic con validación
+- ✅ Endpoints CRUD funcionales para siniestros
+- ✅ Configuración de base de datos PostgreSQL
+- ✅ Alembic para migraciones de BD
+- ⏳ Servicio de generación PDF (parcial)
+- ⏳ Autenticación básica (pendiente)
 
-**Fase 3: Frontend Core**
-- Componentes base del formulario
+**Fase 3: Frontend Core** - PENDIENTE
+- Componentes React + TypeScript
 - Integración con API backend
 - Manejo de estado con React Query
 - UI/UX responsive
 
-**Fase 4: Funcionalidades Avanzadas**
+**Fase 4: Funcionalidades Avanzadas** - PENDIENTE
 - Upload de archivos con drag&drop
 - Previews de imágenes
 - Formularios dinámicos anidados
 - Dashboard de informes
 
-**Fase 5: Testing y Optimización**
+**Fase 5: Testing y Optimización** - PENDIENTE
 - Tests unitarios e integración
 - Optimización de rendimiento
 - Documentación completa
-- Despliegue en producción
 
 #### Despliegue en Railway
 - **Frontend**: Railway detectará package.json y desplegará con Vite
