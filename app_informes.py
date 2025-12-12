@@ -46,7 +46,24 @@ if 'num_relatos_inspec' not in st.session_state:
 if 'num_relatos_testigos' not in st.session_state:
     st.session_state.num_relatos_testigos = 1
 
+# Botones para añadir más relatos (fuera del formulario)
+st.header("Añadir Más Relatos")
+col1, col2, col3 = st.columns(3)
 
+with col1:
+    if st.button("Añadir Otro Relato del Asegurado (Azul)", help="Añade un nuevo relato del asegurado"):
+        st.session_state.num_relatos_aseg += 1
+        st.rerun()
+
+with col2:
+    if st.button("Añadir Otra Descripción de Inspección (Verde)", help="Añade una nueva descripción de inspección"):
+        st.session_state.num_relatos_inspec += 1
+        st.rerun()
+
+with col3:
+    if st.button("Añadir Otro Relato de Testigo (Rojo)", help="Añade un nuevo relato de testigo"):
+        st.session_state.num_relatos_testigos += 1
+        st.rerun()
 
 # Sección: ASEGURADO (fuera del formulario para actualización dinámica)
 st.header("Asegurado")
