@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-// Configurar base URL para el backend
-axios.defaults.baseURL = 'https://siniestros-production.up.railway.app';
+// Configurar base URL para el backend - cambiar cuando se cree el servicio separado
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'https://siniestros-production.up.railway.app';
+axios.defaults.baseURL = BACKEND_URL;
 
 interface FormData {
   compania_seguros: string;
