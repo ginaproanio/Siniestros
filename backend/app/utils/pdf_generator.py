@@ -1,5 +1,4 @@
 import io
-import os
 import logging
 from datetime import datetime
 from reportlab.lib.pagesizes import letter
@@ -11,7 +10,6 @@ from reportlab.lib.enums import TA_CENTER
 from sqlalchemy.orm import Session
 from app import models
 from endesive.pdf import cms
-import boto3
 
 logger = logging.getLogger(__name__)
 
@@ -37,13 +35,12 @@ def load_certificate_from_s3(cert_key: str = "certificates/maria_susana_espinosa
 def sign_pdf(pdf_data: bytes, certificate_data: bytes = None, password: str = None) -> bytes:
     """Firmar PDF digitalmente usando certificado P12"""
     try:
-        print(f"🔐 Firmando PDF con certificado digital")
+        logger.info("🔐 Firmando PDF con certificado digital")
 
         # Usar datos del certificado proporcionados
         p12_data = certificate_data
 
         # Extraer clave privada y certificado
-        from cryptography.hazmat.primitives import serialization
         from cryptography.hazmat.primitives.serialization import pkcs12
 
         private_key, certificate, additional_certificates = (
@@ -77,18 +74,18 @@ def sign_pdf(pdf_data: bytes, certificate_data: bytes = None, password: str = No
             pdf_data, dct, private_key, certificate, additional_certificates or []
         )
 
-        print(f"✅ PDF firmado exitosamente: {len(signed_pdf)} bytes")
+        logger.info(f"✅ PDF firmado exitosamente: {len(signed_pdf)} bytes")
         return signed_pdf
 
     except Exception as e:
-        print(f"❌ Error firmando PDF: {e}")
+        logger.error(f"❌ Error firmando PDF: {e}")
         # Retornar PDF sin firma si hay error
         return pdf_data
 
 
 def generate_simple_pdf(siniestro: models.Siniestro) -> bytes:
     """Generar PDF simple y básico del siniestro"""
-    print(f"🔄 Generando PDF para siniestro ID: {siniestro.id}")
+    logger.info(f"🔄 Generando PDF para siniestro ID: {siniestro.id}")
 
     try:
         # Crear buffer para el PDF
@@ -175,7 +172,7 @@ def generate_simple_pdf(siniestro: models.Siniestro) -> bytes:
         buffer.seek(0)
         pdf_data = buffer.getvalue()
 
-        print(f"✅ PDF generado exitosamente: {len(pdf_data)} bytes")
+        logger.info(f"✅ PDF generado exitosamente: {len(pdf_data)} bytes")
         logger.info(f"PDF bytes before signing: {len(pdf_data)}")
 
         # Validar que el PDF sea válido (debe empezar con %PDF-)
@@ -186,7 +183,7 @@ def generate_simple_pdf(siniestro: models.Siniestro) -> bytes:
         # Intentar firmar PDF usando certificado desde S3
         cert_data = load_certificate_from_s3()
         if cert_data:
-            print("🔐 Firmando PDF con certificado digital desde S3...")
+            logger.info("🔐 Firmando PDF con certificado digital desde S3...")
             try:
                 signed_pdf = sign_pdf(pdf_data, cert_data)
                 # Validar que el PDF firmado siga siendo válido
@@ -199,13 +196,16 @@ def generate_simple_pdf(siniestro: models.Siniestro) -> bytes:
                 logger.error(f"Error durante firma digital: {e}")
                 logger.warning("Continuando con PDF sin firma digital")
         else:
-            logger.warning("Certificado digital no encontrado en S3. PDF generado sin firma digital.")
-            print("⚠️  Certificado no encontrado en S3, PDF sin firma")
+            logger.warning(
+                "Certificado digital no encontrado en S3. "
+                "PDF generado sin firma digital."
+            )
+            logger.info("⚠️  Certificado no encontrado en S3, PDF sin firma")
 
         return pdf_data
 
     except Exception as e:
-        print(f"❌ Error generando PDF: {e}")
+        logger.error(f"❌ Error generando PDF: {e}")
         # PDF de error mínimo
         buffer = io.BytesIO()
         doc = SimpleDocTemplate(buffer, pagesize=letter)
@@ -217,7 +217,7 @@ def generate_simple_pdf(siniestro: models.Siniestro) -> bytes:
 
 def generate_unsigned_pdf(siniestro: models.Siniestro) -> bytes:
     """Generar PDF sin firma digital para pruebas"""
-    print(f"🔄 Generando PDF SIN FIRMA para siniestro ID: {siniestro.id}")
+    logger.info(f"🔄 Generando PDF SIN FIRMA para siniestro ID: {siniestro.id}")
 
     try:
         # Crear buffer para el PDF
@@ -312,7 +312,7 @@ def generate_unsigned_pdf(siniestro: models.Siniestro) -> bytes:
         buffer.seek(0)
         pdf_data = buffer.getvalue()
 
-        print(f"✅ PDF sin firma generado exitosamente: {len(pdf_data)} bytes")
+        logger.info(f"✅ PDF sin firma generado exitosamente: {len(pdf_data)} bytes")
 
         # Validar que el PDF sea válido
         if not pdf_data.startswith(b'%PDF-'):
@@ -322,7 +322,7 @@ def generate_unsigned_pdf(siniestro: models.Siniestro) -> bytes:
         return pdf_data
 
     except Exception as e:
-        print(f"❌ Error generando PDF sin firma: {e}")
+        logger.error(f"❌ Error generando PDF sin firma: {e}")
         # PDF de error mínimo
         buffer = io.BytesIO()
         doc = SimpleDocTemplate(buffer, pagesize=letter)
