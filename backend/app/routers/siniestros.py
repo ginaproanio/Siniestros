@@ -205,7 +205,7 @@ async def create_testigo(
 
 
 # PDF generation endpoint
-@router.get("/{siniestro_id}/generar-pdf")
+@router.post("/{siniestro_id}/generar-pdf")
 async def generar_pdf(siniestro_id: int, db: Session = Depends(get_db)):
     """Generar PDF del informe de siniestro"""
     try:
@@ -294,7 +294,7 @@ async def generar_pdf(siniestro_id: int, db: Session = Depends(get_db)):
             )
 
 
-@router.get("/{siniestro_id}/generar-pdf-sin-firma")
+@router.post("/{siniestro_id}/generar-pdf-sin-firma")
 async def generar_pdf_sin_firma(siniestro_id: int, db: Session = Depends(get_db)):
     """Generar PDF del informe de siniestro SIN FIRMA DIGITAL (para pruebas)"""
     try:
