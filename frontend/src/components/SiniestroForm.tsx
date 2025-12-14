@@ -48,8 +48,7 @@ interface FormData {
   tipo_siniestro?: string;
   cobertura?: string;
 
-  // Nuevos campos de declaración
-  fecha_declaracion?: string;
+  // Nuevos campos de declaración (fecha_reportado es la fecha de declaración)
   persona_declara_tipo?: string;
   persona_declara_cedula?: string;
   persona_declara_nombre?: string;
@@ -311,20 +310,29 @@ const SiniestroForm: React.FC = () => {
         <div className="section-container">
           <h3 className="section-header">⚙️ PARAMETRIZACIÓN DEL FORMULARIO</h3>
 
-          {/* DECLARACIÓN DEL SINIESTRO */}
+          {/* PRIMERO: MISIVA DE INVESTIGACIÓN */}
+          <div style={{ marginBottom: "20px", padding: "15px", backgroundColor: "#fff3cd", borderRadius: "5px" }}>
+            <h4 style={{ color: "#0f172a", marginBottom: "10px" }}>📋 Misiva de Investigación</h4>
+            <div className="form-group">
+              <label>Instrucciones específicas de la aseguradora:</label>
+              <textarea
+                name="misiva_investigacion"
+                value={formData.misiva_investigacion || ""}
+                onChange={handleInputChange}
+                rows={6}
+                placeholder="Escriba aquí las instrucciones específicas que dio la aseguradora para esta investigación..."
+              />
+            </div>
+            <small style={{ color: "#6c757d", fontStyle: "italic" }}>
+              * Este campo contiene las instrucciones particulares de la aseguradora para adaptar la investigación a sus requerimientos específicos.
+            </small>
+          </div>
+
+          {/* SEGUNDO: DECLARACIÓN DEL SINIESTRO (Fecha Reportado) */}
           <div style={{ marginBottom: "20px", padding: "15px", backgroundColor: "#e8f4fd", borderRadius: "5px" }}>
             <h4 style={{ color: "#0f172a", marginBottom: "10px" }}>📝 Declaración del Siniestro</h4>
 
             <div className="form-row">
-              <div className="form-group">
-                <label>Fecha de Declaración:</label>
-                <input
-                  type="date"
-                  name="fecha_declaracion"
-                  value={formData.fecha_declaracion || ""}
-                  onChange={handleInputChange}
-                />
-              </div>
               <div className="form-group">
                 <label>Tipo de Persona que Declara:</label>
                 <select
@@ -337,6 +345,15 @@ const SiniestroForm: React.FC = () => {
                   <option value="conductor">Conductor</option>
                   <option value="otro">Otro</option>
                 </select>
+              </div>
+              <div className="form-group">
+                <label>Fecha Reportado:</label>
+                <input
+                  type="date"
+                  name="fecha_reportado"
+                  value={formData.fecha_reportado || ""}
+                  onChange={handleInputChange}
+                />
               </div>
             </div>
 
@@ -364,33 +381,15 @@ const SiniestroForm: React.FC = () => {
             </div>
 
             <div className="form-group">
-              <label>Relación con el siniestro:</label>
+              <label>Relación con el asegurado:</label>
               <input
                 type="text"
                 name="persona_declara_relacion"
                 value={formData.persona_declara_relacion || ""}
                 onChange={handleInputChange}
-                placeholder="Ej: Propietario del vehículo, Testigo presencial, etc."
+                placeholder="Ej: Propietario del vehículo, Esposo/a, Hijo/a, etc."
               />
             </div>
-          </div>
-
-          {/* MISIVA DE INVESTIGACIÓN */}
-          <div style={{ padding: "15px", backgroundColor: "#fff3cd", borderRadius: "5px" }}>
-            <h4 style={{ color: "#0f172a", marginBottom: "10px" }}>📋 Misiva de Investigación</h4>
-            <div className="form-group">
-              <label>Instrucciones específicas de la aseguradora:</label>
-              <textarea
-                name="misiva_investigacion"
-                value={formData.misiva_investigacion || ""}
-                onChange={handleInputChange}
-                rows={6}
-                placeholder="Escriba aquí las instrucciones específicas que dio la aseguradora para esta investigación..."
-              />
-            </div>
-            <small style={{ color: "#6c757d", fontStyle: "italic" }}>
-              * Este campo contiene las instrucciones particulares de la aseguradora para adaptar la investigación a sus requerimientos específicos.
-            </small>
           </div>
         </div>
 

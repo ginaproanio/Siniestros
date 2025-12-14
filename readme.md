@@ -136,19 +136,19 @@ git push origin main
 - `tipo_siniestro`: Tipo de siniestro ⭐ **(Campo parametrizable)**
 - `cobertura`: Tipo de cobertura del seguro ⭐ **(Campo parametrizable)**
 
-#### **2️⃣ DECLARACIÓN DEL SINIESTRO (Campos Parametrizables)**
-Campos que varían según quién realiza la declaración y el contexto del siniestro:
-- `fecha_declaracion`: Fecha de la declaración ⭐ **(Campo parametrizable)**
-- `persona_declara_tipo`: Tipo de persona ("asegurado" | "conductor" | "otro") ⭐ **(Campo parametrizable)**
-- `persona_declara_cedula`: Cédula de identidad ⭐ **(Campo parametrizable)**
-- `persona_declara_nombre`: Nombre completo ⭐ **(Campo parametrizable)**
-- `persona_declara_relacion`: Relación con el siniestro ⭐ **(Campo parametrizable)**
-
-#### **3️⃣ MISIVA DE INVESTIGACIÓN (Campo Parametrizable)**
+#### **2️⃣ MISIVA DE INVESTIGACIÓN (Campo Parametrizable)**
 Campo que contiene las **instrucciones específicas** de la aseguradora para esta investigación particular:
 - `misiva_investigacion`: Texto de la solicitud específica de la aseguradora ⭐ **(Campo parametrizable)**
 - **Nota:** Campo de texto largo para instrucciones particulares
 - **Nota:** NO se incluye en el PDF del informe final
+
+#### **3️⃣ DECLARACIÓN DEL SINIESTRO (Campos Parametrizables)**
+Campos que varían según quién realiza la declaración y el contexto del siniestro:
+- `fecha_reportado`: Fecha de reporte del siniestro (equivale a fecha de declaración) ⭐ **(Campo parametrizable)**
+- `persona_declara_tipo`: Tipo de persona ("asegurado" | "conductor" | "otro") ⭐ **(Campo parametrizable)**
+- `persona_declara_cedula`: Cédula de identidad ⭐ **(Campo parametrizable)**
+- `persona_declara_nombre`: Nombre completo ⭐ **(Campo parametrizable)**
+- `persona_declara_relacion`: Relación con el **asegurado** ⭐ **(Campo parametrizable)**
 
 #### **4️⃣ ENTIDADES RELACIONADAS (Campos Dinámicos)**
 - **ASEGURADO**: Datos del asegurado (cedula, nombre, direccion, telefono, email)
