@@ -521,6 +521,7 @@ button[type="button"]:nth-child(2):hover {
   transition: all 0.3s ease;
   white-space: nowrap;
   position: relative;
+  border-radius: 4px 4px 0 0;
 }
 
 .tab-button:hover {
@@ -529,13 +530,16 @@ button[type="button"]:nth-child(2):hover {
 }
 
 .tab-button.active {
-  color: var(--color-negro-corporativo);
+  color: white;
+  background-color: var(--color-rojo-acento);
   border-bottom-color: var(--color-rojo-acento);
-  background-color: rgba(220, 38, 38, 0.05);
+  font-weight: 600;
 }
 
 .tab-button.completed {
-  color: #059669;
+  color: white;
+  background-color: #059669;
+  border-bottom-color: #059669;
 }
 
 .tab-button.completed::after {
@@ -543,8 +547,9 @@ button[type="button"]:nth-child(2):hover {
   position: absolute;
   top: 8px;
   right: 8px;
-  color: #059669;
+  color: white;
   font-weight: bold;
+  font-size: 14px;
 }
 
 .tab-content {
