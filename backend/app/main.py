@@ -9,42 +9,7 @@ from datetime import datetime
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Database tables are created via Alembic migrations
-# Clear existing data on startup since user doesn't care about test data
-def clear_existing_data():
-    """Clear all existing data from database on startup"""
-    try:
-        from app.database import SessionLocal
-        from app import models
-
-        db = SessionLocal()
-        logger.info("🗑️ Clearing existing test data from database...")
-
-        # Delete in reverse order to handle foreign keys
-        try:
-            db.query(models.Testigo).delete()
-            db.query(models.Inspeccion).delete()
-            db.query(models.RelatoAsegurado).delete()
-            db.query(models.Antecedente).delete()
-            db.query(models.VisitaTaller).delete()
-            db.query(models.DinamicaAccidente).delete()
-            db.query(models.ObjetoAsegurado).delete()
-            db.query(models.Conductor).delete()
-            db.query(models.Beneficiario).delete()
-            db.query(models.Asegurado).delete()
-            db.query(models.Siniestro).delete()
-
-            db.commit()
-            logger.info("✅ All existing data cleared successfully")
-        except Exception as e:
-            logger.warning(f"⚠️ Some tables may not exist yet: {e}")
-            db.rollback()
-
-        db.close()
-    except Exception as e:
-        logger.warning(f"⚠️ Could not clear existing data: {e}")
-
-clear_existing_data()
+# Database initialization will be handled by startup event
 
 app = FastAPI(
     title="Sistema de Informes de Siniestros API",
@@ -275,6 +240,64 @@ async def clear_database():
         }
     finally:
         db.close()
+
+@app.post("/debug/reset-database")
+async def reset_database():
+    """🔥 RESET COMPLETO: Limpiar TODOS los datos y reconstruir esquema"""
+    logger.warning("🔥 INICIANDO RESET COMPLETO DE BASE DE DATOS")
+
+    try:
+        from app.database import SessionLocal, engine, Base
+        from app import models
+        import sqlalchemy as sa
+
+        db = SessionLocal()
+
+        # 1. Limpiar todos los datos existentes
+        logger.info("🗑️ Paso 1: Eliminando datos existentes...")
+        try:
+            db.query(models.Testigo).delete()
+            db.query(models.Inspeccion).delete()
+            db.query(models.RelatoAsegurado).delete()
+            db.query(models.Antecedente).delete()
+            db.query(models.VisitaTaller).delete()
+            db.query(models.DinamicaAccidente).delete()
+            db.query(models.ObjetoAsegurado).delete()
+            db.query(models.Conductor).delete()
+            db.query(models.Beneficiario).delete()
+            db.query(models.Asegurado).delete()
+            db.query(models.Siniestro).delete()
+            db.commit()
+            logger.info("✅ Datos eliminados")
+        except Exception as e:
+            logger.warning(f"⚠️ Algunos datos ya estaban limpios: {e}")
+            db.rollback()
+
+        # 2. Recrear todas las tablas desde cero
+        logger.info("🏗️ Paso 2: Recreando esquema de base de datos...")
+        Base.metadata.drop_all(bind=engine)  # Eliminar tablas existentes
+        Base.metadata.create_all(bind=engine)  # Crear tablas nuevas
+        logger.info("✅ Esquema recreado")
+
+        db.close()
+
+        return {
+            "message": "🔥 RESET COMPLETO EJECUTADO EXITOSAMENTE",
+            "actions_taken": [
+                "✅ Eliminados todos los datos existentes",
+                "✅ Eliminadas todas las tablas",
+                "✅ Recreación completa del esquema",
+                "✅ Base de datos lista para uso"
+            ],
+            "status": "ready"
+        }
+
+    except Exception as e:
+        logger.error(f"❌ Error en reset completo: {e}")
+        return {
+            "error": f"Reset falló: {str(e)}",
+            "status": "failed"
+        }
 
 @app.post("/debug/apply-migrations")
 async def apply_migrations():
