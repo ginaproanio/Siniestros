@@ -18,6 +18,16 @@ class SiniestroBase(BaseModel):
     cobertura: Optional[str] = Field(None, max_length=100)
     pdf_firmado_url: Optional[str] = Field(None, max_length=500)
 
+    # Nuevos campos para declaración del siniestro
+    fecha_declaracion: Optional[datetime] = None
+    persona_declara_tipo: Optional[str] = Field(None, max_length=20)
+    persona_declara_cedula: Optional[str] = Field(None, max_length=20)
+    persona_declara_nombre: Optional[str] = Field(None, max_length=255)
+    persona_declara_relacion: Optional[str] = Field(None, max_length=255)
+
+    # Misiva de investigación (no se muestra en PDF)
+    misiva_investigacion: Optional[str] = None
+
 class AseguradoBase(BaseModel):
     tipo: str = Field(..., max_length=50)
     cedula: Optional[str] = Field(None, max_length=20)
@@ -197,6 +207,7 @@ class SiniestroUpdate(BaseModel):
     compania_seguros: Optional[str] = None
     reclamo_num: Optional[str] = None
     fecha_siniestro: Optional[datetime] = None
+    fecha_reportado: Optional[datetime] = None
     direccion_siniestro: Optional[str] = None
     ubicacion_geo_lat: Optional[float] = None
     ubicacion_geo_lng: Optional[float] = None
@@ -204,4 +215,15 @@ class SiniestroUpdate(BaseModel):
     ejecutivo_cargo: Optional[str] = None
     fecha_designacion: Optional[datetime] = None
     tipo_siniestro: Optional[str] = None
+    cobertura: Optional[str] = None
     pdf_firmado_url: Optional[str] = None
+
+    # Nuevos campos para declaración del siniestro
+    fecha_declaracion: Optional[datetime] = None
+    persona_declara_tipo: Optional[str] = None
+    persona_declara_cedula: Optional[str] = None
+    persona_declara_nombre: Optional[str] = None
+    persona_declara_relacion: Optional[str] = None
+
+    # Misiva de investigación
+    misiva_investigacion: Optional[str] = None

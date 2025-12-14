@@ -19,6 +19,17 @@ class Siniestro(Base):
     fecha_reportado = Column(DateTime(timezone=True))  # Fecha cuando se reportó el siniestro
     cobertura = Column(String(100))  # Tipo de cobertura (Todo riesgo, etc.)
     pdf_firmado_url = Column(String(500))  # URL del PDF firmado digitalmente
+
+    # Nuevos campos para declaración del siniestro
+    fecha_declaracion = Column(DateTime(timezone=True))  # Fecha de declaración del siniestro
+    persona_declara_tipo = Column(String(20))  # 'asegurado', 'conductor', 'otro'
+    persona_declara_cedula = Column(String(20))  # Cédula/RUC de quien declara
+    persona_declara_nombre = Column(String(255))  # Nombre/Razón social de quien declara
+    persona_declara_relacion = Column(String(255))  # Relación con el asegurado
+
+    # Misiva de investigación (no se muestra en PDF)
+    misiva_investigacion = Column(Text)  # Solicitud específica de la aseguradora
+
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
