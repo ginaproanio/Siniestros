@@ -69,6 +69,7 @@ interface FormData {
 const SiniestroForm: React.FC = () => {
   const [activeTab, setActiveTab] = useState(0);
   const [completedTabs, setCompletedTabs] = useState<number[]>([]);
+  const [visitedTabs, setVisitedTabs] = useState<number[]>([0]); // Tab 0 starts as visited
 
   const [formData, setFormData] = useState<FormData>({
     compania_seguros: "Zurich Seguros Ecuador S.A.",
@@ -108,6 +109,10 @@ const SiniestroForm: React.FC = () => {
 
   const goToTab = (tabId: number) => {
     setActiveTab(tabId);
+    // Mark tab as visited when navigating to it
+    if (!visitedTabs.includes(tabId)) {
+      setVisitedTabs((prev) => [...prev, tabId]);
+    }
   };
 
   const handleInputChange = (
@@ -198,18 +203,27 @@ const SiniestroForm: React.FC = () => {
       {/* Tab Navigation */}
       <div className="tabs-container">
         <div className="tabs-header">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              className={`tab-button ${activeTab === tab.id ? "active" : ""} ${
-                completedTabs.includes(tab.id) ? "completed" : ""
-              }`}
-              onClick={() => goToTab(tab.id)}
-            >
-              {tab.icon} {tab.title}
-            </button>
-          ))}
+          {tabs.map((tab) => {
+            const isActive = activeTab === tab.id;
+            const isCompleted = completedTabs.includes(tab.id);
+            const isVisited = visitedTabs.includes(tab.id);
+
+            let buttonClass = "tab-button";
+            if (isActive) buttonClass += " active";
+            else if (isCompleted) buttonClass += " completed";
+            else if (isVisited) buttonClass += " visited";
+
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                className={buttonClass}
+                onClick={() => goToTab(tab.id)}
+              >
+                {tab.icon} {tab.title}
+              </button>
+            );
+          })}
         </div>
 
         {/* Tab Content */}
