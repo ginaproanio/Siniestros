@@ -126,7 +126,6 @@ const SiniestroDetail: React.FC = () => {
                 });
 
                 if (response.ok) {
-                  const result = await response.json();
                   alert('PDF firmado subido exitosamente');
                   // Refresh the page to show the new signed PDF
                   window.location.reload();
