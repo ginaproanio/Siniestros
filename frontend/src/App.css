@@ -530,12 +530,13 @@ button[type="button"]:nth-child(2):hover {
 }
 
 /* Estados de pestañas - Sistema CONSISTENTE para todos */
-.tab-button.active {
-  color: white;
-  background-color: var(--color-rojo-acento); /* Rojo para activa */
-  border-bottom-color: var(--color-rojo-acento);
-  font-weight: 600;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+.tab-button.visited {
+  color: var(--color-negro-corporativo);
+  background-color: rgba(59, 130, 246, 0.1); /* Azul sutil para visitada */
+  border-bottom-color: rgba(59, 130, 246, 0.3);
+  border-bottom-width: 2px;
+  font-weight: 500;
+  opacity: 0.8;
 }
 
 .tab-button.completed {
@@ -554,13 +555,12 @@ button[type="button"]:nth-child(2):hover {
   font-size: 14px;
 }
 
-.tab-button.visited {
-  color: var(--color-negro-corporativo);
-  background-color: rgba(59, 130, 246, 0.1); /* Azul sutil para visitada */
-  border-bottom-color: rgba(59, 130, 246, 0.3);
-  border-bottom-width: 2px;
-  font-weight: 500;
-  opacity: 0.8;
+.tab-button.active {
+  color: white;
+  background-color: var(--color-rojo-acento); /* Rojo para activa */
+  border-bottom-color: var(--color-rojo-acento);
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Estado por defecto - gris para pendientes */
