@@ -1,484 +1,170 @@
-# Sistema de Informes de Siniestros
-Aplicación web full-stack completa para la gestión y generación de informes profesionales de investigaciones de siniestros vehiculares en seguros. Incluye formularios parametrizados, base de datos relacional, generación automática de PDFs y firma digital.
+# 🔥 **ESTRATEGIA DEFINITIVA: RESET COMPLETO DE BASE DE DATOS**
 
-## 🎯 **OBJETIVOS ALCANZADOS**
+## ❗ **DECISIÓN ARQUITECTÓNICA DEFINITIVA**
 
-### ✅ **SISTEMA COMPLETO Y FUNCIONAL**
-- **Formularios parametrizados** con TODOS los campos necesarios para el Informe de Investigación
-- **Base de datos PostgreSQL** con esquema relacional completo
-- **APIs REST** funcionales con FastAPI
-- **Frontend React** con navegación completa
-- **Generación de PDFs** profesionales con ReportLab
-- **Firma digital** electrónica
-- **Almacenamiento AWS S3** para archivos
-- **Despliegue en Railway** automatizado
+- ❗ **La base de datos NO contiene datos valiosos**
+- ❗ **Se puede borrar completamente cuantas veces sea necesario**
+- ❗ **NO queremos migraciones incrementales**
 
-## Comunicación con el Asistente de IA
-Todas las comunicaciones e instrucciones dirigidas al asistente de IA (como Cline) deben realizarse en español. El asistente responderá y ejecutará tareas en español para mantener consistencia con el proyecto.
+---
 
-## 🎯 OBJETIVOS PRINCIPALES
+## 🚫 **PROHIBIDO**
 
-### ✅ Funcionalidades Implementadas
-- **Formulario CRUD completo** para gestionar informes de investigación de siniestros
-- **Edición de Informes**: Buscar informes existentes y modificarlos
-- **Secciones dinámicas**: Antecedentes + Entrevistas con relatos numerados e imágenes
-- **Navegación completa**: Crear → Listar → Ver Detalles → Editar
-- **Backend FastAPI** con PostgreSQL y Railway deployment
-- **Frontend React** con secciones dinámicas y diseño responsivo
-- **Almacenamiento AWS S3** con URLs presigned y validación completa
-- **Código completamente refactorizado** siguiendo mejores prácticas
+* NO usar Alembic / Django migrations / Prisma migrate / TypeORM migrations
+* NO intentar "arreglar" migraciones existentes
+* NO asumir continuidad del esquema anterior
 
-### ✅ Funcionalidades Completadas
-- **Generación de PDFs** ✅ **SOLUCIONADO** - PDFs válidos con datos reales
-- **Firma digital electrónica** con certificado P12 (funcional en desarrollo)
-- **Endpoint de diagnóstico** para troubleshooting de PDFs
-- **Codificación de filenames** con caracteres especiales (ñ,á,é,í,ó,ú)
-- **Logging consistente** en todo el sistema
-- **Campos completos**: Asegurado, Conductor, Vehículo, Testigos, Inspecciones
-- **CRUD completo** para siniestros y entidades relacionadas
+---
 
-### 🚧 Funcionalidades Pendientes
-- **Búsqueda avanzada** por filtros
-- **Dashboard administrativo**
-- **Autenticación JWT** con roles de usuario
+## ✅ **ESTRATEGIA OBLIGATORIA**
 
-**Repositorio**: https://github.com/ginaproanio/Siniestros
-**Rama**: main
+1️⃣ El esquema de base de datos es **declarativo y fuente única de verdad**
 
-## Instalación Local
-1. **Instala Python 3.8+** desde python.org
-2. **Instala Node.js 18+** desde nodejs.org
-3. **Instala dependencias** (ejecuta el script automático):
-   ```bash
-   install-dependencies.bat
+2️⃣ En cada deploy:
+   * Si el esquema cambió:
+     * **BORRAR COMPLETAMENTE la base de datos**
+     * **RECREAR TODAS LAS TABLAS DESDE CERO**
+
+3️⃣ El arranque del backend debe:
+   * Detectar inconsistencia de esquema
+   * Ejecutar automáticamente:
+   ```text
+   DROP ALL TABLES
+   CREATE ALL TABLES
    ```
-   O manualmente:
-   ```bash
-   # Backend
-   pip install -r requirements.txt
 
-   # Frontend
-   cd frontend && npm install
-   ```
-4. **Ejecuta el backend**:
-   ```bash
-   cd backend
-   uvicorn app.main:app --reload
-   ```
-   API disponible en http://localhost:8000
+4️⃣ No debe existir historial de migraciones
 
-5. **Ejecuta el frontend** (en otra terminal):
-   ```bash
-   cd frontend
-   npm run dev
-   ```
-   Frontend disponible en http://localhost:3000
+---
 
-## Despliegue en Railway
+## 🧠 **OBJETIVO**
 
-### Configuración de Servicios Separados (Recomendado)
-Para un despliegue limpio y profesional, configura **dos servicios separados** en Railway:
+* Evitar conflictos de migraciones
+* Evitar estados intermedios corruptos
+* Garantizar que el backend SIEMPRE arranca
 
-#### 1. Servicio Frontend (React)
-- **Nombre**: `frontend`
-- **Root Directory**: `frontend`
-- **Variables de entorno**:
-  - `REACT_APP_BACKEND_URL`: URL del servicio backend (ej: `https://siniestros-backend-production.up.railway.app`)
-- **Build**: Automático con Railpack (Node.js)
-- **Start**: Automático (`npm start`)
+Este es un **entorno de desarrollo activo**, no producción.
 
-#### 2. Servicio Backend (FastAPI)
-- **Nombre**: `Siniestros` o `backend`
-- **Root Directory**: `backend`
-- **Variables de entorno**:
-  - `DATABASE_URL`: Proporcionada automáticamente por Railway PostgreSQL
-  - `AWS_ACCESS_KEY_ID`: Tu access key de AWS
-  - `AWS_SECRET_ACCESS_KEY`: Tu secret key de AWS
-  - `AWS_DEFAULT_REGION`: `us-east-2`
-  - `S3_BUCKET_NAME`: `siniestrossusiespinosa`
-  - `ALLOWED_ORIGINS`: URLs permitidas para CORS (ej: `https://frontend-production.up.railway.app`)
-  - `LOG_BODY`: `false` (para no loguear datos sensibles en producción)
-- **Start Command**: `alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+---
 
-### Configuración Antigua (Obsoleta)
-⚠️ **Los archivos `railway.toml` y `Procfile` del directorio raíz ya no se usan** porque ahora usamos servicios separados. Estos archivos han sido eliminados del repositorio para evitar conflictos.
+## 📋 **PROCESO PASO A PASO PARA AGREGAR NUEVOS CAMPOS**
 
-**Nota**: Los archivos subidos e informes se guardan en la base de datos PostgreSQL. En Railway, la BD es persistente.
+### **1️⃣ AGREGAR CAMPO AL MODELO (Backend)**
+**Archivo:** `backend/app/models/siniestro.py`
 
-## Configuración AWS S3
-Para el almacenamiento de imágenes, el sistema utiliza AWS S3. Configura estas variables de entorno en Railway:
+```python
+# Ejemplo: Agregar campo "fecha_reportado"
+fecha_reportado = Column(DateTime, nullable=True)
+```
 
-- `AWS_ACCESS_KEY_ID`: Tu access key de AWS
-- `AWS_SECRET_ACCESS_KEY`: Tu secret key de AWS
-- `AWS_DEFAULT_REGION`: Región de S3 (ej: us-east-2)
-- `S3_BUCKET_NAME`: Nombre del bucket (ej: siniestrossusiespinosa)
-- `ALLOWED_ORIGINS`: Dominios permitidos para CORS (ej: https://tu-dominio.com)
+### **2️⃣ AGREGAR CAMPO AL SCHEMA (Backend)**
+**Archivo:** `backend/app/schemas/siniestro.py`
 
-Las imágenes se suben a la carpeta `uploads/` en S3 y se generan URLs presigned válidas por 7 días.
+```python
+# En SiniestroBase
+fecha_reportado: Optional[datetime] = None
 
-## 🏆 Calidad del Código - Mejoras Implementadas
+# En SiniestroUpdate (si es editable)
+fecha_reportado: Optional[datetime] = None
+```
 
-### ✅ **Refactorización Completa del Backend**
-- **Arquitectura Limpia**: Separación de responsabilidades, funciones especializadas
-- **Seguridad Robusta**: Validación completa, manejo específico de errores
-- **Configuración Flexible**: Variables de entorno para personalización
-- **Logging Completo**: Trazabilidad y debugging efectivo
-- **Código Mantenible**: Principios SOLID aplicados correctamente
+### **3️⃣ ACTUALIZAR INTERFAZ TYPESCRIPT (Frontend)**
+**Archivo:** `frontend/src/components/SiniestroForm.tsx` o `SiniestroEdit.tsx`
 
-### ✅ **Problemas Críticos Resueltos**
-- ✅ Eliminación completa de código duplicado
-- ✅ Manejo de errores específico (no más `except Exception`)
-- ✅ Cliente S3 con factory pattern y validación de credenciales
-- ✅ Constantes configurables via variables de entorno
-- ✅ Logging consistente en todo el proyecto
-- ✅ Imports innecesarios eliminados
-- ✅ Comentarios obsoletos removidos
+```typescript
+interface FormData {
+  // Agregar el nuevo campo
+  fecha_reportado?: string;
+  // ... otros campos
+}
+```
 
-### ✅ **Mejores Prácticas Aplicadas**
-- ✅ Principio de responsabilidad única
-- ✅ Manejo específico de excepciones
-- ✅ Configuración externa (no hardcoded)
-- ✅ Validación robusta de inputs
-- ✅ Arquitectura modular y extensible
-- ✅ Documentación clara y completa
+### **4️⃣ AGREGAR CAMPO AL FORMULARIO HTML (Frontend)**
+**Ubicación:** Dentro del `<form>` en el componente
 
-### ✅ **Problemas de PDF - COMPLETAMENTE RESUELTOS**
-Los PDFs dañados han sido **100% solucionados** mediante:
+```jsx
+<div className="form-row">
+  <div className="form-group">
+    <label>Fecha Reportado:</label>
+    <input
+      type="date"
+      name="fecha_reportado"
+      value={formData.fecha_reportado}
+      onChange={handleInputChange}
+    />
+  </div>
+</div>
+```
 
-#### 🔧 **Correcciones Aplicadas:**
-- **Bug FastAPI**: Endpoints POST registrados como GET → **Solucionado** (cambiados a GET)
-- **Logging inconsistente**: `print()` → `logger` → **Solucionado**
-- **Codificación de filenames**: Caracteres especiales (ñ,á,é,í,ó,ú) → **Solucionado**
-- **Imports no utilizados**: Código limpiado → **Solucionado**
-- **Endpoint de diagnóstico**: `/diagnostico-pdf` agregado → **Solucionado**
-- **Imports circulares**: Verificado que no existen → **Solucionado**
+### **5️⃣ ACTUALIZAR DATOS DE PRUEBA**
+**Archivo:** `backend/create_test_data.py`
 
-#### 📄 **Endpoints PDF Funcionando:**
+```python
+siniestro = models.Siniestro(
+    # Agregar el campo con valor de prueba
+    fecha_reportado="2025-11-30T10:49:00",
+    # ... otros campos
+)
+```
+
+### **6️⃣ HACER COMMIT Y PUSH**
 ```bash
-GET /api/v1/{siniestro_id}/generar-pdf              # ✅ PDF con firma
-GET /api/v1/{siniestro_id}/generar-pdf-sin-firma    # ✅ PDF sin firma
-GET /api/v1/diagnostico-pdf                         # ✅ Diagnóstico completo
-GET /api/v1/test-pdf                                # ✅ PDF básico
+git add .
+git commit -m "Add new field: fecha_reportado for siniestro reporting date"
+git push origin main
+```
+**Railway redeploy automáticamente y ejecuta reset completo de BD**
+
+## 🎯 **EJEMPLOS DE CAMPOS RECIENTEMENTE AGREGADOS**
+
+### **✅ Fecha Reportado**
+- **Propósito:** Fecha en que se reportó el siniestro
+- **Tipo:** `DateTime` nullable
+- **Uso:** Aparece en el informe de investigación
+
+### **✅ Cobertura**
+- **Propósito:** Tipo de cobertura del seguro
+- **Tipo:** `String(100)` nullable
+- **Uso:** Ej: "Todo riesgo", "Terceros", etc.
+
+### **✅ Campos de Declaración del Siniestro**
+- **fecha_declaracion:** Fecha de la declaración
+- **persona_declara_tipo:** "asegurado" | "conductor" | "otro"
+- **persona_declara_cedula:** Cédula de quien declara
+- **persona_declara_nombre:** Nombre completo
+- **persona_declara_relacion:** Relación con el siniestro
+
+### **✅ Misiva de Investigación**
+- **Propósito:** Solicitud específica de la aseguradora
+- **Tipo:** `Text` nullable
+- **Nota:** No se muestra en el PDF del informe
+
+## 🔄 **FLUJO DE DESARROLLO DEPLOY-DRIVEN**
+
+```
+1. Backend Model → 2. Backend Schema → 3. Frontend Types →
+4. Frontend Form → 5. Test Data → 6. Commit → 7. Push →
+8. Railway Redeploy → 9. Reset BD Automático → 10. ✅ Listo
 ```
 
-#### 🎯 **Resultado:**
-- PDFs válidos con cabecera `%PDF-1.4`
-- Tamaño promedio: 2168+ bytes
-- Datos reales de base de datos PostgreSQL
-- Nombres de archivo con caracteres especiales normalizados
-- Logging completo para debugging
+## ⚠️ **NOTAS IMPORTANTES**
 
-**Estado**: 🏆 **CÓDIGO PROFESIONAL Y PRODUCTION-READY** - **PDFs funcionando perfectamente**
+- **Base de datos se recrea automáticamente** en cada deploy
+- **NO hay migraciones Alembic** - evitamos problemas de compatibilidad
+- **Campos nuevos son opcionales** por defecto para compatibilidad
+- **Railway redeploy automáticamente** después de push
+- **Reset completo es automático** y no requiere intervención manual
 
-## 📋 **FORMULARIOS COMPLETAMENTE PARAMETRIZADOS**
+## 📝 **REGISTRO DE CAMBIOS RECIENTES**
 
-### ✅ **Formulario "Registro de Siniestro" (Creación)**
-Incluye **TODOS** los campos necesarios para parametrizar el Informe de Investigación:
+| Fecha | Campo Agregado | Propósito | Estado |
+|-------|---------------|-----------|---------|
+| 2025-12-13 | `fecha_reportado` | Fecha de reporte del siniestro | ✅ Implementado |
+| 2025-12-13 | `cobertura` | Tipo de cobertura del seguro | ✅ Implementado |
+| 2025-12-13 | `fecha_declaracion` | Fecha de declaración | ✅ Implementado |
+| 2025-12-13 | `persona_declara_*` | Información de quien declara | ✅ Implementado |
+| 2025-12-13 | `misiva_investigacion` | Solicitud de aseguradora | ✅ Implementado |
 
-#### **DATOS DEL SINIESTRO**
-- ✅ Compañía de Seguros: Zurich Seguros Ecuador S.A.
-- ✅ Número de Reclamo: 25-01-VH-7079448
-- ✅ Fecha del Siniestro: 28/11/25 10:49:00 AM
-- ✅ **Fecha Reportado**: 30/11/25 10:49:00 AM
-- ✅ Dirección del Siniestro: Metroparqueos (Sucursal Eloy Alfaro). Pradera y Mariano Aguilera
-- ✅ Ubicación Georreferenciada: -0.193108 -78.486227
-- ✅ Daños a Terceros: No
-- ✅ Ejecutivo a Cargo: (opcional)
-- ✅ Fecha de Designación: 12 de Diciembre de 2025
-- ✅ **Cobertura**: Todo riesgo
+---
 
-#### **ASEGURADO**
-- ✅ Razón Social: LANDAZURI MIRANDA PATRICIA VERONI
-- ✅ Cédula / RUC: 2100348008
-- ✅ Domicilio: De los Conquistadores y Juan Leon Mera
-- ✅ Teléfono: 032947804 (Matrícula)
-- ✅ Celular: 099 7507 161
-- ✅ Correo: pverolandazuri@hotmail.com
-
-#### **BENEFICIARIO**
-- ✅ Razón Social: NOVACREDIT S.A.
-- ✅ Cédula / RUC: (vacío)
-- ✅ Domicilio: (vacío)
-
-#### **CONDUCTOR**
-- ✅ Nombre: Manuel Antonio Carrión Herrera
-- ✅ Cédula: 1105653891
-- ✅ Celular: 0969520800
-- ✅ Dirección: Gaspar de Villarroel y 6 de Diciembre
-- ✅ Parentesco: Amigo
-
-#### **OBJETO ASEGURADO**
-- ✅ Placa: PFB4337
-- ✅ Marca: TOYOTA
-- ✅ Modelo: Corolla Cross High AC 1.8 5P 4x2
-- ✅ Tipo: Jeep
-- ✅ Color: Blanco
-- ✅ Año: 2023
-- ✅ Motor: 2ZR2X01895
-- ✅ Chasis: 9BRKZAAGXR0669964
-
-#### **DECLARACIÓN DEL SINIESTRO**
-- ✅ Fecha de Declaración del Siniestro
-- ✅ Persona que Declara (Asegurado/Conductor/Otro)
-- ✅ Cédula/Nombre/Relación de quien declara
-
-#### **MISIVA DE INVESTIGACIÓN**
-- ✅ Solicitud específica de la aseguradora (no se muestra en PDF)
-
-### ✅ **Formulario "Editar Siniestro"**
-Mantiene **TODOS** los campos del formulario de creación, más secciones dinámicas:
-- ✅ Antecedentes con redacción automática
-- ✅ Entrevistas con el Asegurado (relatos numerados)
-- ✅ Inspección del Lugar
-- ✅ Testigos
-
-### ✅ **Funcionalidades Implementadas**
-- **Generación de PDFs profesionales**: Utiliza ReportLab para crear PDFs con:
-  - Diseño corporativo con tablas estructuradas
-  - Mapas integrados generados con StaticMap
-  - Headers con nombre de compañía y fecha
-  - Footers con numeración de páginas
-  - Relatos con imágenes dispuestas lado a lado cuando aplicable
-  - Tipografía formal (Helvetica)
-  - Firma digital electrónica usando certificado P12
-- **Vista previa en texto**: Permite revisar el contenido antes de generar el PDF.
-- **Upload de imágenes**: Subida a AWS S3 con URLs presigned de 7 días, validación de tipos y tamaño (10MB máximo).
-- **Archivos de respaldo**: Genera informes en formato TXT además del PDF.
-- **Firma digital**: Soporte para firma digital de PDFs usando certificado P12.
-- **Navegación completa**: Crear → Listar → Ver Detalles → Editar
-- **Base de datos relacional**: PostgreSQL con todas las entidades relacionadas
-- **APIs REST completas**: FastAPI con endpoints para todas las operaciones CRUD
-
-## CAMPOS DEL FORMULARIO (BASADO EN EL PDF ANALIZADO)
-*(Organizados por secciones, con nombres de variables sugeridos)*
-
-### A. METADATOS / ENCABEZADO
-- `numero_reclamo` (Ej: "24-01-VH-7059206")
-- `fecha_informe` (Fecha de elaboración del informe)
-- `pagina_total / pagina_actual` (Para el pie de página)
-- `investigador_nombre`
-- `investigador_email`
-- `investigador_telefono`
-- `investigador_empresa` ("INVESTIGACIÓN Y RECUPERACIÓN VEHICULAR")
-
-### B. DATOS DEL SINIESTRO
-- `compania_seguros`
-- `fecha_siniestro`
-- `direccion_siniestro`
-- `ubicacion_gps` (URL de Google Maps)
-- `fecha_radicado`
-- `danos_a_terceros` (Si/No)
-- `ejecutivo_a_cargo`
-- `fecha_designacion`
-
-### C. DATOS DE PERSONAS
-**Asegurado:**
-- `asegurado_nombre`
-- `asegurado_cedula`
-- `asegurado_domicilio`
-- `asegurado_celular`
-
-**Conductor (si es diferente):**
-- `conductor_nombre`
-- `conductor_cedula`
-- `conductor_celular`
-
-### D. OBJETO ASEGURADO (VEHÍCULO)
-- `vehiculo_placa`
-- `vehiculo_marca`
-- `vehiculo_modelo`
-- `vehiculo_color`
-- `vehiculo_anio`
-- `vehiculo_motor`
-- `vehiculo_chasis`
-
-### E. CONTENIDO DEL INFORME (CAMPOS DE TEXTO LARGO - EDITABLES)
-- `antecedentes` (Texto con el aviso de siniestro y alcances)
-- `inspeccion_lugar` (Lista de hallazgos, con puntos 1, 2, 3...)
-- `entrevista_asegurado` (Lista numerada de manifestaciones)
-- `version_terceros` (Subsecciones para cada tercero: Administrador Supermaxi, Presunto Causante, Conductor)
-- `otras_diligencias` (Ej: verificación en AMT)
-- `observaciones` (Lista de puntos contradictorios o relevantes)
-- `conclusiones` (Texto final con recomendación)
-
-### F. DATOS DE TERCEROS INVOLUCRADOS (Estructura repetible)
-- `terceros[]` (Array de objetos con: nombre, telefono, placa(si aplica), relacion, declaracion)
-
-### G. FIRMAS Y ADJUNTOS
-- `firma_investigador` (Podría ser una imagen o texto)
-- `adjuntos` (Campo para listar archivos adjuntos, ej: "Audio de entrevista")
-
-## Arquitectura Técnica
-- **Frontend**: React.js con TypeScript para formularios dinámicos avanzados
-- **Backend**: FastAPI con SQLAlchemy y PostgreSQL
-- **Generación de PDFs**: ReportLab con diseño profesional, tablas estructuradas, headers/footers automáticos, y disposición inteligente de imágenes y texto
-- **Mapas**: StaticMap para generación de mapas estáticos integrados en PDF
-- **Firma Digital**: Endesive para firma digital de PDFs
-- **Almacenamiento**: Base de datos PostgreSQL para datos, archivos en AWS S3 con URLs presigned
-
-## Arquitectura Implementada
-Esta implementación utiliza una arquitectura full-stack moderna para superar las limitaciones de la versión anterior con Streamlit:
-
-### Ventajas de la Nueva Arquitectura
-1. **Formularios Dinámicos Avanzados**:
-   - Componentes React permiten botones interactivos dentro de formularios.
-   - Secciones expansibles con "Añadir Otro" sin recargas de página.
-   - Validación en tiempo real con feedback inmediato.
-
-2. **Manejo de Estado Robusto**:
-   - Estado global con React Query para cache y sincronización.
-   - Persistencia automática en base de datos PostgreSQL.
-   - Sesiones independientes por usuario.
-
-3. **Escalabilidad y Rendimiento**:
-   - Separación frontend/backend permite despliegue independiente.
-   - API REST eficiente con FastAPI.
-   - Generación de PDFs asíncrona.
-
-4. **Almacenamiento Persistente**:
-   - Base de datos PostgreSQL integrada en Railway.
-   - Archivos en la nube con Railway volumes o AWS S3.
-   - Historial completo de informes y versiones.
-
-### Componentes Técnicos
-1. **Backend (FastAPI)**:
-   - **Modelos SQLAlchemy**: Definición completa de entidades con relaciones.
-   - **Schemas Pydantic**: Validación automática de datos.
-   - **Endpoints REST**: CRUD completo para todas las entidades.
-   - **Base de Datos**: PostgreSQL con migraciones Alembic.
-
-2. **Frontend (React + TypeScript)**:
-   - **Componentes Reutilizables**: Para secciones dinámicas.
-   - **React Router**: Navegación SPA sin recargas.
-   - **Axios + React Query**: API calls con cache inteligente.
-   - **Estado Local**: React hooks para formularios complejos.
-
-3. **Despliegue en Railway**:
-   - **Frontend**: Build estático servido con `serve`.
-   - **Backend**: FastAPI con Uvicorn.
-   - **Base de Datos**: PostgreSQL integrada.
-   - **Variables de Entorno**: Configuración segura.
-
-### Nueva Arquitectura Propuesta y Plan de Desarrollo
-Dado las limitaciones identificadas, se implementará una nueva arquitectura full-stack para superar las restricciones de Streamlit:
-
-#### Arquitectura Objetivo
-- **Frontend**: React.js con TypeScript para formularios dinámicos avanzados
-- **Backend**: FastAPI (Python) con base de datos PostgreSQL
-- **Despliegue**: Railway para frontend (Vite) y backend (FastAPI) con BD integrada
-- **Almacenamiento**: Railway volumes o AWS S3 para archivos
-- **Autenticación**: JWT con roles (Investigador, Administrador)
-
-#### Estructura del Proyecto
-```
-siniestros-app/
-├── frontend/              # React + TypeScript
-│   ├── src/
-│   │   ├── components/    # Componentes reutilizables
-│   │   │   ├── RelatoForm.tsx
-│   │   │   ├── ImageUpload.tsx
-│   │   │   └── DynamicSection.tsx
-│   │   ├── pages/
-│   │   │   ├── FormularioSiniestro.tsx
-│   │   │   └── Dashboard.tsx
-│   │   ├── hooks/         # Custom hooks para formularios
-│   │   ├── services/      # API calls
-│   │   └── types/         # TypeScript interfaces
-│   ├── public/
-│   └── package.json
-├── backend/               # FastAPI + SQLAlchemy
-│   ├── app/
-│   │   ├── models/        # SQLAlchemy models
-│   │   ├── schemas/       # Pydantic schemas
-│   │   ├── routers/       # API endpoints
-│   │   ├── services/      # Business logic
-│   │   └── utils/         # PDF generation, file handling
-│   ├── tests/
-│   └── requirements.txt
-├── database/              # Railway PostgreSQL
-├── docker/                # Dockerfiles para Railway
-└── docs/                  # Documentación API
-```
-
-#### Funcionalidades Clave a Implementar
-1. **Formulario Dinámico**:
-   - Componentes React para secciones expansibles
-   - Botones "Añadir Otro" dentro de cada sección
-   - Validación en tiempo real
-
-2. **Manejo de Archivos**:
-   - Upload múltiple con preview
-   - Almacenamiento en S3/Railway volumes
-   - Asociación con registros de BD
-
-3. **Generación de PDF**:
-   - Servicio backend asíncrono
-   - Templates profesionales con ReportLab
-   - Descarga directa desde frontend
-
-4. **Base de Datos**:
-   - Tablas: siniestros, relatos, imagenes, usuarios
-   - Relaciones many-to-one/many-to-many
-   - Migraciones con Alembic
-
-#### Estado Actual del Desarrollo
-✅ **Fase 1: Setup e Infraestructura** - COMPLETADA
-- ✅ Configurar repositorio con estructura backend
-- ✅ Desplegar PostgreSQL en Railway
-- ✅ Configurar CI/CD con Railway (FastAPI funcionando)
-
-✅ **Fase 2: Backend Core** - COMPLETADA
-- ✅ Modelos SQLAlchemy completos para todas las entidades
-- ✅ Schemas Pydantic con validación
-- ✅ Endpoints CRUD funcionales para siniestros
-- ✅ Configuración de base de datos PostgreSQL
-- ✅ Alembic para migraciones de BD
-- ✅ Servicio S3 completamente refactorizado con mejores prácticas
-- ✅ Arquitectura limpia con separación de responsabilidades
-- ✅ Manejo robusto de errores y logging completo
-- ✅ Configuración flexible via variables de entorno
-- ⏳ Servicio de generación PDF (parcial)
-- ⏳ Autenticación básica (pendiente)
-
-**Fase 3: Frontend Core** - PENDIENTE
-- Componentes React + TypeScript
-- Integración con API backend
-- Manejo de estado con React Query
-- UI/UX responsive
-
-**Fase 4: Funcionalidades Avanzadas** - PENDIENTE
-- Upload de archivos con drag&drop
-- Previews de imágenes
-- Formularios dinámicos anidados
-- Dashboard de informes
-
-**Fase 5: Testing y Optimización** - PENDIENTE
-- Tests unitarios e integración
-- Optimización de rendimiento
-- Documentación completa
-
-#### Despliegue en Railway
-- **Frontend**: Railway detectará package.json y desplegará con Vite
-- **Backend**: Railway usará requirements.txt y Procfile para FastAPI
-- **Base de Datos**: Railway PostgreSQL integrada
-- **Variables de Entorno**: Configurar en Railway dashboard
-
-Esta nueva arquitectura permitirá formularios complejos sin limitaciones, persistencia de datos, y escalabilidad para múltiples usuarios.
-
-### Próximos Pasos Sugeridos
-- Crear nuevo repositorio para la arquitectura full-stack
-- Implementar Fase 1: Setup de infraestructura
-- Desarrollar backend primero, luego frontend
-- Mantener despliegue continuo en Railway
-
-La versión Streamlit actual queda como prototipo funcional, pero se recomienda migrar a la nueva arquitectura para producción.
-
-## Requisitos del Sistema
-- Python 3.8+
-- Dependencias listadas en `requirements.txt`:
-  - streamlit
-  - reportlab
-  - staticmap
-  - pillow
-  - endesive
-  - requests
+**Esta estrategia garantiza desarrollo ágil sin problemas de migraciones.** 🚀
