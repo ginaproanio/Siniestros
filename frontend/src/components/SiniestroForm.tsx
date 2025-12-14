@@ -1,10 +1,11 @@
 import axios from "axios";
 import React, { useState } from "react";
 
-// Configurar base URL para el backend - cambiar cuando se cree el servicio separado
-const BACKEND_URL =
-  process.env.REACT_APP_BACKEND_URL ||
-  "https://siniestros-production.up.railway.app";
+// Configurar base URL para el backend
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+if (!BACKEND_URL) {
+  console.error('REACT_APP_BACKEND_URL no está configurado');
+}
 axios.defaults.baseURL = BACKEND_URL;
 
 // Interfaces para futuras expansiones del formulario
@@ -382,7 +383,7 @@ const SiniestroForm: React.FC = () => {
                 {relato.imagen_url && (
                   <div>
                     <img
-                      src={`http://localhost:8000${relato.imagen_url}`}
+                      src={`${BACKEND_URL}${relato.imagen_url}`}
                       alt={`Relato ${relato.numero_relato}`}
                       className="image-preview"
                     />
@@ -532,7 +533,7 @@ const SiniestroForm: React.FC = () => {
                 {inspeccion.imagen_url && (
                   <div style={{ marginTop: "5px" }}>
                     <img
-                      src={`http://localhost:8000${inspeccion.imagen_url}`}
+                      src={`${BACKEND_URL}${inspeccion.imagen_url}`}
                       alt={`Inspección ${inspeccion.numero_inspeccion}`}
                       style={{
                         maxWidth: "200px",
@@ -682,7 +683,7 @@ const SiniestroForm: React.FC = () => {
                 {testigo.imagen_url && (
                   <div style={{ marginTop: "5px" }}>
                     <img
-                      src={`http://localhost:8000${testigo.imagen_url}`}
+                      src={`${BACKEND_URL}${testigo.imagen_url}`}
                       alt={`Testigo ${testigo.numero_relato}`}
                       style={{
                         maxWidth: "200px",

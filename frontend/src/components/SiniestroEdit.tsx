@@ -44,10 +44,11 @@ interface FormData {
   testigos?: TestigoData[];
 }
 
-// Configurar base URL para el backend - cambiar cuando se cree el servicio separado
-const BACKEND_URL =
-  process.env.REACT_APP_BACKEND_URL ||
-  "https://siniestros-production.up.railway.app";
+// Configurar base URL para el backend
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+if (!BACKEND_URL) {
+  console.error('REACT_APP_BACKEND_URL no está configurado');
+}
 axios.defaults.baseURL = BACKEND_URL;
 
 const SiniestroEdit: React.FC = () => {
@@ -362,7 +363,7 @@ const SiniestroEdit: React.FC = () => {
                 {relato.imagen_url && (
                   <div style={{ marginTop: '5px' }}>
                     <img
-                      src={`http://localhost:8000${relato.imagen_url}`}
+                      src={`${BACKEND_URL}${relato.imagen_url}`}
                       alt={`Relato ${relato.numero_relato}`}
                       style={{ maxWidth: '200px', maxHeight: '150px', border: '1px solid #ddd' }}
                     />
@@ -465,7 +466,7 @@ const SiniestroEdit: React.FC = () => {
                 {inspeccion.imagen_url && (
                   <div style={{ marginTop: '5px' }}>
                     <img
-                      src={`http://localhost:8000${inspeccion.imagen_url}`}
+                      src={`${BACKEND_URL}${inspeccion.imagen_url}`}
                       alt={`Inspección ${inspeccion.numero_inspeccion}`}
                       style={{ maxWidth: '200px', maxHeight: '150px', border: '1px solid #ddd' }}
                     />
@@ -568,7 +569,7 @@ const SiniestroEdit: React.FC = () => {
                 {testigo.imagen_url && (
                   <div style={{ marginTop: '5px' }}>
                     <img
-                      src={`http://localhost:8000${testigo.imagen_url}`}
+                      src={`${BACKEND_URL}${testigo.imagen_url}`}
                       alt={`Testigo ${testigo.numero_relato}`}
                       style={{ maxWidth: '200px', maxHeight: '150px', border: '1px solid #ddd' }}
                     />

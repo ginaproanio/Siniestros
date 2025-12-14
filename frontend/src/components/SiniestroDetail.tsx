@@ -61,7 +61,13 @@ const SiniestroDetail: React.FC = () => {
         <button
           onClick={async () => {
             try {
-              const response = await fetch(`/api/v1/${siniestro.id}/generar-pdf`, {
+              const apiBase = process.env.REACT_APP_BACKEND_URL;
+              if (!apiBase) {
+                console.error('REACT_APP_BACKEND_URL no está configurado');
+                alert('Error de configuración: REACT_APP_BACKEND_URL no está definido');
+                return;
+              }
+              const response = await fetch(`${apiBase}/api/v1/${siniestro.id}/generar-pdf`, {
                 method: 'POST',
               });
 
