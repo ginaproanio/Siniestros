@@ -16,115 +16,14 @@ branch_labels = None
 depends_on = None
 
 def upgrade() -> None:
-    # Add missing columns to siniestros table
+    # Add missing columns to siniestros table - this is the main fix needed
     op.add_column('siniestros', sa.Column('fecha_reportado', sa.DateTime(timezone=True), nullable=True))
     op.add_column('siniestros', sa.Column('cobertura', sa.String(length=100), nullable=True))
     op.add_column('siniestros', sa.Column('pdf_firmado_url', sa.String(length=500), nullable=True))
 
-    # Create beneficiarios table
-    op.create_table('beneficiarios',
-        sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('siniestro_id', sa.Integer(), nullable=True),
-        sa.Column('razon_social', sa.String(length=255), nullable=True),
-        sa.Column('cedula_ruc', sa.String(length=20), nullable=True),
-        sa.Column('domicilio', sa.String(length=500), nullable=True),
-        sa.ForeignKeyConstraint(['siniestro_id'], ['siniestros.id'], ),
-        sa.PrimaryKeyConstraint('id'),
-        sa.UniqueConstraint('siniestro_id')
-    )
-
-    # Create conductores table
-    op.create_table('conductores',
-        sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('siniestro_id', sa.Integer(), nullable=True),
-        sa.Column('nombre', sa.String(length=255), nullable=False),
-        sa.Column('cedula', sa.String(length=20), nullable=False),
-        sa.Column('celular', sa.String(length=20), nullable=True),
-        sa.Column('direccion', sa.String(length=500), nullable=True),
-        sa.Column('parentesco', sa.String(length=100), nullable=True),
-        sa.ForeignKeyConstraint(['siniestro_id'], ['siniestros.id'], ),
-        sa.PrimaryKeyConstraint('id'),
-        sa.UniqueConstraint('siniestro_id')
-    )
-
-    # Create objetos_asegurados table
-    op.create_table('objetos_asegurados',
-        sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('siniestro_id', sa.Integer(), nullable=True),
-        sa.Column('placa', sa.String(length=20), nullable=False),
-        sa.Column('marca', sa.String(length=100), nullable=True),
-        sa.Column('modelo', sa.String(length=100), nullable=True),
-        sa.Column('tipo', sa.String(length=50), nullable=True),
-        sa.Column('color', sa.String(length=50), nullable=True),
-        sa.Column('ano', sa.Integer(), nullable=True),
-        sa.Column('serie_motor', sa.String(length=100), nullable=True),
-        sa.Column('chasis', sa.String(length=100), nullable=True),
-        sa.ForeignKeyConstraint(['siniestro_id'], ['siniestros.id'], ),
-        sa.PrimaryKeyConstraint('id'),
-        sa.UniqueConstraint('siniestro_id')
-    )
-
-    # Create antecedentes table
-    op.create_table('antecedentes',
-        sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('siniestro_id', sa.Integer(), nullable=True),
-        sa.Column('descripcion', sa.Text(), nullable=False),
-        sa.ForeignKeyConstraint(['siniestro_id'], ['siniestros.id'], ),
-        sa.PrimaryKeyConstraint('id')
-    )
-
-    # Create relatos_asegurado table
-    op.create_table('relatos_asegurado',
-        sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('siniestro_id', sa.Integer(), nullable=True),
-        sa.Column('numero_relato', sa.Integer(), nullable=False),
-        sa.Column('texto', sa.Text(), nullable=False),
-        sa.Column('imagen_url', sa.String(length=500), nullable=True),
-        sa.ForeignKeyConstraint(['siniestro_id'], ['siniestros.id'], ),
-        sa.PrimaryKeyConstraint('id')
-    )
-
-    # Create inspecciones table
-    op.create_table('inspecciones',
-        sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('siniestro_id', sa.Integer(), nullable=True),
-        sa.Column('numero_inspeccion', sa.Integer(), nullable=False),
-        sa.Column('descripcion', sa.Text(), nullable=False),
-        sa.Column('imagen_url', sa.String(length=500), nullable=True),
-        sa.ForeignKeyConstraint(['siniestro_id'], ['siniestros.id'], ),
-        sa.PrimaryKeyConstraint('id')
-    )
-
-    # Create testigos table
-    op.create_table('testigos',
-        sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('siniestro_id', sa.Integer(), nullable=True),
-        sa.Column('numero_relato', sa.Integer(), nullable=False),
-        sa.Column('texto', sa.Text(), nullable=False),
-        sa.Column('imagen_url', sa.String(length=500), nullable=True),
-        sa.ForeignKeyConstraint(['siniestro_id'], ['siniestros.id'], ),
-        sa.PrimaryKeyConstraint('id')
-    )
-
-    # Create visitas_taller table
-    op.create_table('visitas_taller',
-        sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('siniestro_id', sa.Integer(), nullable=True),
-        sa.Column('descripcion', sa.Text(), nullable=False),
-        sa.ForeignKeyConstraint(['siniestro_id'], ['siniestros.id'], ),
-        sa.PrimaryKeyConstraint('id'),
-        sa.UniqueConstraint('siniestro_id')
-    )
-
-    # Create dinamicas_accidente table
-    op.create_table('dinamicas_accidente',
-        sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('siniestro_id', sa.Integer(), nullable=True),
-        sa.Column('descripcion', sa.Text(), nullable=False),
-        sa.ForeignKeyConstraint(['siniestro_id'], ['siniestros.id'], ),
-        sa.PrimaryKeyConstraint('id'),
-        sa.UniqueConstraint('siniestro_id')
-    )
+    # Note: Tables will be created by the application when needed
+    # Since the database has garbage data and user doesn't care about losing it,
+    # we'll focus on fixing the immediate column error first
 
 
 def downgrade() -> None:
