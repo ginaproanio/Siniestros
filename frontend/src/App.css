@@ -529,16 +529,18 @@ button[type="button"]:nth-child(2):hover {
   background-color: rgba(15, 23, 42, 0.05);
 }
 
+/* Estados de pestañas - Sistema CONSISTENTE para todos */
 .tab-button.active {
   color: white;
-  background-color: var(--color-rojo-acento);
+  background-color: var(--color-rojo-acento); /* Rojo para activa */
   border-bottom-color: var(--color-rojo-acento);
   font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .tab-button.completed {
   color: white;
-  background-color: #059669;
+  background-color: #059669; /* Verde para completada */
   border-bottom-color: #059669;
 }
 
@@ -554,16 +556,19 @@ button[type="button"]:nth-child(2):hover {
 
 .tab-button.visited {
   color: var(--color-negro-corporativo);
-  background-color: rgba(59, 130, 246, 0.1); /* Azul sutil para visited */
+  background-color: rgba(59, 130, 246, 0.1); /* Azul sutil para visitada */
   border-bottom-color: rgba(59, 130, 246, 0.3);
+  border-bottom-width: 2px;
   font-weight: 500;
+  opacity: 0.8;
 }
 
-/* Pestañas no visitadas (estado por defecto - gris) */
+/* Estado por defecto - gris para pendientes */
 .tab-button:not(.active):not(.completed):not(.visited) {
   color: var(--color-gris-texto);
   background-color: transparent;
   border-bottom-color: transparent;
+  opacity: 0.6;
 }
 
 .tab-content {

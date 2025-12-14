@@ -218,6 +218,7 @@ const SiniestroForm: React.FC = () => {
                 key={tab.id}
                 type="button"
                 className={buttonClass}
+                data-tab={tab.id}
                 onClick={() => goToTab(tab.id)}
               >
                 {tab.icon} {tab.title}
