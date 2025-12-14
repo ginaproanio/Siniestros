@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 // Configurar base URL para el backend
 const BACKEND_URL =
@@ -199,8 +199,6 @@ const SiniestroForm: React.FC = () => {
         <h2>Registro de Siniestro</h2>
       </div>
 
-
-
       {/* Tab Navigation */}
       <div className="tabs-container">
         <div className="tabs-header">
@@ -227,7 +225,8 @@ const SiniestroForm: React.FC = () => {
                 📋 Información Básica del Siniestro
               </div>
               <div className="form-section-description">
-                Datos principales del incidente reportado y configuración inicial
+                Datos principales del incidente reportado y configuración
+                inicial
               </div>
             </div>
           )}
@@ -239,7 +238,8 @@ const SiniestroForm: React.FC = () => {
                 ⚙️ Parametrización del Formulario
               </div>
               <div className="form-section-description">
-                Configuración específica de la investigación y declaración formal
+                Configuración específica de la investigación y declaración
+                formal
               </div>
             </div>
           )}
@@ -251,7 +251,8 @@ const SiniestroForm: React.FC = () => {
                 👥 Entidades Relacionadas
               </div>
               <div className="form-section-description">
-                Información completa de las personas y objetos involucrados en el siniestro
+                Información completa de las personas y objetos involucrados en
+                el siniestro
               </div>
             </div>
           )}
@@ -263,7 +264,8 @@ const SiniestroForm: React.FC = () => {
                 🔍 Investigación y Evidencia
               </div>
               <div className="form-section-description">
-                Recopilación sistemática de información, declaraciones y evidencia del incidente
+                Recopilación sistemática de información, declaraciones y
+                evidencia del incidente
               </div>
             </div>
           )}
@@ -271,279 +273,283 @@ const SiniestroForm: React.FC = () => {
           <form onSubmit={handleSubmit}>
             {/* TAB 1: Información Básica del Siniestro */}
             <div className={`tab-section ${activeTab === 0 ? "active" : ""}`}>
-
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Compañía de Seguros:</label>
-                    <input
-                      type="text"
-                      name="compania_seguros"
-                      value={formData.compania_seguros}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Número de Reclamo:</label>
-                    <input
-                      type="text"
-                      name="reclamo_num"
-                      value={formData.reclamo_num}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Fecha del Siniestro:</label>
-                    <input
-                      type="date"
-                      name="fecha_siniestro"
-                      value={formData.fecha_siniestro}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Fecha Reportado:</label>
-                    <input
-                      type="date"
-                      name="fecha_reportado"
-                      value={formData.fecha_reportado || ""}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Fecha Designación:</label>
-                    <input
-                      type="date"
-                      name="fecha_designacion"
-                      value={
-                        formData.fecha_designacion ||
-                        new Date().toISOString().split("T")[0]
-                      }
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                </div>
-
+              <div className="form-row">
                 <div className="form-group">
-                  <label>Dirección del Siniestro:</label>
-                  <textarea
-                    name="direccion_siniestro"
-                    value={formData.direccion_siniestro}
+                  <label>Compañía de Seguros:</label>
+                  <input
+                    type="text"
+                    name="compania_seguros"
+                    value={formData.compania_seguros}
                     onChange={handleInputChange}
-                    rows={2}
                     required
                   />
                 </div>
-
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Latitud:</label>
-                    <input
-                      type="number"
-                      step="0.0001"
-                      name="ubicacion_geo_lat"
-                      value={formData.ubicacion_geo_lat || ""}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Longitud:</label>
-                    <input
-                      type="number"
-                      step="0.0001"
-                      name="ubicacion_geo_lng"
-                      value={formData.ubicacion_geo_lng || ""}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                </div>
-
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Ejecutivo a Cargo:</label>
-                    <input
-                      type="text"
-                      name="ejecutivo_cargo"
-                      value={formData.ejecutivo_cargo}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label className="checkbox-label">
-                      <input
-                        type="checkbox"
-                        name="danos_terceros"
-                        checked={formData.danos_terceros}
-                        onChange={handleInputChange}
-                      />
-                      Daños a Terceros
-                    </label>
-                  </div>
-                </div>
-
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Tipo de Siniestro:</label>
-                    <input
-                      type="text"
-                      name="tipo_siniestro"
-                      value={formData.tipo_siniestro || ""}
-                      onChange={handleInputChange}
-                      placeholder="Ej: Vehicular, Incendio, Robo"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Cobertura:</label>
-                    <input
-                      type="text"
-                      name="cobertura"
-                      value={formData.cobertura || ""}
-                      onChange={handleInputChange}
-                      placeholder="Ej: Todo riesgo, Terceros, etc."
-                    />
-                </div>
-
-              {/* Tab Navigation */}
-              <div className="tab-navigation">
-                <button type="button" className="btn-prev" disabled>
-                  Anterior
-                </button>
-                <button type="button" className="btn-next" onClick={nextTab}>
-                  Siguiente
-                </button>
-              </div>
-            </div>
-
-            {/* TAB 2: Parametrización */}
-            <div className={`tab-section ${activeTab === 1 ? "active" : ""}`}>
-              <div
-                className="card-section"
-                style={{ marginBottom: "20px", backgroundColor: "#fff3cd" }}
-              >
-                <h4 style={{ color: "#0f172a", marginBottom: "10px" }}>
-                  📋 Misiva de Investigación
-                </h4>
                 <div className="form-group">
-                  <label>Instrucciones específicas de la aseguradora:</label>
-                  <textarea
-                    name="misiva_investigacion"
-                    value={formData.misiva_investigacion || ""}
+                  <label>Número de Reclamo:</label>
+                  <input
+                    type="text"
+                    name="reclamo_num"
+                    value={formData.reclamo_num}
                     onChange={handleInputChange}
-                    rows={6}
-                    placeholder="Escriba aquí las instrucciones específicas que dio la aseguradora para esta investigación..."
+                    required
                   />
                 </div>
-                <small style={{ color: "#6c757d", fontStyle: "italic" }}>
-                  * Este campo contiene las instrucciones particulares de la
-                  aseguradora para adaptar la investigación a sus
-                  requerimientos específicos.
-                </small>
               </div>
 
-              <hr style={{ border: "none", borderTop: "1px solid #e2e8f0", margin: "30px 0" }} />
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Fecha del Siniestro:</label>
+                  <input
+                    type="date"
+                    name="fecha_siniestro"
+                    value={formData.fecha_siniestro}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Fecha Reportado:</label>
+                  <input
+                    type="date"
+                    name="fecha_reportado"
+                    value={formData.fecha_reportado || ""}
+                    onChange={handleInputChange}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Fecha Designación:</label>
+                  <input
+                    type="date"
+                    name="fecha_designacion"
+                    value={
+                      formData.fecha_designacion ||
+                      new Date().toISOString().split("T")[0]
+                    }
+                    onChange={handleInputChange}
+                  />
+                </div>
+              </div>
 
-              <div
-                className="card-section"
-                style={{ backgroundColor: "#e8f4fd" }}
-              >
-                <h4 style={{ color: "#0f172a", marginBottom: "10px" }}>
-                  📝 Declaración del Siniestro
-                </h4>
+              <div className="form-group">
+                <label>Dirección del Siniestro:</label>
+                <textarea
+                  name="direccion_siniestro"
+                  value={formData.direccion_siniestro}
+                  onChange={handleInputChange}
+                  rows={2}
+                  required
+                />
+              </div>
 
-                <div className="form-row">
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Latitud:</label>
+                  <input
+                    type="number"
+                    step="0.0001"
+                    name="ubicacion_geo_lat"
+                    value={formData.ubicacion_geo_lat || ""}
+                    onChange={handleInputChange}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Longitud:</label>
+                  <input
+                    type="number"
+                    step="0.0001"
+                    name="ubicacion_geo_lng"
+                    value={formData.ubicacion_geo_lng || ""}
+                    onChange={handleInputChange}
+                  />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Ejecutivo a Cargo:</label>
+                  <input
+                    type="text"
+                    name="ejecutivo_cargo"
+                    value={formData.ejecutivo_cargo}
+                    onChange={handleInputChange}
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      name="danos_terceros"
+                      checked={formData.danos_terceros}
+                      onChange={handleInputChange}
+                    />
+                    Daños a Terceros
+                  </label>
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Tipo de Siniestro:</label>
+                  <input
+                    type="text"
+                    name="tipo_siniestro"
+                    value={formData.tipo_siniestro || ""}
+                    onChange={handleInputChange}
+                    placeholder="Ej: Vehicular, Incendio, Robo"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Cobertura:</label>
+                  <input
+                    type="text"
+                    name="cobertura"
+                    value={formData.cobertura || ""}
+                    onChange={handleInputChange}
+                    placeholder="Ej: Todo riesgo, Terceros, etc."
+                  />
+                </div>
+
+                {/* Tab Navigation */}
+                <div className="tab-navigation">
+                  <button type="button" className="btn-prev" disabled>
+                    Anterior
+                  </button>
+                  <button type="button" className="btn-next" onClick={nextTab}>
+                    Siguiente
+                  </button>
+                </div>
+              </div>
+
+              {/* TAB 2: Parametrización */}
+              <div className={`tab-section ${activeTab === 1 ? "active" : ""}`}>
+                <div
+                  className="card-section"
+                  style={{ marginBottom: "20px", backgroundColor: "#fff3cd" }}
+                >
+                  <h4 style={{ color: "#0f172a", marginBottom: "10px" }}>
+                    📋 Misiva de Investigación
+                  </h4>
                   <div className="form-group">
-                    <label>Tipo de Persona que Declara:</label>
-                    <div className="inline-fields">
-                      <div className="inline-field narrow">
-                        <select
-                          name="persona_declara_tipo"
-                          value={formData.persona_declara_tipo || ""}
-                          onChange={handleInputChange}
-                          style={{ width: "100%" }}
-                        >
-                          <option value="">Seleccionar...</option>
-                          <option value="asegurado">Asegurado</option>
-                          <option value="conductor">Conductor</option>
-                          <option value="broker">Bróker</option>
-                          <option value="otro">Otro</option>
-                        </select>
+                    <label>Instrucciones específicas de la aseguradora:</label>
+                    <textarea
+                      name="misiva_investigacion"
+                      value={formData.misiva_investigacion || ""}
+                      onChange={handleInputChange}
+                      rows={6}
+                      placeholder="Escriba aquí las instrucciones específicas que dio la aseguradora para esta investigación..."
+                    />
+                  </div>
+                  <small style={{ color: "#6c757d", fontStyle: "italic" }}>
+                    * Este campo contiene las instrucciones particulares de la
+                    aseguradora para adaptar la investigación a sus
+                    requerimientos específicos.
+                  </small>
+                </div>
+
+                <hr
+                  style={{
+                    border: "none",
+                    borderTop: "1px solid #e2e8f0",
+                    margin: "30px 0",
+                  }}
+                />
+
+                <div
+                  className="card-section"
+                  style={{ backgroundColor: "#e8f4fd" }}
+                >
+                  <h4 style={{ color: "#0f172a", marginBottom: "10px" }}>
+                    📝 Declaración del Siniestro
+                  </h4>
+
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Tipo de Persona que Declara:</label>
+                      <div className="inline-fields">
+                        <div className="inline-field narrow">
+                          <select
+                            name="persona_declara_tipo"
+                            value={formData.persona_declara_tipo || ""}
+                            onChange={handleInputChange}
+                            style={{ width: "100%" }}
+                          >
+                            <option value="">Seleccionar...</option>
+                            <option value="asegurado">Asegurado</option>
+                            <option value="conductor">Conductor</option>
+                            <option value="broker">Bróker</option>
+                            <option value="otro">Otro</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="form-group">
+                      <label>Fecha Reportado:</label>
+                      <div className="read-only-field">
+                        <input
+                          type="date"
+                          value={formData.fecha_reportado || ""}
+                          readOnly
+                          style={{
+                            backgroundColor: "#f8f9fa",
+                            cursor: "not-allowed",
+                            border: "1px solid #dee2e6",
+                          }}
+                        />
+                        <small style={{ color: "#6c757d", fontSize: "12px" }}>
+                          * Se toma de la Información Básica
+                        </small>
                       </div>
                     </div>
                   </div>
-                  <div className="form-group">
-                    <label>Fecha Reportado:</label>
-                    <div className="read-only-field">
+
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Cédula o RUC de quien declara:</label>
                       <input
-                        type="date"
-                        value={formData.fecha_reportado || ""}
-                        readOnly
-                        style={{
-                          backgroundColor: "#f8f9fa",
-                          cursor: "not-allowed",
-                          border: "1px solid #dee2e6",
-                        }}
+                        type="text"
+                        name="persona_declara_cedula"
+                        value={formData.persona_declara_cedula || ""}
+                        onChange={handleInputChange}
+                        placeholder="Ej: 1234567890"
                       />
-                      <small style={{ color: "#6c757d", fontSize: "12px" }}>
-                        * Se toma de la Información Básica
-                      </small>
+                    </div>
+                    <div className="form-group">
+                      <label>Nombre completo:</label>
+                      <input
+                        type="text"
+                        name="persona_declara_nombre"
+                        value={formData.persona_declara_nombre || ""}
+                        onChange={handleInputChange}
+                        placeholder="Ej: Juan Pérez"
+                      />
                     </div>
                   </div>
-                </div>
 
-                <div className="form-row">
                   <div className="form-group">
-                    <label>Cédula o RUC de quien declara:</label>
+                    <label>Relación con el asegurado:</label>
                     <input
                       type="text"
-                      name="persona_declara_cedula"
-                      value={formData.persona_declara_cedula || ""}
+                      name="persona_declara_relacion"
+                      value={formData.persona_declara_relacion || ""}
                       onChange={handleInputChange}
-                      placeholder="Ej: 1234567890"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Nombre completo:</label>
-                    <input
-                      type="text"
-                      name="persona_declara_nombre"
-                      value={formData.persona_declara_nombre || ""}
-                      onChange={handleInputChange}
-                      placeholder="Ej: Juan Pérez"
+                      placeholder="Ej: Propietario del vehículo, Esposo/a, Hijo/a, etc."
                     />
                   </div>
                 </div>
 
-                <div className="form-group">
-                  <label>Relación con el asegurado:</label>
-                  <input
-                    type="text"
-                    name="persona_declara_relacion"
-                    value={formData.persona_declara_relacion || ""}
-                    onChange={handleInputChange}
-                    placeholder="Ej: Propietario del vehículo, Esposo/a, Hijo/a, etc."
-                  />
+                {/* Tab Navigation */}
+                <div className="tab-navigation">
+                  <button type="button" className="btn-prev" onClick={prevTab}>
+                    Anterior
+                  </button>
+                  <button type="button" className="btn-next" onClick={nextTab}>
+                    Siguiente
+                  </button>
                 </div>
               </div>
 
-              {/* Tab Navigation */}
-              <div className="tab-navigation">
-                <button type="button" className="btn-prev" onClick={prevTab}>
-                  Anterior
-                </button>
-                <button type="button" className="btn-next" onClick={nextTab}>
-                  Siguiente
-                </button>
-              </div>
-            </div>
-
-            {/* TAB 3: Entidades Relacionadas */}
-            <div className={`tab-section ${activeTab === 2 ? "active" : ""}`}>
-
+              {/* TAB 3: Entidades Relacionadas */}
+              <div className={`tab-section ${activeTab === 2 ? "active" : ""}`}>
                 {/* ASEGURADO */}
                 <div
                   className="card-section"
@@ -572,7 +578,10 @@ const SiniestroForm: React.FC = () => {
                           }}
                           className="person-type-radio"
                         />
-                        <label htmlFor="asegurado-natural" className="person-type-card">
+                        <label
+                          htmlFor="asegurado-natural"
+                          className="person-type-card"
+                        >
                           Persona Natural
                         </label>
                       </div>
@@ -592,7 +601,10 @@ const SiniestroForm: React.FC = () => {
                           }}
                           className="person-type-radio"
                         />
-                        <label htmlFor="asegurado-juridica" className="person-type-card">
+                        <label
+                          htmlFor="asegurado-juridica"
+                          className="person-type-card"
+                        >
                           Persona Jurídica
                         </label>
                       </div>
@@ -851,7 +863,10 @@ const SiniestroForm: React.FC = () => {
                             }));
                           }}
                         />
-                        <label htmlFor="beneficiario-es-asegurado" className="checkbox-label-text">
+                        <label
+                          htmlFor="beneficiario-es-asegurado"
+                          className="checkbox-label-text"
+                        >
                           Beneficiario es el Asegurado
                         </label>
                       </div>
@@ -1004,7 +1019,10 @@ const SiniestroForm: React.FC = () => {
                     🚗 Datos del Conductor
                   </h4>
 
-                  <div className="checkbox-group" style={{ marginBottom: "15px" }}>
+                  <div
+                    className="checkbox-group"
+                    style={{ marginBottom: "15px" }}
+                  >
                     <input
                       type="checkbox"
                       id="conductor-es-asegurado"
@@ -1031,7 +1049,10 @@ const SiniestroForm: React.FC = () => {
                         }));
                       }}
                     />
-                    <label htmlFor="conductor-es-asegurado" className="checkbox-label-text">
+                    <label
+                      htmlFor="conductor-es-asegurado"
+                      className="checkbox-label-text"
+                    >
                       Conductor es el asegurado
                     </label>
                   </div>
@@ -1322,412 +1343,411 @@ const SiniestroForm: React.FC = () => {
 
             {/* TAB 4: Investigación */}
             <div className={`tab-section ${activeTab === 3 ? "active" : ""}`}>
+              {/* ANTECEDENTES */}
+              <div
+                className="card-section"
+                style={{ marginBottom: "20px", backgroundColor: "#f8f9fa" }}
+              >
+                <h4 style={{ color: "#0f172a", marginBottom: "15px" }}>
+                  📋 Antecedentes
+                </h4>
+                <div className="form-group">
+                  <label>Descripción de los antecedentes:</label>
+                  <textarea
+                    name="antecedentes_descripcion"
+                    value={
+                      (formData.antecedentes &&
+                        formData.antecedentes[0]?.descripcion) ||
+                      ""
+                    }
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setFormData((prev) => ({
+                        ...prev,
+                        antecedentes: [{ descripcion: value }],
+                      }));
+                    }}
+                    rows={4}
+                    placeholder="Describa el aviso de siniestro, alcances de la investigación..."
+                  />
+                </div>
+              </div>
 
-                {/* ANTECEDENTES */}
-                <div
-                  className="card-section"
-                  style={{ marginBottom: "20px", backgroundColor: "#f8f9fa" }}
+              {/* ENTREVISTA CON EL ASEGURADO */}
+              <div
+                className="card-section"
+                style={{ marginBottom: "20px", backgroundColor: "#e9ecef" }}
+              >
+                <h4 style={{ color: "#0f172a", marginBottom: "15px" }}>
+                  🎤 Entrevista con el Asegurado
+                </h4>
+                <button
+                  type="button"
+                  className="btn-add"
+                  onClick={() => {
+                    const currentRelatos = formData.relatos_asegurado || [];
+                    const nextNumero = currentRelatos.length + 1;
+                    setFormData((prev) => ({
+                      ...prev,
+                      relatos_asegurado: [
+                        ...currentRelatos,
+                        {
+                          numero_relato: nextNumero,
+                          texto: "",
+                          imagen_url: "",
+                        },
+                      ],
+                    }));
+                  }}
                 >
-                  <h4 style={{ color: "#0f172a", marginBottom: "15px" }}>
-                    📋 Antecedentes
-                  </h4>
-                  <div className="form-group">
-                    <label>Descripción de los antecedentes:</label>
-                    <textarea
-                      name="antecedentes_descripcion"
-                      value={
-                        (formData.antecedentes &&
-                          formData.antecedentes[0]?.descripcion) ||
-                        ""
-                      }
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        setFormData((prev) => ({
-                          ...prev,
-                          antecedentes: [{ descripcion: value }],
-                        }));
-                      }}
-                      rows={4}
-                      placeholder="Describa el aviso de siniestro, alcances de la investigación..."
-                    />
+                  ➕ Agregar Relato
+                </button>
+
+                {formData.relatos_asegurado?.map((relato, index) => (
+                  <div key={index} className="dynamic-item">
+                    <div className="dynamic-item-header">
+                      <h4 className="dynamic-item-title">
+                        Relato {relato.numero_relato}
+                      </h4>
+                      <button
+                        type="button"
+                        className="btn-delete"
+                        onClick={() => {
+                          setFormData((prev) => ({
+                            ...prev,
+                            relatos_asegurado:
+                              prev.relatos_asegurado?.filter(
+                                (_, i) => i !== index
+                              ) || [],
+                          }));
+                        }}
+                      >
+                        ❌ Eliminar
+                      </button>
+                    </div>
+
+                    <div className="form-group">
+                      <label>Texto del relato:</label>
+                      <textarea
+                        value={relato.texto}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setFormData((prev) => ({
+                            ...prev,
+                            relatos_asegurado:
+                              prev.relatos_asegurado?.map((r, i) =>
+                                i === index ? { ...r, texto: value } : r
+                              ) || [],
+                          }));
+                        }}
+                        rows={3}
+                        placeholder="Escriba el relato del asegurado..."
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Imagen:</label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            try {
+                              const formDataUpload = new FormData();
+                              formDataUpload.append("file", file);
+                              const response = await axios.post(
+                                "/api/v1/upload-imagen",
+                                formDataUpload,
+                                {
+                                  headers: {
+                                    "Content-Type": "multipart/form-data",
+                                  },
+                                }
+                              );
+                              const imageUrl = response.data.url;
+                              setFormData((prev) => ({
+                                ...prev,
+                                relatos_asegurado:
+                                  prev.relatos_asegurado?.map((r, i) =>
+                                    i === index
+                                      ? { ...r, imagen_url: imageUrl }
+                                      : r
+                                  ) || [],
+                              }));
+                            } catch (error) {
+                              console.error("Error subiendo imagen:", error);
+                              alert(
+                                "Error al subir la imagen. Intente nuevamente."
+                              );
+                            }
+                          }
+                        }}
+                      />
+                      {relato.imagen_url && (
+                        <div>
+                          <img
+                            src={`${BACKEND_URL}${relato.imagen_url}`}
+                            alt={`Relato ${relato.numero_relato}`}
+                            className="image-preview"
+                          />
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
+                ))}
+              </div>
 
-                {/* ENTREVISTA CON EL ASEGURADO */}
-                <div
-                  className="card-section"
-                  style={{ marginBottom: "20px", backgroundColor: "#e9ecef" }}
+              {/* INSPECCIÓN DEL LUGAR */}
+              <div
+                className="card-section"
+                style={{ marginBottom: "20px", backgroundColor: "#f8f9fa" }}
+              >
+                <h4 style={{ color: "#0f172a", marginBottom: "15px" }}>
+                  🔍 Inspección del Lugar
+                </h4>
+                <button
+                  type="button"
+                  className="btn-add"
+                  onClick={() => {
+                    const currentInspecciones = formData.inspecciones || [];
+                    const nextNumero = currentInspecciones.length + 1;
+                    setFormData((prev) => ({
+                      ...prev,
+                      inspecciones: [
+                        ...currentInspecciones,
+                        {
+                          numero_inspeccion: nextNumero,
+                          descripcion: "",
+                          imagen_url: "",
+                        },
+                      ],
+                    }));
+                  }}
                 >
-                  <h4 style={{ color: "#0f172a", marginBottom: "15px" }}>
-                    🎤 Entrevista con el Asegurado
-                  </h4>
-                  <button
-                    type="button"
-                    className="btn-add"
-                    onClick={() => {
-                      const currentRelatos = formData.relatos_asegurado || [];
-                      const nextNumero = currentRelatos.length + 1;
-                      setFormData((prev) => ({
-                        ...prev,
-                        relatos_asegurado: [
-                          ...currentRelatos,
-                          {
-                            numero_relato: nextNumero,
-                            texto: "",
-                            imagen_url: "",
-                          },
-                        ],
-                      }));
-                    }}
-                  >
-                    ➕ Agregar Relato
-                  </button>
+                  ➕ Agregar Inspección
+                </button>
 
-                  {formData.relatos_asegurado?.map((relato, index) => (
-                    <div key={index} className="dynamic-item">
-                      <div className="dynamic-item-header">
-                        <h4 className="dynamic-item-title">
-                          Relato {relato.numero_relato}
-                        </h4>
-                        <button
-                          type="button"
-                          className="btn-delete"
-                          onClick={() => {
-                            setFormData((prev) => ({
-                              ...prev,
-                              relatos_asegurado:
-                                prev.relatos_asegurado?.filter(
-                                  (_, i) => i !== index
-                                ) || [],
-                            }));
-                          }}
-                        >
-                          ❌ Eliminar
-                        </button>
-                      </div>
-
-                      <div className="form-group">
-                        <label>Texto del relato:</label>
-                        <textarea
-                          value={relato.texto}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setFormData((prev) => ({
-                              ...prev,
-                              relatos_asegurado:
-                                prev.relatos_asegurado?.map((r, i) =>
-                                  i === index ? { ...r, texto: value } : r
-                                ) || [],
-                            }));
-                          }}
-                          rows={3}
-                          placeholder="Escriba el relato del asegurado..."
-                        />
-                      </div>
-
-                      <div className="form-group">
-                        <label>Imagen:</label>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={async (e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              try {
-                                const formDataUpload = new FormData();
-                                formDataUpload.append("file", file);
-                                const response = await axios.post(
-                                  "/api/v1/upload-imagen",
-                                  formDataUpload,
-                                  {
-                                    headers: {
-                                      "Content-Type": "multipart/form-data",
-                                    },
-                                  }
-                                );
-                                const imageUrl = response.data.url;
-                                setFormData((prev) => ({
-                                  ...prev,
-                                  relatos_asegurado:
-                                    prev.relatos_asegurado?.map((r, i) =>
-                                      i === index
-                                        ? { ...r, imagen_url: imageUrl }
-                                        : r
-                                    ) || [],
-                                }));
-                              } catch (error) {
-                                console.error("Error subiendo imagen:", error);
-                                alert(
-                                  "Error al subir la imagen. Intente nuevamente."
-                                );
-                              }
-                            }
-                          }}
-                        />
-                        {relato.imagen_url && (
-                          <div>
-                            <img
-                              src={`${BACKEND_URL}${relato.imagen_url}`}
-                              alt={`Relato ${relato.numero_relato}`}
-                              className="image-preview"
-                            />
-                          </div>
-                        )}
-                      </div>
+                {formData.inspecciones?.map((inspeccion, index) => (
+                  <div key={index} className="dynamic-item">
+                    <div className="dynamic-item-header">
+                      <h4 className="dynamic-item-title">
+                        Inspección {inspeccion.numero_inspeccion}
+                      </h4>
+                      <button
+                        type="button"
+                        className="btn-delete"
+                        onClick={() => {
+                          setFormData((prev) => ({
+                            ...prev,
+                            inspecciones:
+                              prev.inspecciones?.filter(
+                                (_, i) => i !== index
+                              ) || [],
+                          }));
+                        }}
+                      >
+                        ❌ Eliminar
+                      </button>
                     </div>
-                  ))}
-                </div>
 
-                {/* INSPECCIÓN DEL LUGAR */}
-                <div
-                  className="card-section"
-                  style={{ marginBottom: "20px", backgroundColor: "#f8f9fa" }}
+                    <div className="form-group">
+                      <label>Descripción de la inspección:</label>
+                      <textarea
+                        value={inspeccion.descripcion}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setFormData((prev) => ({
+                            ...prev,
+                            inspecciones:
+                              prev.inspecciones?.map((insp, i) =>
+                                i === index
+                                  ? { ...insp, descripcion: value }
+                                  : insp
+                              ) || [],
+                          }));
+                        }}
+                        rows={3}
+                        placeholder="Describa los hallazgos de la inspección..."
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Imagen:</label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            try {
+                              const formDataUpload = new FormData();
+                              formDataUpload.append("file", file);
+                              const response = await axios.post(
+                                "/api/v1/upload-imagen",
+                                formDataUpload,
+                                {
+                                  headers: {
+                                    "Content-Type": "multipart/form-data",
+                                  },
+                                }
+                              );
+                              const imageUrl = response.data.url;
+                              setFormData((prev) => ({
+                                ...prev,
+                                inspecciones:
+                                  prev.inspecciones?.map((insp, i) =>
+                                    i === index
+                                      ? { ...insp, imagen_url: imageUrl }
+                                      : insp
+                                  ) || [],
+                              }));
+                            } catch (error) {
+                              console.error("Error subiendo imagen:", error);
+                              alert(
+                                "Error al subir la imagen. Intente nuevamente."
+                              );
+                            }
+                          }
+                        }}
+                      />
+                      {inspeccion.imagen_url && (
+                        <div>
+                          <img
+                            src={`${BACKEND_URL}${inspeccion.imagen_url}`}
+                            alt={`Inspección ${inspeccion.numero_inspeccion}`}
+                            className="image-preview"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* TESTIGOS */}
+              <div
+                className="card-section"
+                style={{ backgroundColor: "#f8f9fa" }}
+              >
+                <h4 style={{ color: "#0f172a", marginBottom: "15px" }}>
+                  👥 Testigos
+                </h4>
+                <button
+                  type="button"
+                  className="btn-add"
+                  onClick={() => {
+                    const currentTestigos = formData.testigos || [];
+                    const nextNumero = currentTestigos.length + 1;
+                    setFormData((prev) => ({
+                      ...prev,
+                      testigos: [
+                        ...currentTestigos,
+                        {
+                          numero_relato: nextNumero,
+                          texto: "",
+                          imagen_url: "",
+                        },
+                      ],
+                    }));
+                  }}
                 >
-                  <h4 style={{ color: "#0f172a", marginBottom: "15px" }}>
-                    🔍 Inspección del Lugar
-                  </h4>
-                  <button
-                    type="button"
-                    className="btn-add"
-                    onClick={() => {
-                      const currentInspecciones = formData.inspecciones || [];
-                      const nextNumero = currentInspecciones.length + 1;
-                      setFormData((prev) => ({
-                        ...prev,
-                        inspecciones: [
-                          ...currentInspecciones,
-                          {
-                            numero_inspeccion: nextNumero,
-                            descripcion: "",
-                            imagen_url: "",
-                          },
-                        ],
-                      }));
-                    }}
-                  >
-                    ➕ Agregar Inspección
-                  </button>
+                  ➕ Agregar Testigo
+                </button>
 
-                  {formData.inspecciones?.map((inspeccion, index) => (
-                    <div key={index} className="dynamic-item">
-                      <div className="dynamic-item-header">
-                        <h4 className="dynamic-item-title">
-                          Inspección {inspeccion.numero_inspeccion}
-                        </h4>
-                        <button
-                          type="button"
-                          className="btn-delete"
-                          onClick={() => {
-                            setFormData((prev) => ({
-                              ...prev,
-                              inspecciones:
-                                prev.inspecciones?.filter(
-                                  (_, i) => i !== index
-                                ) || [],
-                            }));
-                          }}
-                        >
-                          ❌ Eliminar
-                        </button>
-                      </div>
-
-                      <div className="form-group">
-                        <label>Descripción de la inspección:</label>
-                        <textarea
-                          value={inspeccion.descripcion}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setFormData((prev) => ({
-                              ...prev,
-                              inspecciones:
-                                prev.inspecciones?.map((insp, i) =>
-                                  i === index
-                                    ? { ...insp, descripcion: value }
-                                    : insp
-                                ) || [],
-                            }));
-                          }}
-                          rows={3}
-                          placeholder="Describa los hallazgos de la inspección..."
-                        />
-                      </div>
-
-                      <div className="form-group">
-                        <label>Imagen:</label>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={async (e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              try {
-                                const formDataUpload = new FormData();
-                                formDataUpload.append("file", file);
-                                const response = await axios.post(
-                                  "/api/v1/upload-imagen",
-                                  formDataUpload,
-                                  {
-                                    headers: {
-                                      "Content-Type": "multipart/form-data",
-                                    },
-                                  }
-                                );
-                                const imageUrl = response.data.url;
-                                setFormData((prev) => ({
-                                  ...prev,
-                                  inspecciones:
-                                    prev.inspecciones?.map((insp, i) =>
-                                      i === index
-                                        ? { ...insp, imagen_url: imageUrl }
-                                        : insp
-                                    ) || [],
-                                }));
-                              } catch (error) {
-                                console.error("Error subiendo imagen:", error);
-                                alert(
-                                  "Error al subir la imagen. Intente nuevamente."
-                                );
-                              }
-                            }
-                          }}
-                        />
-                        {inspeccion.imagen_url && (
-                          <div>
-                            <img
-                              src={`${BACKEND_URL}${inspeccion.imagen_url}`}
-                              alt={`Inspección ${inspeccion.numero_inspeccion}`}
-                              className="image-preview"
-                            />
-                          </div>
-                        )}
-                      </div>
+                {formData.testigos?.map((testigo, index) => (
+                  <div key={index} className="dynamic-item">
+                    <div className="dynamic-item-header">
+                      <h4 className="dynamic-item-title">
+                        Testigo {testigo.numero_relato}
+                      </h4>
+                      <button
+                        type="button"
+                        className="btn-delete"
+                        onClick={() => {
+                          setFormData((prev) => ({
+                            ...prev,
+                            testigos:
+                              prev.testigos?.filter((_, i) => i !== index) ||
+                              [],
+                          }));
+                        }}
+                      >
+                        ❌ Eliminar
+                      </button>
                     </div>
-                  ))}
-                </div>
 
-                {/* TESTIGOS */}
-                <div
-                  className="card-section"
-                  style={{ backgroundColor: "#f8f9fa" }}
-                >
-                  <h4 style={{ color: "#0f172a", marginBottom: "15px" }}>
-                    👥 Testigos
-                  </h4>
-                  <button
-                    type="button"
-                    className="btn-add"
-                    onClick={() => {
-                      const currentTestigos = formData.testigos || [];
-                      const nextNumero = currentTestigos.length + 1;
-                      setFormData((prev) => ({
-                        ...prev,
-                        testigos: [
-                          ...currentTestigos,
-                          {
-                            numero_relato: nextNumero,
-                            texto: "",
-                            imagen_url: "",
-                          },
-                        ],
-                      }));
-                    }}
-                  >
-                    ➕ Agregar Testigo
-                  </button>
-
-                  {formData.testigos?.map((testigo, index) => (
-                    <div key={index} className="dynamic-item">
-                      <div className="dynamic-item-header">
-                        <h4 className="dynamic-item-title">
-                          Testigo {testigo.numero_relato}
-                        </h4>
-                        <button
-                          type="button"
-                          className="btn-delete"
-                          onClick={() => {
-                            setFormData((prev) => ({
-                              ...prev,
-                              testigos:
-                                prev.testigos?.filter((_, i) => i !== index) ||
-                                [],
-                            }));
-                          }}
-                        >
-                          ❌ Eliminar
-                        </button>
-                      </div>
-
-                      <div className="form-group">
-                        <label>Declaración del testigo:</label>
-                        <textarea
-                          value={testigo.texto}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setFormData((prev) => ({
-                              ...prev,
-                              testigos:
-                                prev.testigos?.map((test, i) =>
-                                  i === index ? { ...test, texto: value } : test
-                                ) || [],
-                            }));
-                          }}
-                          rows={3}
-                          placeholder="Escriba la declaración del testigo..."
-                        />
-                      </div>
-
-                      <div className="form-group">
-                        <label>Imagen:</label>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={async (e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              try {
-                                const formDataUpload = new FormData();
-                                formDataUpload.append("file", file);
-                                const response = await axios.post(
-                                  "/api/v1/upload-imagen",
-                                  formDataUpload,
-                                  {
-                                    headers: {
-                                      "Content-Type": "multipart/form-data",
-                                    },
-                                  }
-                                );
-                                const imageUrl = response.data.url;
-                                setFormData((prev) => ({
-                                  ...prev,
-                                  testigos:
-                                    prev.testigos?.map((test, i) =>
-                                      i === index
-                                        ? { ...test, imagen_url: imageUrl }
-                                        : test
-                                    ) || [],
-                                }));
-                              } catch (error) {
-                                console.error("Error subiendo imagen:", error);
-                                alert(
-                                  "Error al subir la imagen. Intente nuevamente."
-                                );
-                              }
-                            }
-                          }}
-                        />
-                        {testigo.imagen_url && (
-                          <div>
-                            <img
-                              src={`${BACKEND_URL}${testigo.imagen_url}`}
-                              alt={`Testigo ${testigo.numero_relato}`}
-                              className="image-preview"
-                            />
-                          </div>
-                        )}
-                      </div>
+                    <div className="form-group">
+                      <label>Declaración del testigo:</label>
+                      <textarea
+                        value={testigo.texto}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setFormData((prev) => ({
+                            ...prev,
+                            testigos:
+                              prev.testigos?.map((test, i) =>
+                                i === index ? { ...test, texto: value } : test
+                              ) || [],
+                          }));
+                        }}
+                        rows={3}
+                        placeholder="Escriba la declaración del testigo..."
+                      />
                     </div>
-                  ))}
-                </div>
+
+                    <div className="form-group">
+                      <label>Imagen:</label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            try {
+                              const formDataUpload = new FormData();
+                              formDataUpload.append("file", file);
+                              const response = await axios.post(
+                                "/api/v1/upload-imagen",
+                                formDataUpload,
+                                {
+                                  headers: {
+                                    "Content-Type": "multipart/form-data",
+                                  },
+                                }
+                              );
+                              const imageUrl = response.data.url;
+                              setFormData((prev) => ({
+                                ...prev,
+                                testigos:
+                                  prev.testigos?.map((test, i) =>
+                                    i === index
+                                      ? { ...test, imagen_url: imageUrl }
+                                      : test
+                                  ) || [],
+                              }));
+                            } catch (error) {
+                              console.error("Error subiendo imagen:", error);
+                              alert(
+                                "Error al subir la imagen. Intente nuevamente."
+                              );
+                            }
+                          }
+                        }}
+                      />
+                      {testigo.imagen_url && (
+                        <div>
+                          <img
+                            src={`${BACKEND_URL}${testigo.imagen_url}`}
+                            alt={`Testigo ${testigo.numero_relato}`}
+                            className="image-preview"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
 
               {/* Tab Navigation */}
               <div className="tab-navigation">
