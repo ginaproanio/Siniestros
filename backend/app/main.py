@@ -9,7 +9,41 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Database tables are created via Alembic migrations
-# No manual initialization needed
+# Clear existing data on startup since user doesn't care about test data
+def clear_existing_data():
+    """Clear all existing data from database on startup"""
+    try:
+        from app.database import SessionLocal
+        from app import models
+
+        db = SessionLocal()
+        logger.info("🗑️ Clearing existing test data from database...")
+
+        # Delete in reverse order to handle foreign keys
+        try:
+            db.query(models.Testigo).delete()
+            db.query(models.Inspeccion).delete()
+            db.query(models.RelatoAsegurado).delete()
+            db.query(models.Antecedente).delete()
+            db.query(models.VisitaTaller).delete()
+            db.query(models.DinamicaAccidente).delete()
+            db.query(models.ObjetoAsegurado).delete()
+            db.query(models.Conductor).delete()
+            db.query(models.Beneficiario).delete()
+            db.query(models.Asegurado).delete()
+            db.query(models.Siniestro).delete()
+
+            db.commit()
+            logger.info("✅ All existing data cleared successfully")
+        except Exception as e:
+            logger.warning(f"⚠️ Some tables may not exist yet: {e}")
+            db.rollback()
+
+        db.close()
+    except Exception as e:
+        logger.warning(f"⚠️ Could not clear existing data: {e}")
+
+clear_existing_data()
 
 app = FastAPI(
     title="Sistema de Informes de Siniestros API",
