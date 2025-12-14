@@ -115,90 +115,64 @@ git push origin main
 ```
 **Railway redeploy automáticamente y ejecuta reset completo de BD**
 
-## 🎯 **PARAMETRIZACIÓN COMPLETA DEL FORMULARIO**
+## 🎯 **PARAMETRIZACIÓN DEL FORMULARIO**
 
-### **📋 SECCIONES DEL FORMULARIO COMPLETO**
+### **🔧 QUÉ ES LA PARAMETRIZACIÓN**
 
-#### **1️⃣ DATOS DEL SINIESTRO (Campos Base)**
-- `compania_seguros`: Compañía aseguradora
-- `reclamo_num`: Número de reclamo
-- `fecha_siniestro`: Fecha del accidente
-- `fecha_reportado`: Fecha de reporte del siniestro
-- `direccion_siniestro`: Ubicación del siniestro
-- `ubicacion_geo_lat/lng`: Coordenadas GPS
-- `danos_terceros`: Boolean - Si hay daños a terceros
-- `ejecutivo_cargo`: Ejecutivo asignado
-- `fecha_designacion`: Fecha de asignación del ejecutivo
-- `tipo_siniestro`: Tipo de siniestro
-- `cobertura`: Tipo de cobertura del seguro
+La **parametrización** son campos que pueden **variar según el tipo de investigación** o **requerimientos específicos** de la aseguradora. Estos campos permiten adaptar el formulario a diferentes escenarios sin cambiar el código base.
 
-#### **2️⃣ DECLARACIÓN DEL SINIESTRO (Parametrización)**
+### **📋 CAMPOS DE PARAMETRIZACIÓN**
+
+#### **1️⃣ DECLARACIÓN DEL SINIESTRO (Parametrización)**
+Campos que varían según quién realiza la declaración y el contexto del siniestro:
 - `fecha_declaracion`: Fecha de la declaración
 - `persona_declara_tipo`: Tipo de persona ("asegurado" | "conductor" | "otro")
 - `persona_declara_cedula`: Cédula de identidad
 - `persona_declara_nombre`: Nombre completo
 - `persona_declara_relacion`: Relación con el siniestro
 
-#### **3️⃣ MISIVA DE INVESTIGACIÓN (Parametrización)**
+#### **2️⃣ MISIVA DE INVESTIGACIÓN (Parametrización)**
+Campo que contiene las **instrucciones específicas** de la aseguradora para esta investigación particular:
 - `misiva_investigacion`: Texto de la solicitud específica de la aseguradora
 - **Nota:** Campo de texto largo para instrucciones particulares
 - **Nota:** NO se incluye en el PDF del informe final
 
-#### **4️⃣ ASEGURADO (Entidad Relacionada)**
-- `asegurado.cedula`: Cédula del asegurado
-- `asegurado.nombre`: Nombre completo
-- `asegurado.direccion`: Dirección
-- `asegurado.telefono`: Teléfono
-- `asegurado.email`: Correo electrónico
+---
 
-#### **5️⃣ BENEFICIARIO (Entidad Relacionada)**
-- `beneficiario.cedula`: Cédula del beneficiario
-- `beneficiario.nombre`: Nombre completo
-- `beneficiario.relacion`: Relación con el asegurado
+## 📝 **REGISTRO DE LA INVESTIGACIÓN**
 
-#### **6️⃣ CONDUCTOR (Entidad Relacionada)**
-- `conductor.cedula`: Cédula del conductor
-- `conductor.nombre`: Nombre completo
-- `conductor.licencia`: Número de licencia
-- `conductor.direccion`: Dirección
-- `conductor.telefono`: Teléfono
+### **🏗️ QUÉ ES EL REGISTRO DE INVESTIGACIÓN**
 
-#### **7️⃣ OBJETO ASEGURADO (Entidad Relacionada)**
-- `objeto_asegurado.tipo`: Tipo de vehículo/objeto
-- `objeto_asegurado.marca`: Marca
-- `objeto_asegurado.modelo`: Modelo
-- `objeto_asegurado.anio`: Año
-- `objeto_asegurado.placa`: Placa/patente
-- `objeto_asegurado.color`: Color
-- `objeto_asegurado.chasis`: Número de chasis
-- `objeto_asegurado.motor`: Número de motor
+El **registro de investigación** incluye todos los **datos básicos del siniestro** y la **información recopilada durante la investigación**. Estos campos son estándar y siempre se requieren.
 
-#### **8️⃣ ANTECEDENTES (Lista Dinámica)**
-- `antecedentes[].descripcion`: Descripción de antecedentes
+### **📋 SECCIONES DEL REGISTRO**
 
-#### **9️⃣ RELATOS DEL ASEGURADO (Lista Dinámica)**
-- `relatos_asegurado[].numero_relato`: Número secuencial
-- `relatos_asegurado[].texto`: Texto del relato
-- `relatos_asegurado[].imagen_url`: URL de imagen opcional
+#### **1️⃣ DATOS DEL SINIESTRO (Campos Base)**
+- `compania_seguros`: Compañía aseguradora
+- `reclamo_num`: Número de reclamo
+- `fecha_siniestro`: Fecha del accidente
+- `fecha_reportado`: Fecha de reporte del siniestro ⭐ **(Nuevo)**
+- `direccion_siniestro`: Ubicación del siniestro
+- `ubicacion_geo_lat/lng`: Coordenadas GPS
+- `danos_terceros`: Boolean - Si hay daños a terceros
+- `ejecutivo_cargo`: Ejecutivo asignado
+- `fecha_designacion`: Fecha de asignación del ejecutivo
+- `tipo_siniestro`: Tipo de siniestro
+- `cobertura`: Tipo de cobertura del seguro ⭐ **(Nuevo)**
 
-#### **🔟 INSPECCIONES (Lista Dinámica)**
-- `inspecciones[].numero_inspeccion`: Número secuencial
-- `inspecciones[].descripcion`: Descripción de hallazgos
-- `inspecciones[].imagen_url`: URL de imagen opcional
+#### **2️⃣ ENTIDADES RELACIONADAS**
+- **ASEGURADO**: Datos del asegurado (cedula, nombre, direccion, telefono, email)
+- **BENEFICIARIO**: Datos del beneficiario (cedula, nombre, relacion)
+- **CONDUCTOR**: Datos del conductor (cedula, nombre, licencia, direccion, telefono)
+- **OBJETO ASEGURADO**: Datos del vehículo (tipo, marca, modelo, anio, placa, color, chasis, motor)
 
-#### **1️⃣1️⃣ TESTIGOS (Lista Dinámica)**
-- `testigos[].numero_relato`: Número secuencial
-- `testigos[].texto`: Declaración del testigo
-- `testigos[].imagen_url`: URL de imagen opcional
-
-#### **1️⃣2️⃣ VISITAS TALLER (Lista Dinámica)**
-- `visitas_taller[].fecha_visita`: Fecha de la visita
-- `visitas_taller[].descripcion`: Descripción de la visita
-- `visitas_taller[].imagen_url`: URL de imagen opcional
-
-#### **1️⃣3️⃣ DINÁMICAS DEL ACCIDENTE (Lista Dinámica)**
-- `dinamicas_accidente[].descripcion`: Descripción de la dinámica
-- `dinamicas_accidente[].imagen_url`: URL de imagen opcional
+#### **3️⃣ INVESTIGACIÓN (Datos Recopilados)**
+- **ANTECEDENTES**: Descripción del aviso de siniestro y alcances
+- **RELATOS DEL ASEGURADO**: Entrevistas con el asegurado
+- **INSPECCIONES**: Hallazgos del lugar del siniestro
+- **TESTIGOS**: Declaraciones de testigos
+- **VISITAS TALLER**: Inspecciones técnicas
+- **DINÁMICAS DEL ACCIDENTE**: Análisis del accidente
 
 ## 🔄 **FLUJO DE DESARROLLO DEPLOY-DRIVEN**
 
