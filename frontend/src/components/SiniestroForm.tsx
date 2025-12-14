@@ -194,9 +194,30 @@ const SiniestroForm: React.FC = () => {
   };
 
   return (
-    <div>
+    <div className="form-container">
       <div className="form-header">
         <h2>Registro de Siniestro</h2>
+      </div>
+
+      {/* Progress Bar */}
+      <div className="progress-container">
+        <div className="progress-bar">
+          {tabs.map((tab, index) => (
+            <React.Fragment key={tab.id}>
+              <div
+                className={`progress-step ${
+                  activeTab === tab.id ? "active" : ""
+                } ${completedTabs.includes(tab.id) ? "completed" : ""}`}
+              >
+                <div className="progress-circle">
+                  {completedTabs.includes(tab.id) ? "✓" : index + 1}
+                </div>
+                <div className="progress-label">{tab.title}</div>
+              </div>
+              {index < tabs.length - 1 && <div className="progress-line"></div>}
+            </React.Fragment>
+          ))}
+        </div>
       </div>
 
       {/* Tab Navigation */}
@@ -218,210 +239,184 @@ const SiniestroForm: React.FC = () => {
 
         {/* Tab Content */}
         <div className="tab-content">
-          {/* Información Básica Section */}
-          {activeTab === 0 && (
-            <div className="form-section">
-              <div className="form-section-title">
-                📋 Información Básica del Siniestro
-              </div>
-              <div className="form-section-description">
-                Datos principales del incidente reportado y configuración
-                inicial
-              </div>
-            </div>
-          )}
-
-          {/* Parametrización Section */}
-          {activeTab === 1 && (
-            <div className="form-section">
-              <div className="form-section-title">
-                ⚙️ Parametrización del Formulario
-              </div>
-              <div className="form-section-description">
-                Configuración específica de la investigación y declaración
-                formal
-              </div>
-            </div>
-          )}
-
-          {/* Entidades Section */}
-          {activeTab === 2 && (
-            <div className="form-section">
-              <div className="form-section-title">
-                👥 Entidades Relacionadas
-              </div>
-              <div className="form-section-description">
-                Información completa de las personas y objetos involucrados en
-                el siniestro
-              </div>
-            </div>
-          )}
-
-          {/* Investigación Section */}
-          {activeTab === 3 && (
-            <div className="form-section">
-              <div className="form-section-title">
-                🔍 Investigación y Evidencia
-              </div>
-              <div className="form-section-description">
-                Recopilación sistemática de información, declaraciones y
-                evidencia del incidente
-              </div>
-            </div>
-          )}
-
           <form onSubmit={handleSubmit}>
-            {/* TAB 1: Información Básica del Siniestro */}
-            <div className={`tab-section ${activeTab === 0 ? "active" : ""}`}>
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Compañía de Seguros:</label>
-                  <input
-                    type="text"
-                    name="compania_seguros"
-                    value={formData.compania_seguros}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Número de Reclamo:</label>
-                  <input
-                    type="text"
-                    name="reclamo_num"
-                    value={formData.reclamo_num}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-              </div>
+            {/* TAB 0: Información Básica del Siniestro */}
+            {activeTab === 0 && (
+              <div className="tab-section active">
+                <div className="card-section info-section">
+                  <div className="card-header">
+                    <div className="card-icon">📋</div>
+                    <div>
+                      <h3 className="card-title">Información Básica del Siniestro</h3>
+                      <p className="card-description">
+                        Datos principales del incidente reportado y configuración inicial
+                      </p>
+                    </div>
+                  </div>
 
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Fecha del Siniestro:</label>
-                  <input
-                    type="date"
-                    name="fecha_siniestro"
-                    value={formData.fecha_siniestro}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Fecha Reportado:</label>
-                  <input
-                    type="date"
-                    name="fecha_reportado"
-                    value={formData.fecha_reportado || ""}
-                    onChange={handleInputChange}
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Fecha Designación:</label>
-                  <input
-                    type="date"
-                    name="fecha_designacion"
-                    value={
-                      formData.fecha_designacion ||
-                      new Date().toISOString().split("T")[0]
-                    }
-                    onChange={handleInputChange}
-                  />
-                </div>
-              </div>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Compañía de Seguros:</label>
+                      <input
+                        type="text"
+                        name="compania_seguros"
+                        value={formData.compania_seguros}
+                        onChange={handleInputChange}
+                        required
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Número de Reclamo:</label>
+                      <input
+                        type="text"
+                        name="reclamo_num"
+                        value={formData.reclamo_num}
+                        onChange={handleInputChange}
+                        required
+                      />
+                    </div>
+                  </div>
 
-              <div className="form-group">
-                <label>Dirección del Siniestro:</label>
-                <textarea
-                  name="direccion_siniestro"
-                  value={formData.direccion_siniestro}
-                  onChange={handleInputChange}
-                  rows={2}
-                  required
-                />
-              </div>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Fecha del Siniestro:</label>
+                      <input
+                        type="date"
+                        name="fecha_siniestro"
+                        value={formData.fecha_siniestro}
+                        onChange={handleInputChange}
+                        required
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Fecha Reportado:</label>
+                      <input
+                        type="date"
+                        name="fecha_reportado"
+                        value={formData.fecha_reportado || ""}
+                        onChange={handleInputChange}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Fecha Designación:</label>
+                      <input
+                        type="date"
+                        name="fecha_designacion"
+                        value={
+                          formData.fecha_designacion ||
+                          new Date().toISOString().split("T")[0]
+                        }
+                        onChange={handleInputChange}
+                      />
+                    </div>
+                  </div>
 
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Latitud:</label>
-                  <input
-                    type="number"
-                    step="0.0001"
-                    name="ubicacion_geo_lat"
-                    value={formData.ubicacion_geo_lat || ""}
-                    onChange={handleInputChange}
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Longitud:</label>
-                  <input
-                    type="number"
-                    step="0.0001"
-                    name="ubicacion_geo_lng"
-                    value={formData.ubicacion_geo_lng || ""}
-                    onChange={handleInputChange}
-                  />
-                </div>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Ejecutivo a Cargo:</label>
-                  <input
-                    type="text"
-                    name="ejecutivo_cargo"
-                    value={formData.ejecutivo_cargo}
-                    onChange={handleInputChange}
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="checkbox-label">
-                    <input
-                      type="checkbox"
-                      name="danos_terceros"
-                      checked={formData.danos_terceros}
+                  <div className="form-group">
+                    <label>Dirección del Siniestro:</label>
+                    <textarea
+                      name="direccion_siniestro"
+                      value={formData.direccion_siniestro}
                       onChange={handleInputChange}
+                      rows={3}
+                      required
                     />
-                    Daños a Terceros
-                  </label>
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Latitud:</label>
+                      <input
+                        type="number"
+                        step="0.0001"
+                        name="ubicacion_geo_lat"
+                        value={formData.ubicacion_geo_lat || ""}
+                        onChange={handleInputChange}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Longitud:</label>
+                      <input
+                        type="number"
+                        step="0.0001"
+                        name="ubicacion_geo_lng"
+                        value={formData.ubicacion_geo_lng || ""}
+                        onChange={handleInputChange}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Ejecutivo a Cargo:</label>
+                      <input
+                        type="text"
+                        name="ejecutivo_cargo"
+                        value={formData.ejecutivo_cargo}
+                        onChange={handleInputChange}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Tipo de Siniestro:</label>
+                      <input
+                        type="text"
+                        name="tipo_siniestro"
+                        value={formData.tipo_siniestro || ""}
+                        onChange={handleInputChange}
+                        placeholder="Ej: Vehicular, Incendio, Robo"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Cobertura:</label>
+                      <input
+                        type="text"
+                        name="cobertura"
+                        value={formData.cobertura || ""}
+                        onChange={handleInputChange}
+                        placeholder="Ej: Todo riesgo, Terceros, etc."
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="checkbox-label">
+                        <input
+                          type="checkbox"
+                          name="danos_terceros"
+                          checked={formData.danos_terceros}
+                          onChange={handleInputChange}
+                        />
+                        Daños a Terceros
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Tab Navigation */}
+                  <div className="tab-navigation">
+                    <button type="button" className="btn-prev" disabled>
+                      Anterior
+                    </button>
+                    <button type="button" className="btn-next" onClick={nextTab}>
+                      Siguiente
+                    </button>
+                  </div>
                 </div>
               </div>
+            )}
 
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Tipo de Siniestro:</label>
-                  <input
-                    type="text"
-                    name="tipo_siniestro"
-                    value={formData.tipo_siniestro || ""}
-                    onChange={handleInputChange}
-                    placeholder="Ej: Vehicular, Incendio, Robo"
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Cobertura:</label>
-                  <input
-                    type="text"
-                    name="cobertura"
-                    value={formData.cobertura || ""}
-                    onChange={handleInputChange}
-                    placeholder="Ej: Todo riesgo, Terceros, etc."
-                  />
-                </div>
-
-                {/* Tab Navigation */}
-                <div className="tab-navigation">
-                  <button type="button" className="btn-prev" disabled>
-                    Anterior
-                  </button>
-                  <button type="button" className="btn-next" onClick={nextTab}>
-                    Siguiente
-                  </button>
-                </div>
-              </div>
-
-              {/* TAB 2: Parametrización */}
-              <div className={`tab-section ${activeTab === 1 ? "active" : ""}`}>
+            {/* TAB 1: Parametrización */}
+            {activeTab === 1 && (
+              <div className="tab-section active">
+                <div className="card-section param-section">
+                  <div className="card-header">
+                    <div className="card-icon">⚙️</div>
+                    <div>
+                      <h3 className="card-title">Parametrización del Formulario</h3>
+                      <p className="card-description">
+                        Configuración específica de la investigación y declaración formal
+                      </p>
+                    </div>
+                  </div>
                 <div
                   className="card-section"
                   style={{ marginBottom: "20px", backgroundColor: "#fff3cd" }}
