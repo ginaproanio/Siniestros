@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.routers import siniestros
 import logging
 import os
+from datetime import datetime
 
 # Configurar logging detallado
 logging.basicConfig(level=logging.INFO)
@@ -100,6 +101,97 @@ async def debug_database():
     except Exception as e:
         logger.error(f"Database connection error: {e}")
         return {"database": "error", "error": str(e)}
+
+@app.get("/debug/analyze-db")
+async def analyze_database():
+    """Analizar completamente la base de datos: tablas, registros, estructura"""
+    try:
+        from app.database import SessionLocal, engine
+        from app import models
+        import sqlalchemy as sa
+
+        analysis = {
+            "timestamp": str(datetime.now()),
+            "database_info": {},
+            "tables_analysis": {},
+            "summary": {}
+        }
+
+        # Información general de la base de datos
+        db = SessionLocal()
+        try:
+            # Verificar conexión
+            db.execute(sa.text("SELECT 1"))
+            analysis["database_info"]["connection"] = "✅ Connected"
+
+            # Obtener lista de tablas
+            result = db.execute(sa.text("""
+                SELECT tablename FROM pg_tables
+                WHERE schemaname = 'public'
+                ORDER BY tablename
+            """))
+            tables = [row[0] for row in result]
+            analysis["database_info"]["tables"] = tables
+            analysis["database_info"]["total_tables"] = len(tables)
+
+            # Análisis de cada tabla
+            total_records = 0
+            tables_with_data = 0
+
+            for table_name in tables:
+                table_analysis = {
+                    "exists": True,
+                    "record_count": 0,
+                    "has_data": False,
+                    "sample_records": []
+                }
+
+                try:
+                    # Contar registros
+                    if hasattr(models, table_name.capitalize()):
+                        model_class = getattr(models, table_name.capitalize())
+                        count = db.query(model_class).count()
+                        table_analysis["record_count"] = count
+                        total_records += count
+
+                        if count > 0:
+                            tables_with_data += 1
+                            table_analysis["has_data"] = True
+
+                            # Obtener muestra de registros (máximo 3)
+                            sample = db.query(model_class).limit(3).all()
+                            table_analysis["sample_records"] = [
+                                {"id": getattr(record, 'id', 'N/A'), "data": str(record)[:200] + "..." if len(str(record)) > 200 else str(record)}
+                                for record in sample
+                            ]
+
+                except Exception as e:
+                    table_analysis["error"] = str(e)
+
+                analysis["tables_analysis"][table_name] = table_analysis
+
+            # Resumen
+            analysis["summary"] = {
+                "total_tables": len(tables),
+                "tables_with_data": tables_with_data,
+                "tables_empty": len(tables) - tables_with_data,
+                "total_records": total_records,
+                "database_status": "✅ Active with data" if tables_with_data > 0 else "📭 Empty database"
+            }
+
+        finally:
+            db.close()
+
+        return analysis
+
+    except Exception as e:
+        logger.error(f"❌ Database analysis error: {e}")
+        import traceback
+        return {
+            "error": f"Analysis failed: {str(e)}",
+            "traceback": traceback.format_exc(),
+            "timestamp": str(datetime.now())
+        }
 
 @app.delete("/debug/clear-database")
 async def clear_database():
