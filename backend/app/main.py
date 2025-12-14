@@ -8,33 +8,8 @@ import os
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Initialize database tables on startup
-def init_database():
-    """Initialize database tables if they don't exist"""
-    try:
-        logger.info("🔍 Checking database tables...")
-        from app.database import engine, Base
-
-        # Check if tables exist by trying to query one
-        from sqlalchemy import text
-        with engine.connect() as conn:
-            result = conn.execute(text("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'siniestros')"))
-            tables_exist = result.fetchone()[0]
-
-        if not tables_exist:
-            logger.info("🏗️ Creating database tables...")
-            Base.metadata.create_all(bind=engine)
-            logger.info("✅ Database tables created successfully")
-        else:
-            logger.info("✅ Database tables already exist")
-
-    except Exception as e:
-        logger.error(f"❌ Error initializing database: {e}")
-        # Don't fail the app startup, just log the error
-        pass
-
-# Initialize database on startup
-init_database()
+# Database tables are created via Alembic migrations
+# No manual initialization needed
 
 app = FastAPI(
     title="Sistema de Informes de Siniestros API",
