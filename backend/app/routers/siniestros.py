@@ -208,8 +208,11 @@ async def create_testigo(
 @router.get("/{siniestro_id}/generar-pdf")
 async def generar_pdf(siniestro_id: int, db: Session = Depends(get_db)):
     """Generar PDF del informe de siniestro"""
+    import logging
+    logger = logging.getLogger(__name__)
+
     try:
-        print(f"🔍 INICIANDO GENERACIÓN PDF - Siniestro ID: {siniestro_id}")
+        logger.info(f"🔍 INICIANDO GENERACIÓN PDF - Siniestro ID: {siniestro_id}")
         from app.utils.pdf_generator import generate_simple_pdf
 
         # Get siniestro data first
@@ -222,7 +225,7 @@ async def generar_pdf(siniestro_id: int, db: Session = Depends(get_db)):
             raise HTTPException(status_code=404, detail="Siniestro no encontrado")
 
         pdf_data = generate_simple_pdf(siniestro)
-        print(f"✅ PDF generado exitosamente: {len(pdf_data)} bytes")
+        logger.info(f"✅ PDF generado exitosamente: {len(pdf_data)} bytes")
 
         from fastapi.responses import Response
 
@@ -251,13 +254,13 @@ async def generar_pdf(siniestro_id: int, db: Session = Depends(get_db)):
             },
         )
     except Exception as e:
-        print(f"❌ Error generando PDF: {e}")
+        logger.error(f"❌ Error generando PDF: {e}")
         import traceback
 
-        print(f"❌ Traceback completo: {traceback.format_exc()}")
+        logger.error(f"❌ Traceback completo: {traceback.format_exc()}")
 
         # Generar PDF de error mínimo como prueba
-        print("🧪 Generando PDF de error mínimo...")
+        logger.info("🧪 Generando PDF de error mínimo...")
         from reportlab.lib.pagesizes import letter
         from reportlab.platypus import SimpleDocTemplate, Paragraph
         from reportlab.lib.styles import getSampleStyleSheet
@@ -277,7 +280,7 @@ async def generar_pdf(siniestro_id: int, db: Session = Depends(get_db)):
             doc.build(story)
             buffer.seek(0)
             error_pdf = buffer.getvalue()
-            print(f"✅ PDF de error generado: {len(error_pdf)} bytes")
+            logger.info(f"✅ PDF de error generado: {len(error_pdf)} bytes")
 
             return Response(
                 content=error_pdf,
@@ -297,8 +300,11 @@ async def generar_pdf(siniestro_id: int, db: Session = Depends(get_db)):
 @router.get("/{siniestro_id}/generar-pdf-sin-firma")
 async def generar_pdf_sin_firma(siniestro_id: int, db: Session = Depends(get_db)):
     """Generar PDF del informe de siniestro SIN FIRMA DIGITAL (para pruebas)"""
+    import logging
+    logger = logging.getLogger(__name__)
+
     try:
-        print(f"🔍 GENERANDO PDF SIN FIRMA - Siniestro ID: {siniestro_id}")
+        logger.info(f"🔍 GENERANDO PDF SIN FIRMA - Siniestro ID: {siniestro_id}")
         from app.utils.pdf_generator import generate_unsigned_pdf
 
         # Get siniestro data first
@@ -311,7 +317,7 @@ async def generar_pdf_sin_firma(siniestro_id: int, db: Session = Depends(get_db)
             raise HTTPException(status_code=404, detail="Siniestro no encontrado")
 
         pdf_data = generate_unsigned_pdf(siniestro)
-        print(f"✅ PDF sin firma generado exitosamente: {len(pdf_data)} bytes")
+        logger.info(f"✅ PDF sin firma generado exitosamente: {len(pdf_data)} bytes")
 
         from fastapi.responses import Response
 
@@ -340,10 +346,10 @@ async def generar_pdf_sin_firma(siniestro_id: int, db: Session = Depends(get_db)
             },
         )
     except Exception as e:
-        print(f"❌ Error generando PDF sin firma: {e}")
+        logger.error(f"❌ Error generando PDF sin firma: {e}")
         import traceback
 
-        print(f"❌ Traceback: {traceback.format_exc()}")
+        logger.error(f"❌ Traceback: {traceback.format_exc()}")
         raise HTTPException(
             status_code=500, detail=f"Error generando PDF sin firma: {str(e)}"
         )
@@ -468,6 +474,7 @@ async def diagnostico_pdf(db: Session = Depends(get_db)):
         from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
         from reportlab.lib import colors
         from reportlab.lib.enums import TA_CENTER
+        from reportlab.lib.units import inch
         from fastapi.responses import Response
         import io
 
@@ -528,7 +535,10 @@ async def diagnostico_pdf(db: Session = Depends(get_db)):
 @router.get("/test-pdf")
 async def test_pdf():
     """Generar PDF de prueba mínimo sin BD"""
-    print("🧪 GENERANDO PDF DE PRUEBA MÍNIMO")
+    import logging
+    logger = logging.getLogger(__name__)
+
+    logger.info("🧪 GENERANDO PDF DE PRUEBA MÍNIMO")
 
     from reportlab.lib.pagesizes import letter
     from reportlab.platypus import SimpleDocTemplate, Paragraph
@@ -553,7 +563,7 @@ async def test_pdf():
         buffer.seek(0)
         pdf_data = buffer.getvalue()
 
-        print(f"✅ PDF de prueba generado: {len(pdf_data)} bytes")
+        logger.info(f"✅ PDF de prueba generado: {len(pdf_data)} bytes")
 
         return Response(
             content=pdf_data,
@@ -564,10 +574,10 @@ async def test_pdf():
             },
         )
     except Exception as e:
-        print(f"❌ Error generando PDF de prueba: {e}")
+        logger.error(f"❌ Error generando PDF de prueba: {e}")
         import traceback
 
-        print(f"❌ Traceback: {traceback.format_exc()}")
+        logger.error(f"❌ Traceback: {traceback.format_exc()}")
         raise HTTPException(
             status_code=500, detail=f"Error generando PDF de prueba: {str(e)}"
         )
