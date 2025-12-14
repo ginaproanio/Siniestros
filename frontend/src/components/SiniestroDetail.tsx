@@ -68,7 +68,7 @@ const SiniestroDetail: React.FC = () => {
                 return;
               }
               const response = await fetch(`${apiBase}/api/v1/${siniestro.id}/generar-pdf`, {
-                method: 'POST',
+                method: 'GET',
               });
 
               if (response.ok) {
