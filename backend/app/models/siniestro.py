@@ -16,11 +16,15 @@ class Siniestro(Base):
     ejecutivo_cargo = Column(String(255))
     fecha_designacion = Column(DateTime(timezone=True))
     tipo_siniestro = Column(String(100), default="Vehicular")
+    fecha_reportado = Column(DateTime(timezone=True))  # Fecha cuando se reportó el siniestro
+    cobertura = Column(String(100))  # Tipo de cobertura (Todo riesgo, etc.)
+    pdf_firmado_url = Column(String(500))  # URL del PDF firmado digitalmente
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     # Relationships
     asegurado = relationship("Asegurado", back_populates="siniestro", uselist=False, cascade="all, delete-orphan")
+    beneficiario = relationship("Beneficiario", back_populates="siniestro", uselist=False, cascade="all, delete-orphan")
     conductor = relationship("Conductor", back_populates="siniestro", uselist=False, cascade="all, delete-orphan")
     objeto_asegurado = relationship("ObjetoAsegurado", back_populates="siniestro", uselist=False, cascade="all, delete-orphan")
     visita_taller = relationship("VisitaTaller", back_populates="siniestro", uselist=False, cascade="all, delete-orphan")
@@ -41,6 +45,7 @@ class Asegurado(Base):
     celular = Column(String(20))
     direccion = Column(String(500))
     parentesco = Column(String(100))
+    correo = Column(String(255))  # Correo electrónico del asegurado
     # Para persona jurídica
     ruc = Column(String(20))
     empresa = Column(String(255))
@@ -48,6 +53,17 @@ class Asegurado(Base):
     telefono = Column(String(20))
 
     siniestro = relationship("Siniestro", back_populates="asegurado")
+
+class Beneficiario(Base):
+    __tablename__ = "beneficiarios"
+
+    id = Column(Integer, primary_key=True, index=True)
+    siniestro_id = Column(Integer, ForeignKey("siniestros.id"), unique=True)
+    razon_social = Column(String(255))  # Razón social del beneficiario
+    cedula_ruc = Column(String(20))  # Cédula o RUC del beneficiario
+    domicilio = Column(String(500))  # Domicilio del beneficiario
+
+    siniestro = relationship("Siniestro", back_populates="beneficiario")
 
 class Conductor(Base):
     __tablename__ = "conductores"
@@ -70,6 +86,7 @@ class ObjetoAsegurado(Base):
     placa = Column(String(20), nullable=False)
     marca = Column(String(100))
     modelo = Column(String(100))
+    tipo = Column(String(50))  # Tipo de vehículo (Jeep, etc.)
     color = Column(String(50))
     ano = Column(Integer)
     serie_motor = Column(String(100))

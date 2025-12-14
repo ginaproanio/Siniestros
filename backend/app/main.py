@@ -80,6 +80,7 @@ async def clear_database():
         # Contar registros antes de eliminar
         siniestros_count = db.query(models.Siniestro).count()
         asegurados_count = db.query(models.Asegurado).count()
+        beneficiarios_count = db.query(models.Beneficiario).count()
         conductores_count = db.query(models.Conductor).count()
         objetos_count = db.query(models.ObjetoAsegurado).count()
         antecedentes_count = db.query(models.Antecedente).count()
@@ -92,6 +93,7 @@ async def clear_database():
         logger.info(f"📊 Registros encontrados antes de limpiar:")
         logger.info(f"  - Siniestros: {siniestros_count}")
         logger.info(f"  - Asegurados: {asegurados_count}")
+        logger.info(f"  - Beneficiarios: {beneficiarios_count}")
         logger.info(f"  - Conductores: {conductores_count}")
         logger.info(f"  - Objetos asegurados: {objetos_count}")
         logger.info(f"  - Antecedentes: {antecedentes_count}")
@@ -110,6 +112,7 @@ async def clear_database():
         db.query(models.DinamicaAccidente).delete()
         db.query(models.ObjetoAsegurado).delete()
         db.query(models.Conductor).delete()
+        db.query(models.Beneficiario).delete()
         db.query(models.Asegurado).delete()
         db.query(models.Siniestro).delete()
 
@@ -123,6 +126,7 @@ async def clear_database():
             "registros_eliminados": {
                 "siniestros": siniestros_count,
                 "asegurados": asegurados_count,
+                "beneficiarios": beneficiarios_count,
                 "conductores": conductores_count,
                 "objetos_asegurados": objetos_count,
                 "antecedentes": antecedentes_count,

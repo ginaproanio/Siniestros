@@ -7,6 +7,7 @@ class SiniestroBase(BaseModel):
     compania_seguros: str = Field(..., max_length=255)
     reclamo_num: str = Field(..., max_length=100)
     fecha_siniestro: datetime
+    fecha_reportado: Optional[datetime] = None
     direccion_siniestro: str = Field(..., max_length=500)
     ubicacion_geo_lat: Optional[float] = None
     ubicacion_geo_lng: Optional[float] = None
@@ -14,12 +15,15 @@ class SiniestroBase(BaseModel):
     ejecutivo_cargo: Optional[str] = Field(None, max_length=255)
     fecha_designacion: Optional[datetime] = None
     tipo_siniestro: str = Field("Vehicular", max_length=100)
+    cobertura: Optional[str] = Field(None, max_length=100)
+    pdf_firmado_url: Optional[str] = Field(None, max_length=500)
 
 class AseguradoBase(BaseModel):
     tipo: str = Field(..., max_length=50)
     cedula: Optional[str] = Field(None, max_length=20)
     nombre: Optional[str] = Field(None, max_length=255)
     celular: Optional[str] = Field(None, max_length=20)
+    correo: Optional[str] = Field(None, max_length=255)
     direccion: Optional[str] = Field(None, max_length=500)
     parentesco: Optional[str] = Field(None, max_length=100)
     ruc: Optional[str] = Field(None, max_length=20)
@@ -38,10 +42,16 @@ class ObjetoAseguradoBase(BaseModel):
     placa: str = Field(..., max_length=20)
     marca: Optional[str] = Field(None, max_length=100)
     modelo: Optional[str] = Field(None, max_length=100)
+    tipo: Optional[str] = Field(None, max_length=50)
     color: Optional[str] = Field(None, max_length=50)
     ano: Optional[int] = None
     serie_motor: Optional[str] = Field(None, max_length=100)
     chasis: Optional[str] = Field(None, max_length=100)
+
+class BeneficiarioBase(BaseModel):
+    razon_social: Optional[str] = Field(None, max_length=255)
+    cedula_ruc: Optional[str] = Field(None, max_length=20)
+    domicilio: Optional[str] = Field(None, max_length=500)
 
 class RelatoBase(BaseModel):
     numero_relato: int
@@ -64,6 +74,9 @@ class ConductorCreate(ConductorBase):
     pass
 
 class ObjetoAseguradoCreate(ObjetoAseguradoBase):
+    pass
+
+class BeneficiarioCreate(BeneficiarioBase):
     pass
 
 class RelatoAseguradoCreate(RelatoBase):
@@ -108,6 +121,13 @@ class ConductorResponse(ConductorBase):
         from_attributes = True
 
 class ObjetoAseguradoResponse(ObjetoAseguradoBase):
+    id: int
+    siniestro_id: int
+
+    class Config:
+        from_attributes = True
+
+class BeneficiarioResponse(BeneficiarioBase):
     id: int
     siniestro_id: int
 
@@ -162,6 +182,7 @@ class DinamicaAccidenteResponse(BaseModel):
 # Full siniestro response with all relationships
 class SiniestroFullResponse(SiniestroResponse):
     asegurado: Optional[AseguradoResponse] = None
+    beneficiario: Optional[BeneficiarioResponse] = None
     conductor: Optional[ConductorResponse] = None
     objeto_asegurado: Optional[ObjetoAseguradoResponse] = None
     antecedentes: List[AntecedenteResponse] = []
@@ -183,3 +204,4 @@ class SiniestroUpdate(BaseModel):
     ejecutivo_cargo: Optional[str] = None
     fecha_designacion: Optional[datetime] = None
     tipo_siniestro: Optional[str] = None
+    pdf_firmado_url: Optional[str] = None

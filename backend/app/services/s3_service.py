@@ -58,12 +58,13 @@ async def validate_file(file: UploadFile) -> bytes:
     return content
 
 
-async def upload_file_to_s3(file: UploadFile) -> str:
+async def upload_file_to_s3(file: UploadFile, content: bytes = None) -> str:
     """
     Sube archivo a S3 y retorna URL presigned
 
     Args:
         file: Archivo UploadFile de FastAPI
+        content: Contenido del archivo (opcional, si ya fue leído)
 
     Returns:
         str: URL presigned válida por 7 días
@@ -72,8 +73,9 @@ async def upload_file_to_s3(file: UploadFile) -> str:
         HTTPException: Si hay errores de validación o subida
     """
     try:
-        # Validar archivo
-        content = await validate_file(file)
+        # Validar archivo y obtener contenido si no se proporcionó
+        if content is None:
+            content = await validate_file(file)
         logger.info(f"Archivo validado: {file.filename}, tamaño: {len(content)} bytes")
 
         # Generar nombre único
