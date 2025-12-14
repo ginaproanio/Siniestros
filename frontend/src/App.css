@@ -529,20 +529,53 @@ button[type="button"]:nth-child(2):hover {
   background-color: rgba(15, 23, 42, 0.05);
 }
 
-/* Estados de pestañas - Sistema CONSISTENTE para todos */
+/* Colores específicos por función de pestaña */
+.tab-button[data-tab="0"] { /* Información Básica - Azul documentos */
+  --tab-color: #3b82f6;
+  --tab-hover: rgba(59, 130, 246, 0.1);
+  --tab-border: rgba(59, 130, 246, 0.3);
+}
+
+.tab-button[data-tab="1"] { /* Parametrización - Amarillo configuración */
+  --tab-color: #f59e0b;
+  --tab-hover: rgba(245, 158, 11, 0.1);
+  --tab-border: rgba(245, 158, 11, 0.3);
+}
+
+.tab-button[data-tab="2"] { /* Entidades - Verde personas */
+  --tab-color: #10b981;
+  --tab-hover: rgba(16, 185, 129, 0.1);
+  --tab-border: rgba(16, 185, 129, 0.3);
+}
+
+.tab-button[data-tab="3"] { /* Investigación - Morado análisis */
+  --tab-color: #8b5cf6;
+  --tab-hover: rgba(139, 92, 246, 0.1);
+  --tab-border: rgba(139, 92, 246, 0.3);
+}
+
+/* Estados aplicados con colores específicos */
+.tab-button.active {
+  color: white;
+  background-color: var(--tab-color);
+  border-bottom-color: var(--tab-color);
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
 .tab-button.visited {
-  color: var(--color-negro-corporativo);
-  background-color: rgba(59, 130, 246, 0.1); /* Azul sutil para visitada */
-  border-bottom-color: rgba(59, 130, 246, 0.3);
-  border-bottom-width: 2px;
-  font-weight: 500;
+  color: white;
+  background-color: var(--tab-color);
+  border-bottom-color: var(--tab-color);
   opacity: 0.8;
+  font-weight: 500;
 }
 
 .tab-button.completed {
   color: white;
-  background-color: #059669; /* Verde para completada */
-  border-bottom-color: #059669;
+  background-color: var(--tab-color);
+  border-bottom-color: var(--tab-color);
+  opacity: 0.9;
 }
 
 .tab-button.completed::after {
@@ -553,14 +586,6 @@ button[type="button"]:nth-child(2):hover {
   color: white;
   font-weight: bold;
   font-size: 14px;
-}
-
-.tab-button.active {
-  color: white;
-  background-color: var(--color-rojo-acento); /* Rojo para activa */
-  border-bottom-color: var(--color-rojo-acento);
-  font-weight: 600;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Estado por defecto - gris para pendientes */
