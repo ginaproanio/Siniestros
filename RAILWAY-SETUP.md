@@ -20,10 +20,11 @@
   ```
 
 ### **2. Servicio Backend (FastAPI)**
-- **URL**: Railway asigna automáticamente (ej: `https://backend-siniestros-[hash].up.railway.app/`)
+- **URL**: Railway asigna automáticamente (ej: `https://siniestros-production.up.railway.app/`)
 - **Root Directory**: `backend/`
 - **Framework**: FastAPI + SQLAlchemy + PostgreSQL
-- **Start Command**: `alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+- **Start Command**: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+- **Reset BD Automático**: Se ejecuta en cada startup (DROP ALL + CREATE ALL)
 
 #### **Variables de Entorno del Backend**:
 ```bash
@@ -122,7 +123,8 @@ El formulario incluye **TODOS** los campos necesarios para el Informe de Investi
 
 ### **Triggers de Redeploy**
 - **Push a `main`**: Railway redeploy automáticamente
-- **Nuevas migraciones**: Se ejecutan automáticamente en el backend
+- **Reset BD automático**: Se ejecuta en cada startup (DROP ALL + CREATE ALL)
+- **Sin migraciones**: No hay sistema de migraciones incrementales
 - **Variables de entorno**: Se aplican sin redeploy manual
 
 ### **Logs y Debugging**
