@@ -69,7 +69,7 @@ interface FormData {
 const SiniestroForm: React.FC = () => {
   const [activeTab, setActiveTab] = useState(0);
   const [completedTabs, setCompletedTabs] = useState<number[]>([]);
-  const [visitedTabs, setVisitedTabs] = useState<number[]>([0]); // Tab 0 starts as visited
+  const [visitedTabs, setVisitedTabs] = useState<number[]>([]); // Start empty, will be populated on navigation
 
   const [formData, setFormData] = useState<FormData>({
     compania_seguros: "Zurich Seguros Ecuador S.A.",

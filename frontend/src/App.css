@@ -559,6 +559,13 @@ button[type="button"]:nth-child(2):hover {
   font-weight: 500;
 }
 
+/* Pestañas no visitadas (estado por defecto - gris) */
+.tab-button:not(.active):not(.completed):not(.visited) {
+  color: var(--color-gris-texto);
+  background-color: transparent;
+  border-bottom-color: transparent;
+}
+
 .tab-content {
   min-height: 600px;
 }
@@ -632,6 +639,7 @@ button[type="button"]:nth-child(2):hover {
   color: var(--color-negro-corporativo);
   font-size: 18px;
   font-weight: 600;
+  text-align: left;
 }
 
 .card-description {
