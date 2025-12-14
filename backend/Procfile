@@ -1,1 +1,1 @@
-web: python -c "from app.database import engine; import sqlalchemy as sa; engine.execute(sa.text('DROP TABLE IF EXISTS alembic_version CASCADE')); print('Alembic version table cleared')" && alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+web: python migration_setup.py && alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT
