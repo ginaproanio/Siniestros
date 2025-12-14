@@ -48,7 +48,17 @@ def create_test_data():
             ejecutivo_cargo="",
             fecha_designacion="2025-12-12",
             tipo_siniestro="Vehicular",
-            cobertura="Todo riesgo"
+            cobertura="Todo riesgo",
+
+            # Nuevos campos de declaración
+            fecha_declaracion="2025-11-28T10:49:00",
+            persona_declara_tipo="asegurado",
+            persona_declara_cedula="2100348008",
+            persona_declara_nombre="LANDAZURI MIRANDA PATRICIA VERONI",
+            persona_declara_relacion="Propietario del vehículo",
+
+            # Misiva de investigación
+            misiva_investigacion="Se solicita investigación completa del accidente vehicular ocurrido en Metroparqueos."
         )
 
         db.add(siniestro)

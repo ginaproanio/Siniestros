@@ -29,6 +29,7 @@ interface FormData {
   compania_seguros: string;
   reclamo_num: string;
   fecha_siniestro: string;
+  fecha_reportado?: string;
   direccion_siniestro: string;
   ubicacion_geo_lat?: number;
   ubicacion_geo_lng?: number;
@@ -36,12 +37,27 @@ interface FormData {
   ejecutivo_cargo?: string;
   fecha_designacion?: string;
   tipo_siniestro?: string;
+  cobertura?: string;
+
+  // Nuevos campos de declaración
+  fecha_declaracion?: string;
+  persona_declara_tipo?: string;
+  persona_declara_cedula?: string;
+  persona_declara_nombre?: string;
+  persona_declara_relacion?: string;
+  misiva_investigacion?: string;
 
   // Secciones dinámicas
   antecedentes?: AntecedenteData[];
   relatos_asegurado?: RelatoData[];
   inspecciones?: InspeccionData[];
   testigos?: TestigoData[];
+
+  // Datos relacionados
+  asegurado?: any;
+  beneficiario?: any;
+  conductor?: any;
+  objeto_asegurado?: any;
 }
 
 // Configurar base URL para el backend
@@ -80,6 +96,7 @@ const SiniestroEdit: React.FC = () => {
           compania_seguros: data.compania_seguros || "Zurich Seguros Ecuador S.A.",
           reclamo_num: data.reclamo_num || "",
           fecha_siniestro: data.fecha_siniestro ? new Date(data.fecha_siniestro).toISOString().split('T')[0] : "",
+          fecha_reportado: data.fecha_reportado ? new Date(data.fecha_reportado).toISOString().split('T')[0] : "",
           direccion_siniestro: data.direccion_siniestro || "",
           ubicacion_geo_lat: data.ubicacion_geo_lat || undefined,
           ubicacion_geo_lng: data.ubicacion_geo_lng || undefined,
@@ -87,12 +104,27 @@ const SiniestroEdit: React.FC = () => {
           ejecutivo_cargo: data.ejecutivo_cargo || "",
           fecha_designacion: data.fecha_designacion ? new Date(data.fecha_designacion).toISOString().split('T')[0] : "",
           tipo_siniestro: data.tipo_siniestro || "Vehicular",
+          cobertura: data.cobertura || "",
+
+          // Nuevos campos de declaración
+          fecha_declaracion: data.fecha_declaracion ? new Date(data.fecha_declaracion).toISOString().split('T')[0] : "",
+          persona_declara_tipo: data.persona_declara_tipo || "",
+          persona_declara_cedula: data.persona_declara_cedula || "",
+          persona_declara_nombre: data.persona_declara_nombre || "",
+          persona_declara_relacion: data.persona_declara_relacion || "",
+          misiva_investigacion: data.misiva_investigacion || "",
 
           // Secciones dinámicas
           antecedentes: data.antecedentes || [],
           relatos_asegurado: data.relatos_asegurado || [],
           inspecciones: data.inspecciones || [],
           testigos: data.testigos || [],
+
+          // Datos relacionados
+          asegurado: data.asegurado || null,
+          beneficiario: data.beneficiario || null,
+          conductor: data.conductor || null,
+          objeto_asegurado: data.objeto_asegurado || null,
         });
       } catch (error) {
         console.error('Error loading siniestro:', error);
@@ -183,12 +215,34 @@ const SiniestroEdit: React.FC = () => {
             />
           </div>
           <div className="form-group">
+            <label>Fecha Reportado:</label>
+            <input
+              type="date"
+              name="fecha_reportado"
+              value={formData.fecha_reportado}
+              onChange={handleInputChange}
+            />
+          </div>
+        </div>
+
+        <div className="form-row">
+          <div className="form-group">
             <label>Fecha de Designación:</label>
             <input
               type="date"
               name="fecha_designacion"
               value={formData.fecha_designacion}
               onChange={handleInputChange}
+            />
+          </div>
+          <div className="form-group">
+            <label>Cobertura:</label>
+            <input
+              type="text"
+              name="cobertura"
+              value={formData.cobertura}
+              onChange={handleInputChange}
+              placeholder="Todo riesgo, etc."
             />
           </div>
         </div>
