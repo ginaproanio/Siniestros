@@ -15,45 +15,69 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Database initialization - automatic schema sync on startup
+# Database initialization - COMPLETE RESET on every startup
 @app.on_event("startup")
 async def startup_event():
-    """Initialize database on startup - handles schema updates automatically"""
+    """🔥 COMPLETE DATABASE RESET: Drop all tables and recreate from scratch"""
     import logging
     logger = logging.getLogger(__name__)
 
-    logger.info("🚀 INICIANDO SISTEMA - VERIFICANDO BASE DE DATOS...")
+    logger.info("🔥 INICIANDO RESET COMPLETO DE BASE DE DATOS...")
 
     try:
         from app.database import engine, Base
         from app import models
+        import sqlalchemy as sa
 
-        # Create all tables (safe operation - won't drop existing data)
-        logger.info("🏗️ Asegurando que todas las tablas existan...")
+        # 1. DROP ALL EXISTING TABLES
+        logger.info("🗑️ Eliminando todas las tablas existentes...")
+        with engine.connect() as conn:
+            # Get all table names
+            result = conn.execute(sa.text("""
+                SELECT tablename FROM pg_tables
+                WHERE schemaname = 'public'
+            """))
+            tables = [row[0] for row in result]
+
+            if tables:
+                # Drop tables with CASCADE to handle foreign keys
+                for table in tables:
+                    try:
+                        conn.execute(sa.text(f"DROP TABLE IF EXISTS {table} CASCADE"))
+                        logger.info(f"  ✅ Dropped table: {table}")
+                    except Exception as e:
+                        logger.warning(f"  ⚠️ Could not drop {table}: {e}")
+
+                conn.commit()
+                logger.info(f"✅ Dropped {len(tables)} tables")
+            else:
+                logger.info("ℹ️ No tables to drop")
+
+        # 2. CREATE ALL TABLES FROM SCRATCH
+        logger.info("🏗️ Creando todas las tablas desde cero...")
         Base.metadata.create_all(bind=engine)
-        logger.info("✅ Esquema de base de datos verificado")
+        logger.info("✅ Todas las tablas creadas exitosamente")
 
-        # Check if we have any siniestros (basic data check)
+        # 3. Verify database is ready
         from sqlalchemy.orm import sessionmaker
         SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
         db = SessionLocal()
 
         try:
+            # Test basic query
             siniestros_count = db.query(models.Siniestro).count()
             logger.info(f"📊 Base de datos lista: {siniestros_count} siniestros registrados")
-
-            if siniestros_count == 0:
-                logger.info("🧪 No hay datos - sistema listo para uso")
-            else:
-                logger.info("✅ Sistema operativo con datos existentes")
+            logger.info("✅ Sistema operativo y listo para uso")
 
         finally:
             db.close()
 
     except Exception as e:
-        logger.error(f"❌ Error en inicialización de BD: {e}")
+        logger.error(f"❌ Error en reset completo de BD: {e}")
+        import traceback
+        logger.error(f"❌ Traceback: {traceback.format_exc()}")
         # Don't crash the app - log and continue
-        logger.warning("⚠️ Continuando sin inicialización completa de BD")
+        logger.warning("⚠️ Continuando sin inicialización de BD")
 
 # CORS middleware
 allowed_origins = os.getenv("ALLOWED_ORIGINS", "*").split(",")
