@@ -115,58 +115,48 @@ git push origin main
 ```
 **Railway redeploy automáticamente y ejecuta reset completo de BD**
 
-## 🎯 **PARAMETRIZACIÓN DEL FORMULARIO**
+## 🎯 **PARAMETRIZACIÓN COMPLETA: FORMULARIO "REGISTRO DE SINIESTRO"**
 
 ### **🔧 QUÉ ES LA PARAMETRIZACIÓN**
 
-La **parametrización** son campos que pueden **variar según el tipo de investigación** o **requerimientos específicos** de la aseguradora. Estos campos permiten adaptar el formulario a diferentes escenarios sin cambiar el código base.
+**TODO el formulario "Registro de Siniestro" ES LA PARAMETRIZACIÓN.** No hay separación entre "parametrización" y "registro" - el formulario mismo permite configurar y adaptar cada investigación según los requerimientos específicos de la aseguradora.
 
-### **📋 CAMPOS DE PARAMETRIZACIÓN**
+### **📋 CAMPOS DE PARAMETRIZACIÓN (FORMULARIO COMPLETO)**
 
-#### **1️⃣ DECLARACIÓN DEL SINIESTRO (Parametrización)**
-Campos que varían según quién realiza la declaración y el contexto del siniestro:
-- `fecha_declaracion`: Fecha de la declaración
-- `persona_declara_tipo`: Tipo de persona ("asegurado" | "conductor" | "otro")
-- `persona_declara_cedula`: Cédula de identidad
-- `persona_declara_nombre`: Nombre completo
-- `persona_declara_relacion`: Relación con el siniestro
-
-#### **2️⃣ MISIVA DE INVESTIGACIÓN (Parametrización)**
-Campo que contiene las **instrucciones específicas** de la aseguradora para esta investigación particular:
-- `misiva_investigacion`: Texto de la solicitud específica de la aseguradora
-- **Nota:** Campo de texto largo para instrucciones particulares
-- **Nota:** NO se incluye en el PDF del informe final
-
----
-
-## 📝 **REGISTRO DE LA INVESTIGACIÓN**
-
-### **🏗️ QUÉ ES EL REGISTRO DE INVESTIGACIÓN**
-
-El **registro de investigación** incluye todos los **datos básicos del siniestro** y la **información recopilada durante la investigación**. Estos campos son estándar y siempre se requieren.
-
-### **📋 SECCIONES DEL REGISTRO**
-
-#### **1️⃣ DATOS DEL SINIESTRO (Campos Base)**
+#### **1️⃣ DATOS BÁSICOS DEL SINIESTRO**
 - `compania_seguros`: Compañía aseguradora
 - `reclamo_num`: Número de reclamo
 - `fecha_siniestro`: Fecha del accidente
-- `fecha_reportado`: Fecha de reporte del siniestro ⭐ **(Nuevo)**
+- `fecha_reportado`: Fecha de reporte del siniestro ⭐ **(Campo parametrizable)**
 - `direccion_siniestro`: Ubicación del siniestro
 - `ubicacion_geo_lat/lng`: Coordenadas GPS
 - `danos_terceros`: Boolean - Si hay daños a terceros
 - `ejecutivo_cargo`: Ejecutivo asignado
 - `fecha_designacion`: Fecha de asignación del ejecutivo
-- `tipo_siniestro`: Tipo de siniestro
-- `cobertura`: Tipo de cobertura del seguro ⭐ **(Nuevo)**
+- `tipo_siniestro`: Tipo de siniestro ⭐ **(Campo parametrizable)**
+- `cobertura`: Tipo de cobertura del seguro ⭐ **(Campo parametrizable)**
 
-#### **2️⃣ ENTIDADES RELACIONADAS**
+#### **2️⃣ DECLARACIÓN DEL SINIESTRO (Campos Parametrizables)**
+Campos que varían según quién realiza la declaración y el contexto del siniestro:
+- `fecha_declaracion`: Fecha de la declaración ⭐ **(Campo parametrizable)**
+- `persona_declara_tipo`: Tipo de persona ("asegurado" | "conductor" | "otro") ⭐ **(Campo parametrizable)**
+- `persona_declara_cedula`: Cédula de identidad ⭐ **(Campo parametrizable)**
+- `persona_declara_nombre`: Nombre completo ⭐ **(Campo parametrizable)**
+- `persona_declara_relacion`: Relación con el siniestro ⭐ **(Campo parametrizable)**
+
+#### **3️⃣ MISIVA DE INVESTIGACIÓN (Campo Parametrizable)**
+Campo que contiene las **instrucciones específicas** de la aseguradora para esta investigación particular:
+- `misiva_investigacion`: Texto de la solicitud específica de la aseguradora ⭐ **(Campo parametrizable)**
+- **Nota:** Campo de texto largo para instrucciones particulares
+- **Nota:** NO se incluye en el PDF del informe final
+
+#### **4️⃣ ENTIDADES RELACIONADAS (Campos Dinámicos)**
 - **ASEGURADO**: Datos del asegurado (cedula, nombre, direccion, telefono, email)
 - **BENEFICIARIO**: Datos del beneficiario (cedula, nombre, relacion)
 - **CONDUCTOR**: Datos del conductor (cedula, nombre, licencia, direccion, telefono)
 - **OBJETO ASEGURADO**: Datos del vehículo (tipo, marca, modelo, anio, placa, color, chasis, motor)
 
-#### **3️⃣ INVESTIGACIÓN (Datos Recopilados)**
+#### **5️⃣ INVESTIGACIÓN (Datos Recopilados - Campos Dinámicos)**
 - **ANTECEDENTES**: Descripción del aviso de siniestro y alcances
 - **RELATOS DEL ASEGURADO**: Entrevistas con el asegurado
 - **INSPECCIONES**: Hallazgos del lugar del siniestro
