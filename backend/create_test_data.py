@@ -59,12 +59,13 @@ def create_test_data():
         # Crear asegurado
         asegurado = models.Asegurado(
             siniestro_id=siniestro.id,
-            razon_social="LANDAZURI MIRANDA PATRICIA VERONI",
-            cedula_ruc="2100348008",
-            domicilio="De los Conquistadores y Juan Leon Mera",
-            telefono="032947804",
+            tipo="Natural",  # Natural o Jurídica
+            cedula="2100348008",
+            nombre="LANDAZURI MIRANDA PATRICIA VERONI",
             celular="0997507161",
-            correo="pverolandazuri@hotmail.com"
+            direccion="De los Conquistadores y Juan Leon Mera",
+            correo="pverolandazuri@hotmail.com",
+            telefono="032947804"
         )
         db.add(asegurado)
 
@@ -96,8 +97,8 @@ def create_test_data():
             modelo="Corolla Cross High AC 1.8 5P 4x2",
             tipo="Jeep",
             color="Blanco",
-            anio=2023,
-            motor="2ZR2X01895",
+            ano=2023,  # El modelo usa 'ano' no 'anio'
+            serie_motor="2ZR2X01895",
             chasis="9BRKZAAGXR0669964"
         )
         db.add(objeto)
