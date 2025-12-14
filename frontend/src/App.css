@@ -1,4 +1,4 @@
-/* Corporate Color Palette - From DESIGN.md */
+z/* Corporate Color Palette - From DESIGN.md */
 :root {
   --color-negro-corporativo: #0f172a;
   --color-rojo-acento: #dc2626;
@@ -528,6 +528,107 @@ button[type="button"]:nth-child(2):hover {
 
 .btn-submit-tab:hover:not(:disabled) {
   background-color: var(--color-rojo-hover);
+}
+
+/* === RADIO BUTTON GROUP FOR PERSON TYPE === */
+
+.person-type-selector {
+  display: flex;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+}
+
+.person-type-option {
+  flex: 1;
+  position: relative;
+}
+
+.person-type-radio {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.person-type-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border: 2px solid var(--color-gris-borde);
+  border-radius: var(--border-radius);
+  background-color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  color: var(--color-gris-texto);
+  min-height: 48px;
+}
+
+.person-type-card:hover {
+  border-color: var(--color-negro-corporativo);
+  background-color: rgba(15, 23, 42, 0.05);
+}
+
+.person-type-radio:checked + .person-type-card {
+  border-color: var(--color-rojo-acento);
+  background-color: rgba(220, 38, 38, 0.1);
+  color: var(--color-negro-corporativo);
+  font-weight: 600;
+}
+
+.person-type-card::before {
+  content: "⭕";
+  margin-right: var(--spacing-sm);
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+.person-type-radio:checked + .person-type-card::before {
+  content: "🔴";
+  color: var(--color-rojo-acento);
+}
+
+/* === IMPROVED CHECKBOX STYLING === */
+
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.checkbox-input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-rojo-acento);
+}
+
+.checkbox-label-text {
+  font-weight: 500;
+  color: var(--color-negro-corporativo);
+  cursor: pointer;
+  user-select: none;
+}
+
+/* === INLINE FORM ELEMENTS === */
+
+.inline-fields {
+  display: flex;
+  gap: var(--spacing-md);
+  align-items: end;
+}
+
+.inline-field {
+  flex: 1;
+}
+
+.inline-field.wide {
+  flex: 2;
+}
+
+.inline-field.narrow {
+  flex: 0 0 150px;
 }
 
 /* === RESPONSIVE DESIGN - Siguiendo DESIGN.md === */

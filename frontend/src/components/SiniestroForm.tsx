@@ -2,8 +2,10 @@ import axios from "axios";
 import React, { useState } from "react";
 
 // Configurar base URL para el backend
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'https://siniestros-production.up.railway.app';
-console.log('🌐 Backend URL:', BACKEND_URL);
+const BACKEND_URL =
+  process.env.REACT_APP_BACKEND_URL ||
+  "https://siniestros-production.up.railway.app";
+console.log("🌐 Backend URL:", BACKEND_URL);
 axios.defaults.baseURL = BACKEND_URL;
 
 // Interfaces para futuras expansiones del formulario
@@ -93,12 +95,13 @@ const SiniestroForm: React.FC = () => {
 
   const nextTab = () => {
     if (activeTab < tabs.length - 1) {
-      setCompletedTabs(prev => [...prev, activeTab]);
+      setCompletedTabs((prev) => [...prev, activeTab]);
       setActiveTab(activeTab + 1);
     }
   };
 
-  const prevTab = () => { // eslint-disable-line @typescript-eslint/no-unused-vars
+  const prevTab = () => {
+    // eslint-disable-line @typescript-eslint/no-unused-vars
     if (activeTab > 0) {
       setActiveTab(activeTab - 1);
     }
@@ -201,8 +204,8 @@ const SiniestroForm: React.FC = () => {
             <div
               key={tab.id}
               className={`progress-step ${
-                index === activeTab ? 'active' : ''
-              } ${completedTabs.includes(index) ? 'completed' : ''}`}
+                index === activeTab ? "active" : ""
+              } ${completedTabs.includes(index) ? "completed" : ""}`}
             >
               <div className="step-circle">{index + 1}</div>
               <div className="step-label">{tab.title}</div>
@@ -218,9 +221,9 @@ const SiniestroForm: React.FC = () => {
             <button
               key={tab.id}
               type="button"
-              className={`tab-button ${
-                activeTab === tab.id ? 'active' : ''
-              } ${completedTabs.includes(tab.id) ? 'completed' : ''}`}
+              className={`tab-button ${activeTab === tab.id ? "active" : ""} ${
+                completedTabs.includes(tab.id) ? "completed" : ""
+              }`}
               onClick={() => goToTab(tab.id)}
             >
               {tab.icon} {tab.title}
@@ -231,15 +234,23 @@ const SiniestroForm: React.FC = () => {
         {/* Tab Content */}
         <div className="tab-content">
           <form onSubmit={handleSubmit}>
-
             {/* TAB 1: Información Básica del Siniestro */}
-            <div className={`tab-section ${activeTab === 0 ? 'active' : ''}`}>
+            <div className={`tab-section ${activeTab === 0 ? "active" : ""}`}>
               <div className="card-section">
                 <div className="card-header">
-                  <div className="card-icon" style={{ backgroundColor: '#e3f2fd' }}>📋</div>
+                  <div
+                    className="card-icon"
+                    style={{ backgroundColor: "#e3f2fd" }}
+                  >
+                    📋
+                  </div>
                   <div>
-                    <h3 className="card-title">Información Básica del Siniestro</h3>
-                    <p className="card-description">Datos principales del incidente reportado</p>
+                    <h3 className="card-title">
+                      Información Básica del Siniestro
+                    </h3>
+                    <p className="card-description">
+                      Datos principales del incidente reportado
+                    </p>
                   </div>
                 </div>
 
@@ -291,7 +302,10 @@ const SiniestroForm: React.FC = () => {
                     <input
                       type="date"
                       name="fecha_designacion"
-                      value={formData.fecha_designacion || new Date().toISOString().split('T')[0]}
+                      value={
+                        formData.fecha_designacion ||
+                        new Date().toISOString().split("T")[0]
+                      }
                       onChange={handleInputChange}
                     />
                   </div>
@@ -390,18 +404,32 @@ const SiniestroForm: React.FC = () => {
             </div>
 
             {/* TAB 2: Parametrización */}
-            <div className={`tab-section ${activeTab === 1 ? 'active' : ''}`}>
+            <div className={`tab-section ${activeTab === 1 ? "active" : ""}`}>
               <div className="card-section">
                 <div className="card-header">
-                  <div className="card-icon" style={{ backgroundColor: '#fff3cd' }}>⚙️</div>
+                  <div
+                    className="card-icon"
+                    style={{ backgroundColor: "#fff3cd" }}
+                  >
+                    ⚙️
+                  </div>
                   <div>
-                    <h3 className="card-title">Parametrización del Formulario</h3>
-                    <p className="card-description">Configuración específica de la investigación</p>
+                    <h3 className="card-title">
+                      Parametrización del Formulario
+                    </h3>
+                    <p className="card-description">
+                      Configuración específica de la investigación
+                    </p>
                   </div>
                 </div>
 
-                <div className="card-section" style={{ marginBottom: '20px', backgroundColor: '#fff3cd' }}>
-                  <h4 style={{ color: "#0f172a", marginBottom: "10px" }}>📋 Misiva de Investigación</h4>
+                <div
+                  className="card-section"
+                  style={{ marginBottom: "20px", backgroundColor: "#fff3cd" }}
+                >
+                  <h4 style={{ color: "#0f172a", marginBottom: "10px" }}>
+                    📋 Misiva de Investigación
+                  </h4>
                   <div className="form-group">
                     <label>Instrucciones específicas de la aseguradora:</label>
                     <textarea
@@ -413,36 +441,57 @@ const SiniestroForm: React.FC = () => {
                     />
                   </div>
                   <small style={{ color: "#6c757d", fontStyle: "italic" }}>
-                    * Este campo contiene las instrucciones particulares de la aseguradora para adaptar la investigación a sus requerimientos específicos.
+                    * Este campo contiene las instrucciones particulares de la
+                    aseguradora para adaptar la investigación a sus
+                    requerimientos específicos.
                   </small>
                 </div>
 
-                <div className="card-section" style={{ backgroundColor: '#e8f4fd' }}>
-                  <h4 style={{ color: "#0f172a", marginBottom: "10px" }}>📝 Declaración del Siniestro</h4>
+                <div
+                  className="card-section"
+                  style={{ backgroundColor: "#e8f4fd" }}
+                >
+                  <h4 style={{ color: "#0f172a", marginBottom: "10px" }}>
+                    📝 Declaración del Siniestro
+                  </h4>
 
                   <div className="form-row">
                     <div className="form-group">
                       <label>Tipo de Persona que Declara:</label>
-                      <select
-                        name="persona_declara_tipo"
-                        value={formData.persona_declara_tipo || ""}
-                        onChange={handleInputChange}
-                      >
-                        <option value="">Seleccionar...</option>
-                        <option value="asegurado">Asegurado</option>
-                        <option value="conductor">Conductor</option>
-                        <option value="broker">Bróker</option>
-                        <option value="otro">Otro</option>
-                      </select>
+                      <div className="inline-fields">
+                        <div className="inline-field narrow">
+                          <select
+                            name="persona_declara_tipo"
+                            value={formData.persona_declara_tipo || ""}
+                            onChange={handleInputChange}
+                            style={{ width: "100%" }}
+                          >
+                            <option value="">Seleccionar...</option>
+                            <option value="asegurado">Asegurado</option>
+                            <option value="conductor">Conductor</option>
+                            <option value="broker">Bróker</option>
+                            <option value="otro">Otro</option>
+                          </select>
+                        </div>
+                      </div>
                     </div>
                     <div className="form-group">
                       <label>Fecha Reportado:</label>
-                      <input
-                        type="date"
-                        name="fecha_reportado"
-                        value={formData.fecha_reportado || ""}
-                        onChange={handleInputChange}
-                      />
+                      <div className="read-only-field">
+                        <input
+                          type="date"
+                          value={formData.fecha_reportado || ""}
+                          readOnly
+                          style={{
+                            backgroundColor: "#f8f9fa",
+                            cursor: "not-allowed",
+                            border: "1px solid #dee2e6",
+                          }}
+                        />
+                        <small style={{ color: "#6c757d", fontSize: "12px" }}>
+                          * Se toma de la Información Básica
+                        </small>
+                      </div>
                     </div>
                   </div>
 
@@ -494,36 +543,76 @@ const SiniestroForm: React.FC = () => {
             </div>
 
             {/* TAB 3: Entidades Relacionadas */}
-            <div className={`tab-section ${activeTab === 2 ? 'active' : ''}`}>
+            <div className={`tab-section ${activeTab === 2 ? "active" : ""}`}>
               <div className="card-section">
                 <div className="card-header">
-                  <div className="card-icon" style={{ backgroundColor: '#f0f9ff' }}>👥</div>
+                  <div
+                    className="card-icon"
+                    style={{ backgroundColor: "#f0f9ff" }}
+                  >
+                    👥
+                  </div>
                   <div>
                     <h3 className="card-title">Entidades Relacionadas</h3>
-                    <p className="card-description">Datos de las personas y objetos involucrados</p>
+                    <p className="card-description">
+                      Datos de las personas y objetos involucrados
+                    </p>
                   </div>
                 </div>
 
                 {/* ASEGURADO */}
-                <div className="card-section" style={{ marginBottom: '20px', backgroundColor: '#f0f9ff' }}>
-                  <h4 style={{ color: "#0f172a", marginBottom: "15px" }}>👤 Datos del Asegurado</h4>
+                <div
+                  className="card-section"
+                  style={{ marginBottom: "20px", backgroundColor: "#f0f9ff" }}
+                >
+                  <h4 style={{ color: "#0f172a", marginBottom: "15px" }}>
+                    👤 Datos del Asegurado
+                  </h4>
 
                   <div className="form-group" style={{ marginBottom: "15px" }}>
                     <label>Tipo de Persona:</label>
-                    <select
-                      value={formData.asegurado?.tipo || ""}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        setFormData((prev) => ({
-                          ...prev,
-                          asegurado: { ...prev.asegurado, tipo: value },
-                        }));
-                      }}
-                    >
-                      <option value="">Seleccionar...</option>
-                      <option value="natural">Persona Natural</option>
-                      <option value="juridica">Persona Jurídica</option>
-                    </select>
+                    <div className="person-type-selector">
+                      <div className="person-type-option">
+                        <input
+                          type="radio"
+                          id="asegurado-natural"
+                          name="asegurado-tipo"
+                          value="natural"
+                          checked={formData.asegurado?.tipo === "natural"}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setFormData((prev) => ({
+                              ...prev,
+                              asegurado: { ...prev.asegurado, tipo: value },
+                            }));
+                          }}
+                          className="person-type-radio"
+                        />
+                        <label htmlFor="asegurado-natural" className="person-type-card">
+                          Persona Natural
+                        </label>
+                      </div>
+                      <div className="person-type-option">
+                        <input
+                          type="radio"
+                          id="asegurado-juridica"
+                          name="asegurado-tipo"
+                          value="juridica"
+                          checked={formData.asegurado?.tipo === "juridica"}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setFormData((prev) => ({
+                              ...prev,
+                              asegurado: { ...prev.asegurado, tipo: value },
+                            }));
+                          }}
+                          className="person-type-radio"
+                        />
+                        <label htmlFor="asegurado-juridica" className="person-type-card">
+                          Persona Jurídica
+                        </label>
+                      </div>
+                    </div>
                   </div>
 
                   {formData.asegurado?.tipo === "natural" && (
@@ -571,7 +660,10 @@ const SiniestroForm: React.FC = () => {
                               const value = e.target.value;
                               setFormData((prev) => ({
                                 ...prev,
-                                asegurado: { ...prev.asegurado, celular: value },
+                                asegurado: {
+                                  ...prev.asegurado,
+                                  celular: value,
+                                },
                               }));
                             }}
                             placeholder="Ej: 0991234567"
@@ -603,7 +695,10 @@ const SiniestroForm: React.FC = () => {
                             const value = e.target.value;
                             setFormData((prev) => ({
                               ...prev,
-                              asegurado: { ...prev.asegurado, direccion: value },
+                              asegurado: {
+                                ...prev.asegurado,
+                                direccion: value,
+                              },
                             }));
                           }}
                           placeholder="Ej: Av. Amazonas N32-45"
@@ -639,7 +734,10 @@ const SiniestroForm: React.FC = () => {
                               const value = e.target.value;
                               setFormData((prev) => ({
                                 ...prev,
-                                asegurado: { ...prev.asegurado, empresa: value },
+                                asegurado: {
+                                  ...prev.asegurado,
+                                  empresa: value,
+                                },
                               }));
                             }}
                             placeholder="Ej: Empresa S.A."
@@ -652,7 +750,9 @@ const SiniestroForm: React.FC = () => {
                           <label>Representante Legal:</label>
                           <input
                             type="text"
-                            value={formData.asegurado?.representante_legal || ""}
+                            value={
+                              formData.asegurado?.representante_legal || ""
+                            }
                             onChange={(e) => {
                               const value = e.target.value;
                               setFormData((prev) => ({
@@ -675,7 +775,10 @@ const SiniestroForm: React.FC = () => {
                               const value = e.target.value;
                               setFormData((prev) => ({
                                 ...prev,
-                                asegurado: { ...prev.asegurado, celular: value },
+                                asegurado: {
+                                  ...prev.asegurado,
+                                  celular: value,
+                                },
                               }));
                             }}
                             placeholder="Ej: 0991234567"
@@ -693,7 +796,10 @@ const SiniestroForm: React.FC = () => {
                               const value = e.target.value;
                               setFormData((prev) => ({
                                 ...prev,
-                                asegurado: { ...prev.asegurado, telefono: value },
+                                asegurado: {
+                                  ...prev.asegurado,
+                                  telefono: value,
+                                },
                               }));
                             }}
                             placeholder="Ej: 022345678"
@@ -720,45 +826,67 @@ const SiniestroForm: React.FC = () => {
                 </div>
 
                 {/* BENEFICIARIO */}
-                <div className="card-section" style={{ marginBottom: '20px', backgroundColor: '#f0fdf4' }}>
-                  <h4 style={{ color: "#0f172a", marginBottom: "15px" }}>🎯 Datos del Beneficiario</h4>
+                <div
+                  className="card-section"
+                  style={{ marginBottom: "20px", backgroundColor: "#f0fdf4" }}
+                >
+                  <h4 style={{ color: "#0f172a", marginBottom: "15px" }}>
+                    🎯 Datos del Beneficiario
+                  </h4>
 
-                  <div className="form-row" style={{ marginBottom: "15px", alignItems: "center" }}>
-                    <div className="form-group" style={{ flex: "0 0 auto", marginRight: "15px" }}>
-                      <label style={{ display: "flex", alignItems: "center", fontWeight: "normal", margin: 0 }}>
+                  <div
+                    className="form-row"
+                    style={{ marginBottom: "15px", alignItems: "center" }}
+                  >
+                    <div
+                      className="form-group"
+                      style={{ flex: "0 0 auto", marginRight: "15px" }}
+                    >
+                      <div className="checkbox-group">
                         <input
                           type="checkbox"
+                          id="beneficiario-es-asegurado"
+                          className="checkbox-input"
                           checked={formData.beneficiario?.es_asegurado || false}
                           onChange={(e) => {
                             const checked = e.target.checked;
                             setFormData((prev) => ({
                               ...prev,
-                              beneficiario: checked ? {
-                                ...prev.beneficiario,
-                                es_asegurado: true,
-                                cedula: prev.asegurado?.cedula || "",
-                                nombre: prev.asegurado?.nombre || "",
-                                relacion: "Asegurado"
-                              } : {
-                                ...prev.beneficiario,
-                                es_asegurado: false
-                              }
+                              beneficiario: checked
+                                ? {
+                                    ...prev.beneficiario,
+                                    es_asegurado: true,
+                                    cedula: prev.asegurado?.cedula || "",
+                                    nombre: prev.asegurado?.nombre || "",
+                                    relacion: "Asegurado",
+                                  }
+                                : {
+                                    ...prev.beneficiario,
+                                    es_asegurado: false,
+                                  },
                             }));
                           }}
-                          style={{ marginRight: "5px" }}
                         />
-                        Beneficiario es el Asegurado
-                      </label>
+                        <label htmlFor="beneficiario-es-asegurado" className="checkbox-label-text">
+                          Beneficiario es el Asegurado
+                        </label>
+                      </div>
                     </div>
                     {!formData.beneficiario?.es_asegurado && (
-                      <div className="form-group" style={{ flex: "0 0 150px", margin: 0 }}>
+                      <div
+                        className="form-group"
+                        style={{ flex: "0 0 150px", margin: 0 }}
+                      >
                         <select
                           value={formData.beneficiario?.tipo || ""}
                           onChange={(e) => {
                             const value = e.target.value;
                             setFormData((prev) => ({
                               ...prev,
-                              beneficiario: { ...prev.beneficiario, tipo: value }
+                              beneficiario: {
+                                ...prev.beneficiario,
+                                tipo: value,
+                              },
                             }));
                           }}
                           style={{ width: "100%", padding: "6px" }}
@@ -841,7 +969,9 @@ const SiniestroForm: React.FC = () => {
                               <label>Razón Social:</label>
                               <input
                                 type="text"
-                                value={formData.beneficiario?.razon_social || ""}
+                                value={
+                                  formData.beneficiario?.razon_social || ""
+                                }
                                 onChange={(e) => {
                                   const value = e.target.value;
                                   setFormData((prev) => ({
@@ -868,7 +998,10 @@ const SiniestroForm: React.FC = () => {
                             const value = e.target.value;
                             setFormData((prev) => ({
                               ...prev,
-                              beneficiario: { ...prev.beneficiario, relacion: value },
+                              beneficiario: {
+                                ...prev.beneficiario,
+                                relacion: value,
+                              },
                             }));
                           }}
                           placeholder="Ej: Esposa, Hijo, Padre"
@@ -879,34 +1012,43 @@ const SiniestroForm: React.FC = () => {
                 </div>
 
                 {/* CONDUCTOR */}
-                <div className="card-section" style={{ marginBottom: '20px', backgroundColor: '#fef3c7' }}>
-                  <h4 style={{ color: "#0f172a", marginBottom: "15px" }}>🚗 Datos del Conductor</h4>
+                <div
+                  className="card-section"
+                  style={{ marginBottom: "20px", backgroundColor: "#fef3c7" }}
+                >
+                  <h4 style={{ color: "#0f172a", marginBottom: "15px" }}>
+                    🚗 Datos del Conductor
+                  </h4>
 
-                  <div className="form-group" style={{ marginBottom: "15px" }}>
-                    <label>
-                      <input
-                        type="checkbox"
-                        checked={formData.conductor?.es_asegurado || false}
-                        onChange={(e) => {
-                          const checked = e.target.checked;
-                          setFormData((prev) => ({
-                            ...prev,
-                            conductor: checked ? {
-                              ...prev.conductor,
-                              es_asegurado: true,
-                              cedula: prev.asegurado?.cedula || "",
-                              nombre: prev.asegurado?.nombre || "",
-                              licencia: "",
-                              telefono: prev.asegurado?.celular || "",
-                              direccion: prev.asegurado?.direccion || "",
-                            } : {
-                              ...prev.conductor,
-                              es_asegurado: false,
-                            },
-                          }));
-                        }}
-                      />
-                      Es el asegurado
+                  <div className="checkbox-group" style={{ marginBottom: "15px" }}>
+                    <input
+                      type="checkbox"
+                      id="conductor-es-asegurado"
+                      className="checkbox-input"
+                      checked={formData.conductor?.es_asegurado || false}
+                      onChange={(e) => {
+                        const checked = e.target.checked;
+                        setFormData((prev) => ({
+                          ...prev,
+                          conductor: checked
+                            ? {
+                                ...prev.conductor,
+                                es_asegurado: true,
+                                cedula: prev.asegurado?.cedula || "",
+                                nombre: prev.asegurado?.nombre || "",
+                                licencia: "",
+                                telefono: prev.asegurado?.celular || "",
+                                direccion: prev.asegurado?.direccion || "",
+                              }
+                            : {
+                                ...prev.conductor,
+                                es_asegurado: false,
+                              },
+                        }));
+                      }}
+                    />
+                    <label htmlFor="conductor-es-asegurado" className="checkbox-label-text">
+                      Conductor es el asegurado
                     </label>
                   </div>
 
@@ -955,7 +1097,10 @@ const SiniestroForm: React.FC = () => {
                               const value = e.target.value;
                               setFormData((prev) => ({
                                 ...prev,
-                                conductor: { ...prev.conductor, licencia: value },
+                                conductor: {
+                                  ...prev.conductor,
+                                  licencia: value,
+                                },
                               }));
                             }}
                             placeholder="Ej: 123456789"
@@ -970,7 +1115,10 @@ const SiniestroForm: React.FC = () => {
                               const value = e.target.value;
                               setFormData((prev) => ({
                                 ...prev,
-                                conductor: { ...prev.conductor, telefono: value },
+                                conductor: {
+                                  ...prev.conductor,
+                                  telefono: value,
+                                },
                               }));
                             }}
                             placeholder="Ej: 0987654321"
@@ -987,7 +1135,10 @@ const SiniestroForm: React.FC = () => {
                             const value = e.target.value;
                             setFormData((prev) => ({
                               ...prev,
-                              conductor: { ...prev.conductor, direccion: value },
+                              conductor: {
+                                ...prev.conductor,
+                                direccion: value,
+                              },
                             }));
                           }}
                           placeholder="Ej: Calle Principal 123"
@@ -998,8 +1149,13 @@ const SiniestroForm: React.FC = () => {
                 </div>
 
                 {/* OBJETO ASEGURADO */}
-                <div className="card-section" style={{ backgroundColor: '#fdf2f8' }}>
-                  <h4 style={{ color: "#0f172a", marginBottom: "15px" }}>🚙 Datos del Objeto Asegurado</h4>
+                <div
+                  className="card-section"
+                  style={{ backgroundColor: "#fdf2f8" }}
+                >
+                  <h4 style={{ color: "#0f172a", marginBottom: "15px" }}>
+                    🚙 Datos del Objeto Asegurado
+                  </h4>
 
                   <div className="form-row">
                     <div className="form-group">
@@ -1181,19 +1337,31 @@ const SiniestroForm: React.FC = () => {
             </div>
 
             {/* TAB 4: Investigación */}
-            <div className={`tab-section ${activeTab === 3 ? 'active' : ''}`}>
+            <div className={`tab-section ${activeTab === 3 ? "active" : ""}`}>
               <div className="card-section">
                 <div className="card-header">
-                  <div className="card-icon" style={{ backgroundColor: '#fef3c7' }}>🔍</div>
+                  <div
+                    className="card-icon"
+                    style={{ backgroundColor: "#fef3c7" }}
+                  >
+                    🔍
+                  </div>
                   <div>
                     <h3 className="card-title">Investigación y Evidencia</h3>
-                    <p className="card-description">Recopilación de información y evidencia del siniestro</p>
+                    <p className="card-description">
+                      Recopilación de información y evidencia del siniestro
+                    </p>
                   </div>
                 </div>
 
                 {/* ANTECEDENTES */}
-                <div className="card-section" style={{ marginBottom: '20px', backgroundColor: '#f8f9fa' }}>
-                  <h4 style={{ color: "#0f172a", marginBottom: "15px" }}>📋 Antecedentes</h4>
+                <div
+                  className="card-section"
+                  style={{ marginBottom: "20px", backgroundColor: "#f8f9fa" }}
+                >
+                  <h4 style={{ color: "#0f172a", marginBottom: "15px" }}>
+                    📋 Antecedentes
+                  </h4>
                   <div className="form-group">
                     <label>Descripción de los antecedentes:</label>
                     <textarea
@@ -1217,8 +1385,13 @@ const SiniestroForm: React.FC = () => {
                 </div>
 
                 {/* ENTREVISTA CON EL ASEGURADO */}
-                <div className="card-section" style={{ marginBottom: '20px', backgroundColor: '#e9ecef' }}>
-                  <h4 style={{ color: "#0f172a", marginBottom: "15px" }}>🎤 Entrevista con el Asegurado</h4>
+                <div
+                  className="card-section"
+                  style={{ marginBottom: "20px", backgroundColor: "#e9ecef" }}
+                >
+                  <h4 style={{ color: "#0f172a", marginBottom: "15px" }}>
+                    🎤 Entrevista con el Asegurado
+                  </h4>
                   <button
                     type="button"
                     className="btn-add"
@@ -1229,7 +1402,11 @@ const SiniestroForm: React.FC = () => {
                         ...prev,
                         relatos_asegurado: [
                           ...currentRelatos,
-                          { numero_relato: nextNumero, texto: "", imagen_url: "" },
+                          {
+                            numero_relato: nextNumero,
+                            texto: "",
+                            imagen_url: "",
+                          },
                         ],
                       }));
                     }}
@@ -1240,14 +1417,19 @@ const SiniestroForm: React.FC = () => {
                   {formData.relatos_asegurado?.map((relato, index) => (
                     <div key={index} className="dynamic-item">
                       <div className="dynamic-item-header">
-                        <h4 className="dynamic-item-title">Relato {relato.numero_relato}</h4>
+                        <h4 className="dynamic-item-title">
+                          Relato {relato.numero_relato}
+                        </h4>
                         <button
                           type="button"
                           className="btn-delete"
                           onClick={() => {
                             setFormData((prev) => ({
                               ...prev,
-                              relatos_asegurado: prev.relatos_asegurado?.filter((_, i) => i !== index) || [],
+                              relatos_asegurado:
+                                prev.relatos_asegurado?.filter(
+                                  (_, i) => i !== index
+                                ) || [],
                             }));
                           }}
                         >
@@ -1263,9 +1445,10 @@ const SiniestroForm: React.FC = () => {
                             const value = e.target.value;
                             setFormData((prev) => ({
                               ...prev,
-                              relatos_asegurado: prev.relatos_asegurado?.map((r, i) =>
-                                i === index ? { ...r, texto: value } : r
-                              ) || [],
+                              relatos_asegurado:
+                                prev.relatos_asegurado?.map((r, i) =>
+                                  i === index ? { ...r, texto: value } : r
+                                ) || [],
                             }));
                           }}
                           rows={3}
@@ -1284,19 +1467,30 @@ const SiniestroForm: React.FC = () => {
                               try {
                                 const formDataUpload = new FormData();
                                 formDataUpload.append("file", file);
-                                const response = await axios.post("/api/v1/upload-imagen", formDataUpload, {
-                                  headers: { "Content-Type": "multipart/form-data" },
-                                });
+                                const response = await axios.post(
+                                  "/api/v1/upload-imagen",
+                                  formDataUpload,
+                                  {
+                                    headers: {
+                                      "Content-Type": "multipart/form-data",
+                                    },
+                                  }
+                                );
                                 const imageUrl = response.data.url;
                                 setFormData((prev) => ({
                                   ...prev,
-                                  relatos_asegurado: prev.relatos_asegurado?.map((r, i) =>
-                                    i === index ? { ...r, imagen_url: imageUrl } : r
-                                  ) || [],
+                                  relatos_asegurado:
+                                    prev.relatos_asegurado?.map((r, i) =>
+                                      i === index
+                                        ? { ...r, imagen_url: imageUrl }
+                                        : r
+                                    ) || [],
                                 }));
                               } catch (error) {
                                 console.error("Error subiendo imagen:", error);
-                                alert("Error al subir la imagen. Intente nuevamente.");
+                                alert(
+                                  "Error al subir la imagen. Intente nuevamente."
+                                );
                               }
                             }
                           }}
@@ -1316,8 +1510,13 @@ const SiniestroForm: React.FC = () => {
                 </div>
 
                 {/* INSPECCIÓN DEL LUGAR */}
-                <div className="card-section" style={{ marginBottom: '20px', backgroundColor: '#f8f9fa' }}>
-                  <h4 style={{ color: "#0f172a", marginBottom: "15px" }}>🔍 Inspección del Lugar</h4>
+                <div
+                  className="card-section"
+                  style={{ marginBottom: "20px", backgroundColor: "#f8f9fa" }}
+                >
+                  <h4 style={{ color: "#0f172a", marginBottom: "15px" }}>
+                    🔍 Inspección del Lugar
+                  </h4>
                   <button
                     type="button"
                     className="btn-add"
@@ -1343,14 +1542,19 @@ const SiniestroForm: React.FC = () => {
                   {formData.inspecciones?.map((inspeccion, index) => (
                     <div key={index} className="dynamic-item">
                       <div className="dynamic-item-header">
-                        <h4 className="dynamic-item-title">Inspección {inspeccion.numero_inspeccion}</h4>
+                        <h4 className="dynamic-item-title">
+                          Inspección {inspeccion.numero_inspeccion}
+                        </h4>
                         <button
                           type="button"
                           className="btn-delete"
                           onClick={() => {
                             setFormData((prev) => ({
                               ...prev,
-                              inspecciones: prev.inspecciones?.filter((_, i) => i !== index) || [],
+                              inspecciones:
+                                prev.inspecciones?.filter(
+                                  (_, i) => i !== index
+                                ) || [],
                             }));
                           }}
                         >
@@ -1366,9 +1570,12 @@ const SiniestroForm: React.FC = () => {
                             const value = e.target.value;
                             setFormData((prev) => ({
                               ...prev,
-                              inspecciones: prev.inspecciones?.map((insp, i) =>
-                                i === index ? { ...insp, descripcion: value } : insp
-                              ) || [],
+                              inspecciones:
+                                prev.inspecciones?.map((insp, i) =>
+                                  i === index
+                                    ? { ...insp, descripcion: value }
+                                    : insp
+                                ) || [],
                             }));
                           }}
                           rows={3}
@@ -1387,19 +1594,30 @@ const SiniestroForm: React.FC = () => {
                               try {
                                 const formDataUpload = new FormData();
                                 formDataUpload.append("file", file);
-                                const response = await axios.post("/api/v1/upload-imagen", formDataUpload, {
-                                  headers: { "Content-Type": "multipart/form-data" },
-                                });
+                                const response = await axios.post(
+                                  "/api/v1/upload-imagen",
+                                  formDataUpload,
+                                  {
+                                    headers: {
+                                      "Content-Type": "multipart/form-data",
+                                    },
+                                  }
+                                );
                                 const imageUrl = response.data.url;
                                 setFormData((prev) => ({
                                   ...prev,
-                                  inspecciones: prev.inspecciones?.map((insp, i) =>
-                                    i === index ? { ...insp, imagen_url: imageUrl } : insp
-                                  ) || [],
+                                  inspecciones:
+                                    prev.inspecciones?.map((insp, i) =>
+                                      i === index
+                                        ? { ...insp, imagen_url: imageUrl }
+                                        : insp
+                                    ) || [],
                                 }));
                               } catch (error) {
                                 console.error("Error subiendo imagen:", error);
-                                alert("Error al subir la imagen. Intente nuevamente.");
+                                alert(
+                                  "Error al subir la imagen. Intente nuevamente."
+                                );
                               }
                             }
                           }}
@@ -1419,8 +1637,13 @@ const SiniestroForm: React.FC = () => {
                 </div>
 
                 {/* TESTIGOS */}
-                <div className="card-section" style={{ backgroundColor: '#f8f9fa' }}>
-                  <h4 style={{ color: "#0f172a", marginBottom: "15px" }}>👥 Testigos</h4>
+                <div
+                  className="card-section"
+                  style={{ backgroundColor: "#f8f9fa" }}
+                >
+                  <h4 style={{ color: "#0f172a", marginBottom: "15px" }}>
+                    👥 Testigos
+                  </h4>
                   <button
                     type="button"
                     className="btn-add"
@@ -1431,7 +1654,11 @@ const SiniestroForm: React.FC = () => {
                         ...prev,
                         testigos: [
                           ...currentTestigos,
-                          { numero_relato: nextNumero, texto: "", imagen_url: "" },
+                          {
+                            numero_relato: nextNumero,
+                            texto: "",
+                            imagen_url: "",
+                          },
                         ],
                       }));
                     }}
@@ -1442,14 +1669,18 @@ const SiniestroForm: React.FC = () => {
                   {formData.testigos?.map((testigo, index) => (
                     <div key={index} className="dynamic-item">
                       <div className="dynamic-item-header">
-                        <h4 className="dynamic-item-title">Testigo {testigo.numero_relato}</h4>
+                        <h4 className="dynamic-item-title">
+                          Testigo {testigo.numero_relato}
+                        </h4>
                         <button
                           type="button"
                           className="btn-delete"
                           onClick={() => {
                             setFormData((prev) => ({
                               ...prev,
-                              testigos: prev.testigos?.filter((_, i) => i !== index) || [],
+                              testigos:
+                                prev.testigos?.filter((_, i) => i !== index) ||
+                                [],
                             }));
                           }}
                         >
@@ -1465,9 +1696,10 @@ const SiniestroForm: React.FC = () => {
                             const value = e.target.value;
                             setFormData((prev) => ({
                               ...prev,
-                              testigos: prev.testigos?.map((test, i) =>
-                                i === index ? { ...test, texto: value } : test
-                              ) || [],
+                              testigos:
+                                prev.testigos?.map((test, i) =>
+                                  i === index ? { ...test, texto: value } : test
+                                ) || [],
                             }));
                           }}
                           rows={3}
@@ -1486,19 +1718,30 @@ const SiniestroForm: React.FC = () => {
                               try {
                                 const formDataUpload = new FormData();
                                 formDataUpload.append("file", file);
-                                const response = await axios.post("/api/v1/upload-imagen", formDataUpload, {
-                                  headers: { "Content-Type": "multipart/form-data" },
-                                });
+                                const response = await axios.post(
+                                  "/api/v1/upload-imagen",
+                                  formDataUpload,
+                                  {
+                                    headers: {
+                                      "Content-Type": "multipart/form-data",
+                                    },
+                                  }
+                                );
                                 const imageUrl = response.data.url;
                                 setFormData((prev) => ({
                                   ...prev,
-                                  testigos: prev.testigos?.map((test, i) =>
-                                    i === index ? { ...test, imagen_url: imageUrl } : test
-                                  ) || [],
+                                  testigos:
+                                    prev.testigos?.map((test, i) =>
+                                      i === index
+                                        ? { ...test, imagen_url: imageUrl }
+                                        : test
+                                    ) || [],
                                 }));
                               } catch (error) {
                                 console.error("Error subiendo imagen:", error);
-                                alert("Error al subir la imagen. Intente nuevamente.");
+                                alert(
+                                  "Error al subir la imagen. Intente nuevamente."
+                                );
                               }
                             }
                           }}
@@ -1523,12 +1766,15 @@ const SiniestroForm: React.FC = () => {
                 <button type="button" className="btn-prev" onClick={prevTab}>
                   Anterior
                 </button>
-                <button type="button" className="btn-submit-tab" onClick={handleSubmit}>
+                <button
+                  type="button"
+                  className="btn-submit-tab"
+                  onClick={handleSubmit}
+                >
                   {loading ? "Guardando..." : "Crear Siniestro"}
                 </button>
               </div>
             </div>
-
           </form>
         </div>
       </div>
