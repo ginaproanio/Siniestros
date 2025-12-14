@@ -197,22 +197,7 @@ const SiniestroForm: React.FC = () => {
     <div className="form-container">
       <h2>Registro de Siniestro</h2>
 
-      {/* Progress Indicator */}
-      <div className="progress-container">
-        <div className="progress-steps">
-          {tabs.map((tab, index) => (
-            <div
-              key={tab.id}
-              className={`progress-step ${
-                index === activeTab ? "active" : ""
-              } ${completedTabs.includes(index) ? "completed" : ""}`}
-            >
-              <div className="step-circle">{index + 1}</div>
-              <div className="step-label">{tab.title}</div>
-            </div>
-          ))}
-        </div>
-      </div>
+
 
       {/* Tab Navigation */}
       <div className="tabs-container">
