@@ -1,46 +1,172 @@
-# Configuración de Railway - Servicios Separados
+# 🚀 Configuración de Railway - Sistema de Siniestros
 
-## Problema Actual
-Railway está sirviendo el frontend React en lugar del backend FastAPI, causando error 405 en las llamadas API.
+## 📋 **ESTADO ACTUAL: SERVICIOS SEPARADOS FUNCIONANDO**
 
-## Solución: Servicios Separados
+### ✅ **Configuración Implementada**
+- **Frontend**: Servicio React independiente
+- **Backend**: Servicio FastAPI independiente
+- **Base de Datos**: PostgreSQL integrada en Railway
+- **Almacenamiento**: AWS S3 configurado
 
-### Paso 1: Crear Servicio Backend
-1. **Ve a Railway** → Tu proyecto "Siniestros"
-2. **Haz clic en "Add Service"**
-3. **Selecciona "GitHub"**
-4. **Elige el repositorio** "ginaproanio/Siniestros"
-5. **En "Root Directory"** escribe: `backend`
-6. **Deja la rama en "main"**
-7. **Railway detectará automáticamente** `backend/Procfile` y `backend/requirements.txt`
-8. **Railway creará** `https://backend-siniestros-[hash].up.railway.app/`
+## 🏗️ **ESTRUCTURA DE SERVICIOS**
 
-### Paso 2: Configurar Variable de Entorno
-1. **En el servicio backend** (el nuevo)
-2. **Ve a "Variables"**
-3. **Agrega:**
-   - Key: `DATABASE_URL`
-   - Value: `postgresql://postgres:IvyEBvPGcjQHeMwRlXrzexzBxEYRGtVW@postgres.railway.internal:5432/railway`
+### **1. Servicio Frontend (React)**
+- **URL**: `https://siniestros-production.up.railway.app/`
+- **Root Directory**: `frontend/`
+- **Framework**: React + TypeScript + Vite
+- **Variables de Entorno**:
+  ```bash
+  REACT_APP_BACKEND_URL=https://siniestros-production.up.railway.app/
+  ```
 
-### Paso 3: Actualizar Frontend
-1. **En el servicio frontend** (el original)
-2. **Ve a "Variables"**
-3. **Agrega:**
-   - Key: `REACT_APP_BACKEND_URL`
-   - Value: `https://backend-siniestros-[hash].up.railway.app/` (URL del backend)
+### **2. Servicio Backend (FastAPI)**
+- **URL**: Railway asigna automáticamente (ej: `https://backend-siniestros-[hash].up.railway.app/`)
+- **Root Directory**: `backend/`
+- **Framework**: FastAPI + SQLAlchemy + PostgreSQL
+- **Start Command**: `alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT`
 
-## Resultado Final
-- **Frontend**: `https://siniestros-production.up.railway.app/`
-- **Backend**: `https://backend-siniestros-[hash].up.railway.app/`
-- **API Docs**: `https://backend-siniestros-[hash].up.railway.app/docs`
+#### **Variables de Entorno del Backend**:
+```bash
+# Base de datos (Railway asigna automáticamente)
+DATABASE_URL=postgresql://[usuario]:[password]@postgres.railway.internal:5432/railway
 
-## Verificación
-1. Frontend carga correctamente
-2. Formulario puede enviar datos al backend
-3. Datos se guardan en PostgreSQL
+# AWS S3 (requeridas para upload de imágenes)
+AWS_ACCESS_KEY_ID=tu_access_key
+AWS_SECRET_ACCESS_KEY=tu_secret_key
+AWS_DEFAULT_REGION=us-east-2
+S3_BUCKET_NAME=siniestrossusiespinosa
 
-## URLs de Referencia
-- Documentación API: `/docs`
-- Health check: `/health`
-- Debug DB: `/debug/db`
-- Crear siniestro: `POST /api/v1/`
+# CORS (permitir requests del frontend)
+ALLOWED_ORIGINS=https://siniestros-production.up.railway.app/
+
+# Logging (deshabilitar en producción por seguridad)
+LOG_BODY=false
+```
+
+## 🔧 **CONFIGURACIÓN PASO A PASO**
+
+### **Paso 1: Verificar Servicios Existentes**
+1. Ve a tu proyecto Railway "Siniestros"
+2. Deberías tener **2 servicios**:
+   - `frontend` (React)
+   - `backend` (FastAPI)
+
+### **Paso 2: Configurar Variables de Entorno**
+Para cada servicio, configura las variables requeridas en la sección "Variables" del dashboard.
+
+### **Paso 3: Verificar Despliegue**
+- **Frontend**: Debe cargar la aplicación React
+- **Backend**: Debe responder en `/health`
+- **Base de Datos**: Railway crea automáticamente la instancia PostgreSQL
+
+## 📊 **ENDPOINTS DISPONIBLES**
+
+### **API REST Endpoints**
+```bash
+# Health check
+GET /health
+
+# Debug y diagnóstico
+GET /debug/db
+GET /debug/analyze-db
+POST /debug/create-test-data
+POST /debug/reset-database
+
+# CRUD Siniestros
+GET /api/v1/siniestros/           # Listar siniestros
+POST /api/v1/siniestros/          # Crear siniestro
+GET /api/v1/siniestros/{id}       # Obtener siniestro
+PUT /api/v1/siniestros/{id}       # Actualizar siniestro
+DELETE /api/v1/siniestros/{id}    # Eliminar siniestro
+
+# PDFs
+GET /api/v1/{id}/generar-pdf                    # PDF con firma
+GET /api/v1/{id}/generar-pdf-sin-firma          # PDF sin firma
+GET /api/v1/diagnostico-pdf                     # Diagnóstico PDF
+GET /api/v1/test-pdf                            # PDF de prueba
+
+# Documentación API
+GET /docs                                       # Swagger UI
+GET /redoc                                      # ReDoc
+```
+
+## 🎯 **FORMULARIOS COMPLETAMENTE PARAMETRIZADOS**
+
+### **Campos Requeridos en "Registro de Siniestro"**
+El formulario incluye **TODOS** los campos necesarios para el Informe de Investigación:
+
+#### **DATOS DEL SINIESTRO**
+- Compañía de Seguros
+- Número de Reclamo
+- Fecha del Siniestro
+- **Fecha Reportado** ← Campo agregado
+- Dirección del Siniestro
+- Ubicación Georreferenciada
+- Daños a Terceros
+- Ejecutivo a Cargo
+- Fecha de Designación
+- **Cobertura** ← Campo agregado
+
+#### **ASEGURADO, BENEFICIARIO, CONDUCTOR, OBJETO ASEGURADO**
+- **Todos los campos** de cada entidad relacionada
+
+#### **DECLARACIÓN DEL SINIESTRO** ← Sección nueva
+- Fecha de Declaración del Siniestro
+- Persona que Declara (Asegurado/Conductor/Otro)
+- Cédula/Nombre/Relación de quien declara
+
+#### **MISIVA DE INVESTIGACIÓN** ← Campo nuevo
+- Solicitud específica de la aseguradora (no se muestra en PDF)
+
+## 🚀 **DEPLOYMENT AUTOMÁTICO**
+
+### **Triggers de Redeploy**
+- **Push a `main`**: Railway redeploy automáticamente
+- **Nuevas migraciones**: Se ejecutan automáticamente en el backend
+- **Variables de entorno**: Se aplican sin redeploy manual
+
+### **Logs y Debugging**
+- **Railway Dashboard**: Logs en tiempo real
+- **Endpoint de diagnóstico**: `/debug/analyze-db`
+- **Health Check**: `/health`
+
+## ✅ **VERIFICACIÓN POST-DEPLOY**
+
+### **Checklist Funcional**
+- [ ] Frontend carga correctamente
+- [ ] Formulario de creación funciona
+- [ ] Formulario de edición funciona
+- [ ] PDFs se generan correctamente
+- [ ] Imágenes se suben a S3
+- [ ] Base de datos tiene datos correctos
+
+### **URLs de Verificación**
+- **Aplicación**: `https://siniestros-production.up.railway.app/`
+- **API Docs**: `https://[backend-url]/docs`
+- **Health Check**: `https://[backend-url]/health`
+- **Diagnóstico BD**: `https://[backend-url]/debug/analyze-db`
+
+## 🔐 **SEGURIDAD**
+
+### **Variables Sensibles**
+- ✅ AWS credentials configuradas como variables de entorno
+- ✅ DATABASE_URL asignada automáticamente por Railway
+- ✅ LOG_BODY=false en producción
+- ✅ CORS configurado correctamente
+
+### **Certificados SSL**
+- ✅ Railway proporciona HTTPS automáticamente
+- ✅ Certificados válidos y renovados automáticamente
+
+## 📞 **SOPORTE**
+
+Si encuentras problemas:
+1. Revisa los logs en Railway Dashboard
+2. Usa el endpoint `/debug/analyze-db` para diagnosticar BD
+3. Verifica las variables de entorno
+4. Contacta al equipo de desarrollo
+
+---
+
+**Última actualización**: Diciembre 2025
+**Estado**: ✅ **PRODUCTION READY**

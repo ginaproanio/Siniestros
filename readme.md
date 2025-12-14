@@ -1,5 +1,17 @@
 # Sistema de Informes de Siniestros
-Aplicación web full-stack para generar informes profesionales de investigaciones de siniestros en seguros. Utiliza React para el frontend, FastAPI para el backend, y ReportLab para crear PDFs con diseño corporativo, incluyendo mapas integrados y headers/footers automáticos.
+Aplicación web full-stack completa para la gestión y generación de informes profesionales de investigaciones de siniestros vehiculares en seguros. Incluye formularios parametrizados, base de datos relacional, generación automática de PDFs y firma digital.
+
+## 🎯 **OBJETIVOS ALCANZADOS**
+
+### ✅ **SISTEMA COMPLETO Y FUNCIONAL**
+- **Formularios parametrizados** con TODOS los campos necesarios para el Informe de Investigación
+- **Base de datos PostgreSQL** con esquema relacional completo
+- **APIs REST** funcionales con FastAPI
+- **Frontend React** con navegación completa
+- **Generación de PDFs** profesionales con ReportLab
+- **Firma digital** electrónica
+- **Almacenamiento AWS S3** para archivos
+- **Despliegue en Railway** automatizado
 
 ## Comunicación con el Asistente de IA
 Todas las comunicaciones e instrucciones dirigidas al asistente de IA (como Cline) deben realizarse en español. El asistente responderá y ejecutará tareas en español para mantener consistencia con el proyecto.
@@ -158,13 +170,69 @@ GET /api/v1/test-pdf                                # ✅ PDF básico
 
 **Estado**: 🏆 **CÓDIGO PROFESIONAL Y PRODUCTION-READY** - **PDFs funcionando perfectamente**
 
-## Funcionalidades
-- **Formulario estructurado**: Recolección completa de datos del siniestro, asegurado, conductor, vehículo y terceros afectados.
-- **Sección Asegurado Dinámica**: Permite seleccionar entre Persona Natural o Persona Jurídica, mostrando campos específicos:
-  - Persona Natural: Cédula, Celular, Dirección, Parentesco
-  - Persona Jurídica: RUC, Empresa, Representante Legal, Dirección, Teléfono
-- **Entrevista con el Conductor**: Permite registrar múltiples relatos dinámicamente, cada uno con texto opcional y imagen adjunta. Incluye acciones por relato: Buscar, Grabar, Añadir Otro.
-- **Orden de Secciones**: ANTECEDENTES antes de TERCEROS AFECTADOS.
+## 📋 **FORMULARIOS COMPLETAMENTE PARAMETRIZADOS**
+
+### ✅ **Formulario "Registro de Siniestro" (Creación)**
+Incluye **TODOS** los campos necesarios para parametrizar el Informe de Investigación:
+
+#### **DATOS DEL SINIESTRO**
+- ✅ Compañía de Seguros: Zurich Seguros Ecuador S.A.
+- ✅ Número de Reclamo: 25-01-VH-7079448
+- ✅ Fecha del Siniestro: 28/11/25 10:49:00 AM
+- ✅ **Fecha Reportado**: 30/11/25 10:49:00 AM
+- ✅ Dirección del Siniestro: Metroparqueos (Sucursal Eloy Alfaro). Pradera y Mariano Aguilera
+- ✅ Ubicación Georreferenciada: -0.193108 -78.486227
+- ✅ Daños a Terceros: No
+- ✅ Ejecutivo a Cargo: (opcional)
+- ✅ Fecha de Designación: 12 de Diciembre de 2025
+- ✅ **Cobertura**: Todo riesgo
+
+#### **ASEGURADO**
+- ✅ Razón Social: LANDAZURI MIRANDA PATRICIA VERONI
+- ✅ Cédula / RUC: 2100348008
+- ✅ Domicilio: De los Conquistadores y Juan Leon Mera
+- ✅ Teléfono: 032947804 (Matrícula)
+- ✅ Celular: 099 7507 161
+- ✅ Correo: pverolandazuri@hotmail.com
+
+#### **BENEFICIARIO**
+- ✅ Razón Social: NOVACREDIT S.A.
+- ✅ Cédula / RUC: (vacío)
+- ✅ Domicilio: (vacío)
+
+#### **CONDUCTOR**
+- ✅ Nombre: Manuel Antonio Carrión Herrera
+- ✅ Cédula: 1105653891
+- ✅ Celular: 0969520800
+- ✅ Dirección: Gaspar de Villarroel y 6 de Diciembre
+- ✅ Parentesco: Amigo
+
+#### **OBJETO ASEGURADO**
+- ✅ Placa: PFB4337
+- ✅ Marca: TOYOTA
+- ✅ Modelo: Corolla Cross High AC 1.8 5P 4x2
+- ✅ Tipo: Jeep
+- ✅ Color: Blanco
+- ✅ Año: 2023
+- ✅ Motor: 2ZR2X01895
+- ✅ Chasis: 9BRKZAAGXR0669964
+
+#### **DECLARACIÓN DEL SINIESTRO**
+- ✅ Fecha de Declaración del Siniestro
+- ✅ Persona que Declara (Asegurado/Conductor/Otro)
+- ✅ Cédula/Nombre/Relación de quien declara
+
+#### **MISIVA DE INVESTIGACIÓN**
+- ✅ Solicitud específica de la aseguradora (no se muestra en PDF)
+
+### ✅ **Formulario "Editar Siniestro"**
+Mantiene **TODOS** los campos del formulario de creación, más secciones dinámicas:
+- ✅ Antecedentes con redacción automática
+- ✅ Entrevistas con el Asegurado (relatos numerados)
+- ✅ Inspección del Lugar
+- ✅ Testigos
+
+### ✅ **Funcionalidades Implementadas**
 - **Generación de PDFs profesionales**: Utiliza ReportLab para crear PDFs con:
   - Diseño corporativo con tablas estructuradas
   - Mapas integrados generados con StaticMap
@@ -177,6 +245,9 @@ GET /api/v1/test-pdf                                # ✅ PDF básico
 - **Upload de imágenes**: Subida a AWS S3 con URLs presigned de 7 días, validación de tipos y tamaño (10MB máximo).
 - **Archivos de respaldo**: Genera informes en formato TXT además del PDF.
 - **Firma digital**: Soporte para firma digital de PDFs usando certificado P12.
+- **Navegación completa**: Crear → Listar → Ver Detalles → Editar
+- **Base de datos relacional**: PostgreSQL con todas las entidades relacionadas
+- **APIs REST completas**: FastAPI con endpoints para todas las operaciones CRUD
 
 ## CAMPOS DEL FORMULARIO (BASADO EN EL PDF ANALIZADO)
 *(Organizados por secciones, con nombres de variables sugeridos)*
