@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
+// Configurar base URL para el backend
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'https://siniestros-production.up.railway.app';
+console.log('🌐 Backend URL:', BACKEND_URL);
+axios.defaults.baseURL = BACKEND_URL;
+
 interface Siniestro {
   id: number;
   compania_seguros: string;

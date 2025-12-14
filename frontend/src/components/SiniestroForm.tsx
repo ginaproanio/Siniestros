@@ -2,10 +2,8 @@ import axios from "axios";
 import React, { useState } from "react";
 
 // Configurar base URL para el backend
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-if (!BACKEND_URL) {
-  console.error('REACT_APP_BACKEND_URL no está configurado');
-}
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'https://siniestros-production.up.railway.app';
+console.log('🌐 Backend URL:', BACKEND_URL);
 axios.defaults.baseURL = BACKEND_URL;
 
 // Interfaces para futuras expansiones del formulario
