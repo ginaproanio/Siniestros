@@ -148,3 +148,44 @@ async def clear_database():
         }
     finally:
         db.close()
+
+@app.post("/debug/apply-migrations")
+async def apply_migrations():
+    """Aplicar migraciones de base de datos pendientes"""
+    import subprocess
+    import sys
+    import os
+
+    logger.info("🔄 APLICANDO MIGRACIONES DE BASE DE DATOS")
+
+    try:
+        # Cambiar al directorio backend
+        os.chdir("backend")
+
+        # Ejecutar alembic upgrade head
+        result = subprocess.run([
+            sys.executable, "-m", "alembic", "upgrade", "head"
+        ], capture_output=True, text=True, cwd=".")
+
+        if result.returncode == 0:
+            logger.info("✅ Migraciones aplicadas exitosamente")
+            logger.info(f"Output: {result.stdout}")
+            return {
+                "message": "✅ Migraciones aplicadas exitosamente",
+                "output": result.stdout,
+                "error": result.stderr
+            }
+        else:
+            logger.error(f"❌ Error aplicando migraciones: {result.stderr}")
+            return {
+                "error": f"Error aplicando migraciones: {result.stderr}",
+                "output": result.stdout,
+                "status": "failed"
+            }
+
+    except Exception as e:
+        logger.error(f"❌ Error ejecutando migraciones: {e}")
+        return {
+            "error": f"Error ejecutando migraciones: {str(e)}",
+            "status": "failed"
+        }
