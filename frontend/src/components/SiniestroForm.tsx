@@ -107,10 +107,10 @@ const SiniestroForm: React.FC = () => {
     setMessage("");
 
     console.log("🚀 Enviando datos del formulario:", formData);
-    console.log("🌐 URL de destino:", axios.defaults.baseURL + "/api/v1/");
+    console.log("🌐 URL de destino:", axios.defaults.baseURL + "/api/v1/siniestros/");
 
     try {
-      const response = await axios.post("/api/v1/", formData);
+      const response = await axios.post("/api/v1/siniestros/", formData);
       console.log("✅ Respuesta del servidor:", response);
       console.log("📋 Datos de respuesta:", response.data);
       setMessage("Siniestro creado exitosamente!");
@@ -138,7 +138,7 @@ const SiniestroForm: React.FC = () => {
             }`;
             break;
           case 405:
-            errorMessage = `Error 405: Método no permitido. URL: ${axios.defaults.baseURL}/api/v1/`;
+            errorMessage = `Error 405: Método no permitido. URL: ${axios.defaults.baseURL}/api/v1/siniestros/`;
             break;
           case 404:
             errorMessage = `Error 404: Endpoint no encontrado. Verifica la URL de la API`;
@@ -269,6 +269,128 @@ const SiniestroForm: React.FC = () => {
               />
               Daños a Terceros
             </label>
+          </div>
+        </div>
+
+        <div className="form-row">
+          <div className="form-group">
+            <label>Fecha Reportado:</label>
+            <input
+              type="date"
+              name="fecha_reportado"
+              value={formData.fecha_reportado || ""}
+              onChange={handleInputChange}
+            />
+          </div>
+          <div className="form-group">
+            <label>Tipo de Siniestro:</label>
+            <input
+              type="text"
+              name="tipo_siniestro"
+              value={formData.tipo_siniestro || ""}
+              onChange={handleInputChange}
+              placeholder="Ej: Vehicular, Incendio, Robo"
+            />
+          </div>
+        </div>
+
+        <div className="form-row">
+          <div className="form-group">
+            <label>Cobertura:</label>
+            <input
+              type="text"
+              name="cobertura"
+              value={formData.cobertura || ""}
+              onChange={handleInputChange}
+              placeholder="Ej: Todo riesgo, Terceros, etc."
+            />
+          </div>
+        </div>
+
+        {/* PARAMETRIZACIÓN DEL FORMULARIO */}
+        <div className="section-container">
+          <h3 className="section-header">⚙️ PARAMETRIZACIÓN DEL FORMULARIO</h3>
+
+          {/* DECLARACIÓN DEL SINIESTRO */}
+          <div style={{ marginBottom: "20px", padding: "15px", backgroundColor: "#e8f4fd", borderRadius: "5px" }}>
+            <h4 style={{ color: "#0f172a", marginBottom: "10px" }}>📝 Declaración del Siniestro</h4>
+
+            <div className="form-row">
+              <div className="form-group">
+                <label>Fecha de Declaración:</label>
+                <input
+                  type="date"
+                  name="fecha_declaracion"
+                  value={formData.fecha_declaracion || ""}
+                  onChange={handleInputChange}
+                />
+              </div>
+              <div className="form-group">
+                <label>Tipo de Persona que Declara:</label>
+                <select
+                  name="persona_declara_tipo"
+                  value={formData.persona_declara_tipo || ""}
+                  onChange={handleInputChange}
+                >
+                  <option value="">Seleccionar...</option>
+                  <option value="asegurado">Asegurado</option>
+                  <option value="conductor">Conductor</option>
+                  <option value="otro">Otro</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="form-row">
+              <div className="form-group">
+                <label>Cédula de quien declara:</label>
+                <input
+                  type="text"
+                  name="persona_declara_cedula"
+                  value={formData.persona_declara_cedula || ""}
+                  onChange={handleInputChange}
+                  placeholder="Ej: 1234567890"
+                />
+              </div>
+              <div className="form-group">
+                <label>Nombre completo:</label>
+                <input
+                  type="text"
+                  name="persona_declara_nombre"
+                  value={formData.persona_declara_nombre || ""}
+                  onChange={handleInputChange}
+                  placeholder="Ej: Juan Pérez"
+                />
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label>Relación con el siniestro:</label>
+              <input
+                type="text"
+                name="persona_declara_relacion"
+                value={formData.persona_declara_relacion || ""}
+                onChange={handleInputChange}
+                placeholder="Ej: Propietario del vehículo, Testigo presencial, etc."
+              />
+            </div>
+          </div>
+
+          {/* MISIVA DE INVESTIGACIÓN */}
+          <div style={{ padding: "15px", backgroundColor: "#fff3cd", borderRadius: "5px" }}>
+            <h4 style={{ color: "#0f172a", marginBottom: "10px" }}>📋 Misiva de Investigación</h4>
+            <div className="form-group">
+              <label>Instrucciones específicas de la aseguradora:</label>
+              <textarea
+                name="misiva_investigacion"
+                value={formData.misiva_investigacion || ""}
+                onChange={handleInputChange}
+                rows={6}
+                placeholder="Escriba aquí las instrucciones específicas que dio la aseguradora para esta investigación..."
+              />
+            </div>
+            <small style={{ color: "#6c757d", fontStyle: "italic" }}>
+              * Este campo contiene las instrucciones particulares de la aseguradora para adaptar la investigación a sus requerimientos específicos.
+            </small>
           </div>
         </div>
 
