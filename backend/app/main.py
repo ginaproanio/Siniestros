@@ -159,33 +159,59 @@ async def apply_migrations():
     logger.info("🔄 APLICANDO MIGRACIONES DE BASE DE DATOS")
 
     try:
-        # Cambiar al directorio backend
-        os.chdir("backend")
+        # El directorio actual ya ES backend/ (donde está este archivo)
+        # alembic.ini está en el mismo directorio, script_location = alembic
+        # Las migraciones están en ./alembic/versions/
 
-        # Ejecutar alembic upgrade head
+        current_dir = os.getcwd()
+        logger.info(f"Directorio actual: {current_dir}")
+
+        # Verificar que alembic.ini existe
+        if not os.path.exists("alembic.ini"):
+            return {
+                "error": "alembic.ini no encontrado en el directorio actual",
+                "current_dir": current_dir,
+                "status": "failed"
+            }
+
+        # Verificar que el directorio alembic existe
+        if not os.path.exists("alembic"):
+            return {
+                "error": "Directorio alembic/ no encontrado",
+                "current_dir": current_dir,
+                "status": "failed"
+            }
+
+        # Ejecutar alembic upgrade head desde el directorio actual
         result = subprocess.run([
             sys.executable, "-m", "alembic", "upgrade", "head"
-        ], capture_output=True, text=True, cwd=".")
+        ], capture_output=True, text=True, cwd=current_dir)
 
         if result.returncode == 0:
             logger.info("✅ Migraciones aplicadas exitosamente")
             logger.info(f"Output: {result.stdout}")
             return {
                 "message": "✅ Migraciones aplicadas exitosamente",
-                "output": result.stdout,
-                "error": result.stderr
+                "output": result.stdout.strip(),
+                "error": result.stderr.strip(),
+                "current_dir": current_dir
             }
         else:
             logger.error(f"❌ Error aplicando migraciones: {result.stderr}")
             return {
-                "error": f"Error aplicando migraciones: {result.stderr}",
-                "output": result.stdout,
-                "status": "failed"
+                "error": f"Error aplicando migraciones: {result.stderr.strip()}",
+                "output": result.stdout.strip(),
+                "status": "failed",
+                "current_dir": current_dir
             }
 
     except Exception as e:
         logger.error(f"❌ Error ejecutando migraciones: {e}")
+        import traceback
+        error_details = traceback.format_exc()
+        logger.error(f"Traceback: {error_details}")
         return {
             "error": f"Error ejecutando migraciones: {str(e)}",
+            "traceback": error_details,
             "status": "failed"
         }
