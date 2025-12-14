@@ -180,15 +180,85 @@ Campos que varían según quién realiza la declaración y el contexto del sinie
 - **Railway redeploy automáticamente** después de push
 - **Reset completo es automático** y no requiere intervención manual
 
+## 🚀 **ROADMAP Y FUNCIONALIDADES FUTURAS**
+
+### **📄 HOJA DE PEDIDO DE INVESTIGACIÓN AUTOMÁTICA**
+Cada compañía de seguros envía una **hoja de pedido de investigación** que se carga al sistema y extrae automáticamente la información necesaria.
+
+**Funcionalidades:**
+- ✅ **Carga de documento PDF/Word** con la solicitud de la aseguradora
+- ✅ **Extracción automática** de datos (compañía, número de reclamo, fecha, etc.)
+- ✅ **Creación automática** del registro de siniestro con parametrización
+- ✅ **Ahorro de tiempo** significativo al investigador en la documentación inicial
+
+**Beneficio:** El investigador puede enfocarse en la investigación de campo en lugar de transcribir datos.
+
+---
+
+### **📎 ESPACIO PARA SUBIR DOCUMENTOS DE INVESTIGACIÓN**
+El investigado puede subir documentos que aporten evidencia a la investigación, los cuales se relacionan automáticamente con las etapas del informe PDF.
+
+**Tipos de documentos admitidos:**
+- 📍 **Rastreo Satelital** (GPS tracking)
+- 📍 **Ubicación del Siniestro** (mapas, coordenadas)
+- 📸 **Fotos del Siniestro** (antes, durante, después)
+- 📄 **Facturas** (reparaciones, gastos médicos)
+- 🏛️ **Certificados** (póliza, propiedad, etc.)
+- 📋 **Documentos Legales** (denuncias, informes policiales)
+
+**Funcionalidades:**
+- ✅ **Clasificación automática** por tipo de documento
+- ✅ **Relación con etapas** de la investigación en el PDF
+- ✅ **Visualización integrada** en el informe final
+- ✅ **Validación de autenticidad** de documentos
+
+---
+
+### **💰 INTEGRACIÓN DE FACTURACIÓN**
+Por cada investigación completada se genera automáticamente una factura a la compañía de seguros.
+
+**Proceso de Facturación:**
+1. **Investigación completada** → Sistema calcula costos
+2. **Generación automática** de factura con secuencia completa
+3. **Integración contable** con el proceso de investigación
+4. **Seguimiento de pagos** y estado de cobro
+
+**Beneficios:**
+- ✅ **Automatización** del proceso de facturación
+- ✅ **Secuencia completa** del proceso (investigación → factura → cobro)
+- ✅ **Integración financiera** transparente
+
+---
+
+### **🤖 INTELIGENCIA ARTIFICIAL PARA REDACCIÓN PROFESIONAL**
+Integración de IA para mejorar la calidad de redacción en campos descriptivos antes de generar el PDF final.
+
+**Campos mejorados por IA:**
+- 📝 **Relatos del Asegurado** (redacción profesional)
+- 📝 **Descripciones de Inspecciones** (lenguaje técnico preciso)
+- 📝 **Declaraciones de Testigos** (claridad y coherencia)
+- 📝 **Observaciones y Recomendaciones** (tono profesional)
+- 📝 **Conclusiones** (resumen ejecutivo claro)
+
+**Funcionalidades:**
+- ✅ **Análisis de contexto** del siniestro
+- ✅ **Redacción automática** con lenguaje profesional
+- ✅ **Corrección gramatical** y mejora de estilo
+- ✅ **Ajustes por tipo de siniestro** (vehicular, incendio, robo, etc.)
+
+---
+
 ## 📝 **REGISTRO DE CAMBIOS RECIENTES**
 
 | Fecha | Campo Agregado | Propósito | Estado |
 |-------|---------------|-----------|---------|
 | 2025-12-13 | `fecha_reportado` | Fecha de reporte del siniestro | ✅ Implementado |
 | 2025-12-13 | `cobertura` | Tipo de cobertura del seguro | ✅ Implementado |
-| 2025-12-13 | `fecha_declaracion` | Fecha de declaración | ✅ Implementado |
+| 2025-12-13 | `fecha_declaracion` | Fecha de declaración del siniestro | ✅ Implementado |
 | 2025-12-13 | `persona_declara_*` | Información de quien declara | ✅ Implementado |
 | 2025-12-13 | `misiva_investigacion` | Solicitud de aseguradora | ✅ Implementado |
+| 2025-12-14 | **Investigación Recabada** | FASE 2 del proceso | ✅ Implementado |
+| 2025-12-14 | **Lógica Condicional** | Persona natural/jurídica | ✅ Implementado |
 
 ---
 

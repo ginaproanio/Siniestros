@@ -208,7 +208,7 @@ const SiniestroForm: React.FC = () => {
             <input
               type="date"
               name="fecha_designacion"
-              value={formData.fecha_designacion}
+              value={formData.fecha_designacion || new Date().toISOString().split('T')[0]}
               onChange={handleInputChange}
             />
           </div>
@@ -343,6 +343,7 @@ const SiniestroForm: React.FC = () => {
                   <option value="">Seleccionar...</option>
                   <option value="asegurado">Asegurado</option>
                   <option value="conductor">Conductor</option>
+                  <option value="broker">Bróker</option>
                   <option value="otro">Otro</option>
                 </select>
               </div>
@@ -359,7 +360,7 @@ const SiniestroForm: React.FC = () => {
 
             <div className="form-row">
               <div className="form-group">
-                <label>Cédula de quien declara:</label>
+                <label>Cédula o RUC de quien declara:</label>
                 <input
                   type="text"
                   name="persona_declara_cedula"
@@ -401,241 +402,474 @@ const SiniestroForm: React.FC = () => {
           <div style={{ marginBottom: "20px", padding: "15px", backgroundColor: "#f0f9ff", borderRadius: "5px" }}>
             <h4 style={{ color: "#0f172a", marginBottom: "10px" }}>👤 Datos del Asegurado</h4>
 
-            <div className="form-row">
-              <div className="form-group">
-                <label>Cédula:</label>
-                <input
-                  type="text"
-                  name="asegurado_cedula"
-                  value={formData.asegurado?.cedula || ""}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setFormData((prev) => ({
-                      ...prev,
-                      asegurado: { ...prev.asegurado, cedula: value }
-                    }));
-                  }}
-                  placeholder="Ej: 1234567890"
-                />
-              </div>
-              <div className="form-group">
-                <label>Nombre Completo:</label>
-                <input
-                  type="text"
-                  name="asegurado_nombre"
-                  value={formData.asegurado?.nombre || ""}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setFormData((prev) => ({
-                      ...prev,
-                      asegurado: { ...prev.asegurado, nombre: value }
-                    }));
-                  }}
-                  placeholder="Ej: Juan Pérez"
-                />
-              </div>
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label>Dirección:</label>
-                <input
-                  type="text"
-                  name="asegurado_direccion"
-                  value={formData.asegurado?.direccion || ""}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setFormData((prev) => ({
-                      ...prev,
-                      asegurado: { ...prev.asegurado, direccion: value }
-                    }));
-                  }}
-                  placeholder="Ej: Av. Amazonas N32-45"
-                />
-              </div>
-              <div className="form-group">
-                <label>Teléfono:</label>
-                <input
-                  type="tel"
-                  name="asegurado_telefono"
-                  value={formData.asegurado?.telefono || ""}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setFormData((prev) => ({
-                      ...prev,
-                      asegurado: { ...prev.asegurado, telefono: value }
-                    }));
-                  }}
-                  placeholder="Ej: 0991234567"
-                />
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label>Email:</label>
-              <input
-                type="email"
-                name="asegurado_email"
-                value={formData.asegurado?.email || ""}
+            <div className="form-group" style={{ marginBottom: "15px" }}>
+              <label>Tipo de Persona:</label>
+              <select
+                value={formData.asegurado?.tipo || ""}
                 onChange={(e) => {
                   const value = e.target.value;
                   setFormData((prev) => ({
                     ...prev,
-                    asegurado: { ...prev.asegurado, email: value }
+                    asegurado: { ...prev.asegurado, tipo: value }
                   }));
                 }}
-                placeholder="Ej: juan.perez@email.com"
-              />
+              >
+                <option value="">Seleccionar...</option>
+                <option value="natural">Persona Natural</option>
+                <option value="juridica">Persona Jurídica</option>
+              </select>
             </div>
+
+            {formData.asegurado?.tipo === "natural" && (
+              <>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Cédula:</label>
+                    <input
+                      type="text"
+                      value={formData.asegurado?.cedula || ""}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setFormData((prev) => ({
+                          ...prev,
+                          asegurado: { ...prev.asegurado, cedula: value }
+                        }));
+                      }}
+                      placeholder="Ej: 1234567890"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Nombre Completo:</label>
+                    <input
+                      type="text"
+                      value={formData.asegurado?.nombre || ""}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setFormData((prev) => ({
+                          ...prev,
+                          asegurado: { ...prev.asegurado, nombre: value }
+                        }));
+                      }}
+                      placeholder="Ej: Juan Pérez"
+                    />
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Celular:</label>
+                    <input
+                      type="tel"
+                      value={formData.asegurado?.celular || ""}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setFormData((prev) => ({
+                          ...prev,
+                          asegurado: { ...prev.asegurado, celular: value }
+                        }));
+                      }}
+                      placeholder="Ej: 0991234567"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Email:</label>
+                    <input
+                      type="email"
+                      value={formData.asegurado?.correo || ""}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setFormData((prev) => ({
+                          ...prev,
+                          asegurado: { ...prev.asegurado, correo: value }
+                        }));
+                      }}
+                      placeholder="Ej: juan.perez@email.com"
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Dirección:</label>
+                  <input
+                    type="text"
+                    value={formData.asegurado?.direccion || ""}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setFormData((prev) => ({
+                        ...prev,
+                        asegurado: { ...prev.asegurado, direccion: value }
+                      }));
+                    }}
+                    placeholder="Ej: Av. Amazonas N32-45"
+                  />
+                </div>
+              </>
+            )}
+
+            {formData.asegurado?.tipo === "juridica" && (
+              <>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>RUC:</label>
+                    <input
+                      type="text"
+                      value={formData.asegurado?.ruc || ""}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setFormData((prev) => ({
+                          ...prev,
+                          asegurado: { ...prev.asegurado, ruc: value }
+                        }));
+                      }}
+                      placeholder="Ej: 1234567890001"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Razón Social:</label>
+                    <input
+                      type="text"
+                      value={formData.asegurado?.empresa || ""}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setFormData((prev) => ({
+                          ...prev,
+                          asegurado: { ...prev.asegurado, empresa: value }
+                        }));
+                      }}
+                      placeholder="Ej: Empresa S.A."
+                    />
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Representante Legal:</label>
+                    <input
+                      type="text"
+                      value={formData.asegurado?.representante_legal || ""}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setFormData((prev) => ({
+                          ...prev,
+                          asegurado: { ...prev.asegurado, representante_legal: value }
+                        }));
+                      }}
+                      placeholder="Ej: Juan Pérez"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Celular:</label>
+                    <input
+                      type="tel"
+                      value={formData.asegurado?.celular || ""}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setFormData((prev) => ({
+                          ...prev,
+                          asegurado: { ...prev.asegurado, celular: value }
+                        }));
+                      }}
+                      placeholder="Ej: 0991234567"
+                    />
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Teléfono:</label>
+                    <input
+                      type="tel"
+                      value={formData.asegurado?.telefono || ""}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setFormData((prev) => ({
+                          ...prev,
+                          asegurado: { ...prev.asegurado, telefono: value }
+                        }));
+                      }}
+                      placeholder="Ej: 022345678"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Email:</label>
+                    <input
+                      type="email"
+                      value={formData.asegurado?.correo || ""}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setFormData((prev) => ({
+                          ...prev,
+                          asegurado: { ...prev.asegurado, correo: value }
+                        }));
+                      }}
+                      placeholder="Ej: info@empresa.com"
+                    />
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
           {/* BENEFICIARIO */}
           <div style={{ marginBottom: "20px", padding: "15px", backgroundColor: "#f0fdf4", borderRadius: "5px" }}>
             <h4 style={{ color: "#0f172a", marginBottom: "10px" }}>🎯 Datos del Beneficiario</h4>
 
-            <div className="form-row">
-              <div className="form-group">
-                <label>Cédula:</label>
+            <div className="form-group" style={{ marginBottom: "15px" }}>
+              <label>
                 <input
-                  type="text"
-                  name="beneficiario_cedula"
-                  value={formData.beneficiario?.cedula || ""}
+                  type="checkbox"
+                  checked={formData.beneficiario?.es_asegurado || false}
                   onChange={(e) => {
-                    const value = e.target.value;
+                    const checked = e.target.checked;
                     setFormData((prev) => ({
                       ...prev,
-                      beneficiario: { ...prev.beneficiario, cedula: value }
+                      beneficiario: checked ? {
+                        ...prev.beneficiario,
+                        es_asegurado: true,
+                        cedula: prev.asegurado?.cedula || "",
+                        nombre: prev.asegurado?.nombre || "",
+                        relacion: "Asegurado"
+                      } : {
+                        ...prev.beneficiario,
+                        es_asegurado: false
+                      }
                     }));
                   }}
-                  placeholder="Ej: 0987654321"
                 />
-              </div>
-              <div className="form-group">
-                <label>Nombre Completo:</label>
-                <input
-                  type="text"
-                  name="beneficiario_nombre"
-                  value={formData.beneficiario?.nombre || ""}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setFormData((prev) => ({
-                      ...prev,
-                      beneficiario: { ...prev.beneficiario, nombre: value }
-                    }));
-                  }}
-                  placeholder="Ej: María González"
-                />
-              </div>
+                Es el asegurado
+              </label>
             </div>
 
-            <div className="form-group">
-              <label>Relación con el Asegurado:</label>
-              <input
-                type="text"
-                name="beneficiario_relacion"
-                value={formData.beneficiario?.relacion || ""}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setFormData((prev) => ({
-                    ...prev,
-                    beneficiario: { ...prev.beneficiario, relacion: value }
-                  }));
-                }}
-                placeholder="Ej: Esposa, Hijo, Padre"
-              />
-            </div>
+            {!formData.beneficiario?.es_asegurado && (
+              <>
+                <div className="form-group" style={{ marginBottom: "15px" }}>
+                  <label>Tipo de Persona:</label>
+                  <select
+                    value={formData.beneficiario?.tipo || ""}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setFormData((prev) => ({
+                        ...prev,
+                        beneficiario: { ...prev.beneficiario, tipo: value }
+                      }));
+                    }}
+                  >
+                    <option value="">Seleccionar...</option>
+                    <option value="natural">Persona Natural</option>
+                    <option value="juridica">Persona Jurídica</option>
+                  </select>
+                </div>
+
+                {formData.beneficiario?.tipo === "natural" && (
+                  <>
+                    <div className="form-row">
+                      <div className="form-group">
+                        <label>Cédula:</label>
+                        <input
+                          type="text"
+                          value={formData.beneficiario?.cedula || ""}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setFormData((prev) => ({
+                              ...prev,
+                              beneficiario: { ...prev.beneficiario, cedula: value }
+                            }));
+                          }}
+                          placeholder="Ej: 0987654321"
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Nombre Completo:</label>
+                        <input
+                          type="text"
+                          value={formData.beneficiario?.nombre || ""}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setFormData((prev) => ({
+                              ...prev,
+                              beneficiario: { ...prev.beneficiario, nombre: value }
+                            }));
+                          }}
+                          placeholder="Ej: María González"
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {formData.beneficiario?.tipo === "juridica" && (
+                  <>
+                    <div className="form-row">
+                      <div className="form-group">
+                        <label>RUC:</label>
+                        <input
+                          type="text"
+                          value={formData.beneficiario?.cedula_ruc || ""}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setFormData((prev) => ({
+                              ...prev,
+                              beneficiario: { ...prev.beneficiario, cedula_ruc: value }
+                            }));
+                          }}
+                          placeholder="Ej: 1234567890001"
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Razón Social:</label>
+                        <input
+                          type="text"
+                          value={formData.beneficiario?.razon_social || ""}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setFormData((prev) => ({
+                              ...prev,
+                              beneficiario: { ...prev.beneficiario, razon_social: value }
+                            }));
+                          }}
+                          placeholder="Ej: Empresa Beneficiaria S.A."
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                <div className="form-group">
+                  <label>Relación con el Asegurado:</label>
+                  <input
+                    type="text"
+                    value={formData.beneficiario?.relacion || ""}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setFormData((prev) => ({
+                        ...prev,
+                        beneficiario: { ...prev.beneficiario, relacion: value }
+                      }));
+                    }}
+                    placeholder="Ej: Esposa, Hijo, Padre"
+                  />
+                </div>
+              </>
+            )}
           </div>
 
           {/* CONDUCTOR */}
           <div style={{ marginBottom: "20px", padding: "15px", backgroundColor: "#fef3c7", borderRadius: "5px" }}>
             <h4 style={{ color: "#0f172a", marginBottom: "10px" }}>🚗 Datos del Conductor</h4>
 
-            <div className="form-row">
-              <div className="form-group">
-                <label>Cédula:</label>
+            <div className="form-group" style={{ marginBottom: "15px" }}>
+              <label>
                 <input
-                  type="text"
-                  name="conductor_cedula"
-                  value={formData.conductor?.cedula || ""}
+                  type="checkbox"
+                  checked={formData.conductor?.es_asegurado || false}
                   onChange={(e) => {
-                    const value = e.target.value;
+                    const checked = e.target.checked;
                     setFormData((prev) => ({
                       ...prev,
-                      conductor: { ...prev.conductor, cedula: value }
+                      conductor: checked ? {
+                        ...prev.conductor,
+                        es_asegurado: true,
+                        cedula: prev.asegurado?.cedula || "",
+                        nombre: prev.asegurado?.nombre || "",
+                        licencia: "",
+                        telefono: prev.asegurado?.celular || "",
+                        direccion: prev.asegurado?.direccion || ""
+                      } : {
+                        ...prev.conductor,
+                        es_asegurado: false
+                      }
                     }));
                   }}
-                  placeholder="Ej: 1122334455"
                 />
-              </div>
-              <div className="form-group">
-                <label>Nombre Completo:</label>
-                <input
-                  type="text"
-                  name="conductor_nombre"
-                  value={formData.conductor?.nombre || ""}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setFormData((prev) => ({
-                      ...prev,
-                      conductor: { ...prev.conductor, nombre: value }
-                    }));
-                  }}
-                  placeholder="Ej: Carlos Rodríguez"
-                />
-              </div>
+                Es el asegurado
+              </label>
             </div>
 
-            <div className="form-row">
-              <div className="form-group">
-                <label>Número de Licencia:</label>
-                <input
-                  type="text"
-                  name="conductor_licencia"
-                  value={formData.conductor?.licencia || ""}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setFormData((prev) => ({
-                      ...prev,
-                      conductor: { ...prev.conductor, licencia: value }
-                    }));
-                  }}
-                  placeholder="Ej: 123456789"
-                />
-              </div>
-              <div className="form-group">
-                <label>Teléfono:</label>
-                <input
-                  type="tel"
-                  name="conductor_telefono"
-                  value={formData.conductor?.telefono || ""}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setFormData((prev) => ({
-                      ...prev,
-                      conductor: { ...prev.conductor, telefono: value }
-                    }));
-                  }}
-                  placeholder="Ej: 0987654321"
-                />
-              </div>
-            </div>
+            {!formData.conductor?.es_asegurado && (
+              <>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Cédula:</label>
+                    <input
+                      type="text"
+                      value={formData.conductor?.cedula || ""}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setFormData((prev) => ({
+                          ...prev,
+                          conductor: { ...prev.conductor, cedula: value }
+                        }));
+                      }}
+                      placeholder="Ej: 1122334455"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Nombre Completo:</label>
+                    <input
+                      type="text"
+                      value={formData.conductor?.nombre || ""}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setFormData((prev) => ({
+                          ...prev,
+                          conductor: { ...prev.conductor, nombre: value }
+                        }));
+                      }}
+                      placeholder="Ej: Carlos Rodríguez"
+                    />
+                  </div>
+                </div>
 
-            <div className="form-group">
-              <label>Dirección:</label>
-              <input
-                type="text"
-                name="conductor_direccion"
-                value={formData.conductor?.direccion || ""}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setFormData((prev) => ({
-                    ...prev,
-                    conductor: { ...prev.conductor, direccion: value }
-                  }));
-                }}
-                placeholder="Ej: Calle Principal 123"
-              />
-            </div>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Número de Licencia:</label>
+                    <input
+                      type="text"
+                      value={formData.conductor?.licencia || ""}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setFormData((prev) => ({
+                          ...prev,
+                          conductor: { ...prev.conductor, licencia: value }
+                        }));
+                      }}
+                      placeholder="Ej: 123456789"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Teléfono:</label>
+                    <input
+                      type="tel"
+                      value={formData.conductor?.telefono || ""}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setFormData((prev) => ({
+                          ...prev,
+                          conductor: { ...prev.conductor, telefono: value }
+                        }));
+                      }}
+                      placeholder="Ej: 0987654321"
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Dirección:</label>
+                  <input
+                    type="text"
+                    value={formData.conductor?.direccion || ""}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setFormData((prev) => ({
+                        ...prev,
+                        conductor: { ...prev.conductor, direccion: value }
+                      }));
+                    }}
+                    placeholder="Ej: Calle Principal 123"
+                  />
+                </div>
+              </>
+            )}
           </div>
 
           {/* OBJETO ASEGURADO */}
