@@ -58,36 +58,51 @@ z/* Corporate Color Palette - From DESIGN.md */
   color: var(--color-blanco-puro);
 }
 
-.form-container {
-  background: var(--color-blanco-puro);
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.15);
-  padding: 32px;
-  margin: 24px 0;
-  border: 2px solid var(--color-gris-borde);
-  position: relative;
+/* Form container removed - using full width layout */
+
+.form-header {
+  margin-bottom: 40px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--color-gris-borde);
 }
 
-.form-container::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(
-    90deg,
-    var(--color-rojo-acento) 0%,
-    var(--color-negro-corporativo) 100%
-  );
-  border-radius: 12px 12px 0 0;
-}
-
-.form-container h2 {
+.form-header h2 {
   color: var(--color-negro-corporativo);
-  margin-bottom: 30px;
-  border-bottom: 2px solid var(--color-gris-borde);
-  padding-bottom: 10px;
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.form-section {
+  margin-bottom: 48px;
+}
+
+.form-section-title {
+  color: var(--color-negro-corporativo);
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 24px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-gris-borde);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.form-section-title::before {
+  content: '';
+  width: 4px;
+  height: 20px;
+  background: linear-gradient(180deg, var(--color-rojo-acento) 0%, var(--color-negro-corporativo) 100%);
+  border-radius: 2px;
+}
+
+.form-section-description {
+  color: var(--color-gris-texto);
+  font-size: 16px;
+  margin-bottom: 32px;
+  line-height: 1.6;
 }
 
 .form-row {

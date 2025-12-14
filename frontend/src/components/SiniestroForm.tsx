@@ -194,8 +194,10 @@ const SiniestroForm: React.FC = () => {
   };
 
   return (
-    <div className="form-container">
-      <h2>Registro de Siniestro</h2>
+    <div>
+      <div className="form-header">
+        <h2>Registro de Siniestro</h2>
+      </div>
 
 
 
@@ -218,6 +220,54 @@ const SiniestroForm: React.FC = () => {
 
         {/* Tab Content */}
         <div className="tab-content">
+          {/* Información Básica Section */}
+          {activeTab === 0 && (
+            <div className="form-section">
+              <div className="form-section-title">
+                📋 Información Básica del Siniestro
+              </div>
+              <div className="form-section-description">
+                Datos principales del incidente reportado y configuración inicial
+              </div>
+            </div>
+          )}
+
+          {/* Parametrización Section */}
+          {activeTab === 1 && (
+            <div className="form-section">
+              <div className="form-section-title">
+                ⚙️ Parametrización del Formulario
+              </div>
+              <div className="form-section-description">
+                Configuración específica de la investigación y declaración formal
+              </div>
+            </div>
+          )}
+
+          {/* Entidades Section */}
+          {activeTab === 2 && (
+            <div className="form-section">
+              <div className="form-section-title">
+                👥 Entidades Relacionadas
+              </div>
+              <div className="form-section-description">
+                Información completa de las personas y objetos involucrados en el siniestro
+              </div>
+            </div>
+          )}
+
+          {/* Investigación Section */}
+          {activeTab === 3 && (
+            <div className="form-section">
+              <div className="form-section-title">
+                🔍 Investigación y Evidencia
+              </div>
+              <div className="form-section-description">
+                Recopilación sistemática de información, declaraciones y evidencia del incidente
+              </div>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit}>
             {/* TAB 1: Información Básica del Siniestro */}
             <div className={`tab-section ${activeTab === 0 ? "active" : ""}`}>
