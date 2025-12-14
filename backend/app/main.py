@@ -299,6 +299,62 @@ async def reset_database():
             "status": "failed"
         }
 
+@app.post("/debug/create-test-data")
+async def create_test_data_endpoint():
+    """Crear datos de prueba manualmente - ejecuta el script create_test_data.py"""
+    import subprocess
+    import sys
+    import os
+
+    logger.info("🧪 EJECUTANDO CREACIÓN MANUAL DE DATOS DE PRUEBA")
+
+    try:
+        current_dir = os.getcwd()
+        logger.info(f"Directorio actual: {current_dir}")
+
+        # Ejecutar el script create_test_data.py
+        result = subprocess.run([
+            sys.executable, "create_test_data.py"
+        ], capture_output=True, text=True, cwd=current_dir)
+
+        if result.returncode == 0:
+            logger.info("✅ Datos de prueba creados exitosamente")
+            logger.info(f"Output: {result.stdout}")
+
+            # Verificar que se creó el siniestro
+            from app.database import SessionLocal
+            from app import models
+
+            db = SessionLocal()
+            count = db.query(models.Siniestro).count()
+            db.close()
+
+            return {
+                "message": "✅ Datos de prueba creados exitosamente",
+                "output": result.stdout.strip(),
+                "error": result.stderr.strip(),
+                "siniestros_creados": count,
+                "status": "success"
+            }
+        else:
+            logger.error(f"❌ Error creando datos de prueba: {result.stderr}")
+            return {
+                "error": f"Error creando datos: {result.stderr.strip()}",
+                "output": result.stdout.strip(),
+                "status": "failed"
+            }
+
+    except Exception as e:
+        logger.error(f"❌ Error ejecutando script: {e}")
+        import traceback
+        error_details = traceback.format_exc()
+        logger.error(f"Traceback: {error_details}")
+        return {
+            "error": f"Error ejecutando script: {str(e)}",
+            "traceback": error_details,
+            "status": "failed"
+        }
+
 @app.post("/debug/apply-migrations")
 async def apply_migrations():
     """Aplicar migraciones de base de datos pendientes"""
