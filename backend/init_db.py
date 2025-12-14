@@ -46,6 +46,21 @@ def reset_database():
         Base.metadata.create_all(bind=engine)
         print("✅ All tables created successfully", flush=True)
 
+        # Create test data automatically
+        print("🧪 Creating test data...", flush=True)
+        try:
+            # Import and run the create_test_data function
+            from create_test_data import create_test_data
+
+            if create_test_data():
+                print("✅ Test data created successfully", flush=True)
+            else:
+                print("⚠️ Test data creation failed, but database is ready", flush=True)
+
+        except Exception as e:
+            print(f"⚠️ Could not create test data: {e}", flush=True)
+            print("ℹ️ Database is still ready for use", flush=True)
+
         print("🎉 DATABASE RESET COMPLETE!", flush=True)
         return True
 
