@@ -8,6 +8,7 @@ interface SiniestroData {
   reclamo_num: string;
   fecha_siniestro: string;
   tipo_siniestro: string;
+  pdf_firmado_url?: string;
   // Add other fields as needed
 }
 
@@ -93,6 +94,57 @@ const SiniestroDetail: React.FC = () => {
         >
           📄 Generar PDF
         </button>
+        {siniestro.pdf_firmado_url && (
+          <button
+            onClick={() => window.open(siniestro.pdf_firmado_url, '_blank')}
+            style={{ backgroundColor: '#17a2b8' }}
+          >
+            📋 Ver PDF Firmado
+          </button>
+        )}
+        <div style={{ marginTop: '10px' }}>
+          <input
+            type="file"
+            accept=".pdf"
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+
+              try {
+                const apiBase = process.env.REACT_APP_BACKEND_URL;
+                if (!apiBase) {
+                  alert('Error de configuración: REACT_APP_BACKEND_URL no está definido');
+                  return;
+                }
+
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const response = await fetch(`${apiBase}/api/v1/${siniestro.id}/upload-pdf-firmado`, {
+                  method: 'POST',
+                  body: formData,
+                });
+
+                if (response.ok) {
+                  const result = await response.json();
+                  alert('PDF firmado subido exitosamente');
+                  // Refresh the page to show the new signed PDF
+                  window.location.reload();
+                } else {
+                  const error = await response.text();
+                  alert(`Error subiendo PDF: ${error}`);
+                }
+              } catch (error) {
+                console.error('Error:', error);
+                alert('Error subiendo PDF firmado');
+              }
+            }}
+            style={{ marginRight: '10px' }}
+          />
+          <label style={{ fontSize: '12px', color: '#666' }}>
+            Subir PDF firmado digitalmente
+          </label>
+        </div>
       </div>
     </div>
   );
