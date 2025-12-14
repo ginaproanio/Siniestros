@@ -11,6 +11,8 @@ from reportlab.lib.enums import TA_CENTER
 from sqlalchemy.orm import Session
 from ..models import Siniestro
 
+logger = logging.getLogger(__name__)
+
 try:
     from endesive.pdf import cms
     from cryptography.hazmat.primitives.serialization import pkcs12
@@ -19,8 +21,6 @@ try:
 except ImportError as e:
     CRYPTO_AVAILABLE = False
     logger.warning(f"⚠️ Bibliotecas de criptografía no disponibles: {e}")
-
-logger = logging.getLogger(__name__)
 
 
 def load_certificate_from_s3(cert_key: str = "certificates/maria_susana_espinosa_lozada.p12") -> tuple[bytes, str]:
