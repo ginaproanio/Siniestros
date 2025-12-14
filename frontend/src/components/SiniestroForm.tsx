@@ -686,6 +686,131 @@ const SiniestroForm: React.FC = () => {
                       </>
                     )}
 
+                    {formData.asegurado?.tipo === "juridica" && (
+                      <>
+                        <div className="form-row">
+                          <div className="form-group">
+                            <label>RUC:</label>
+                            <input
+                              type="text"
+                              value={formData.asegurado?.ruc || ""}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  asegurado: { ...prev.asegurado, ruc: value },
+                                }));
+                              }}
+                              placeholder="Ej: 1791234567001"
+                            />
+                          </div>
+                          <div className="form-group">
+                            <label>Razón Social:</label>
+                            <input
+                              type="text"
+                              value={formData.asegurado?.razon_social || ""}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  asegurado: { ...prev.asegurado, razon_social: value },
+                                }));
+                              }}
+                              placeholder="Ej: Empresa S.A."
+                            />
+                          </div>
+                        </div>
+
+                        <div className="form-row">
+                          <div className="form-group">
+                            <label>Representante Legal:</label>
+                            <input
+                              type="text"
+                              value={formData.asegurado?.representante_legal || ""}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  asegurado: { ...prev.asegurado, representante_legal: value },
+                                }));
+                              }}
+                              placeholder="Ej: Juan Pérez"
+                            />
+                          </div>
+                          <div className="form-group">
+                            <label>Cédula Representante:</label>
+                            <input
+                              type="text"
+                              value={formData.asegurado?.cedula_representante || ""}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  asegurado: { ...prev.asegurado, cedula_representante: value },
+                                }));
+                              }}
+                              placeholder="Ej: 1234567890"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="form-row">
+                          <div className="form-group">
+                            <label>Teléfono Empresa:</label>
+                            <input
+                              type="tel"
+                              value={formData.asegurado?.telefono_empresa || ""}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  asegurado: {
+                                    ...prev.asegurado,
+                                    telefono_empresa: value,
+                                  },
+                                }));
+                              }}
+                              placeholder="Ej: (02) 123-4567"
+                            />
+                          </div>
+                          <div className="form-group">
+                            <label>Email Empresa:</label>
+                            <input
+                              type="email"
+                              value={formData.asegurado?.correo_empresa || ""}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  asegurado: { ...prev.asegurado, correo_empresa: value },
+                                }));
+                              }}
+                              placeholder="Ej: info@empresa.com"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="form-group">
+                          <label>Dirección Empresa:</label>
+                          <input
+                            type="text"
+                            value={formData.asegurado?.direccion_empresa || ""}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              setFormData((prev) => ({
+                                ...prev,
+                                asegurado: {
+                                  ...prev.asegurado,
+                                  direccion_empresa: value,
+                                },
+                              }));
+                            }}
+                            placeholder="Ej: Av. Amazonas N32-45, Quito"
+                          />
+                        </div>
+                      </>
+                    )}
+
                     {/* Tab Navigation */}
                     <div className="tab-navigation">
                       <button type="button" className="btn-prev" onClick={prevTab}>
