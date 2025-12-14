@@ -1,4 +1,4 @@
-/?* 🎨 Corporate Color Palette - From DESIGN.md */
+/* 🎨 Corporate Color Palette - From DESIGN.md */
 :root {
   --color-negro-corporativo: #0f172a;  /* Azul oscuro corporativo */
   --color-rojo-acento: #dc2626;         /* Rojo para acciones importantes */
@@ -20,11 +20,7 @@
   /* Bordes redondeados */
   --border-radius: 0.25rem; /* 4px */
 
-  /* Gradientes por sección */
-  --gradient-info: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-  --gradient-param: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
-  --gradient-entidades: linear-gradient(135deg, #f0f9ff 0%, #bae6fd 100%);
-  --gradient-investigacion: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  /* Gradientes por sección - definidos en clases específicas */
 }
 
 .App {
@@ -569,16 +565,16 @@ button[type="button"]:nth-child(2):hover {
 }
 
 /* Información Básica */
-.card-section.info-section::before { background: var(--gradient-info); }
+.card-section.info-section::before { background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); }
 
 /* Parametrización */
-.card-section.param-section::before { background: var(--gradient-param); }
+.card-section.param-section::before { background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%); }
 
 /* Entidades Relacionadas */
-.card-section.entidades-section::before { background: var(--gradient-entidades); }
+.card-section.entidades-section::before { background: linear-gradient(135deg, #f0f9ff 0%, #bae6fd 100%); }
 
 /* Investigación */
-.card-section.investigacion-section::before { background: var(--gradient-investigacion); }
+.card-section.investigacion-section::before { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); }
 
 .card-header {
   display: flex;
