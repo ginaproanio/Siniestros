@@ -83,7 +83,7 @@ const SiniestroForm: React.FC = () => {
     tipo_siniestro: "Vehicular",
   });
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false); // eslint-disable-line @typescript-eslint/no-unused-vars
   const [message, setMessage] = useState("");
 
   const tabs = [
@@ -100,7 +100,7 @@ const SiniestroForm: React.FC = () => {
     }
   };
 
-  const prevTab = () => {
+  const prevTab = () => { // eslint-disable-line @typescript-eslint/no-unused-vars
     if (activeTab > 0) {
       setActiveTab(activeTab - 1);
     }
