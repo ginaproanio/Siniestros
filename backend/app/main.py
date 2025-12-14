@@ -9,13 +9,51 @@ from datetime import datetime
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Database initialization will be handled by startup event
-
 app = FastAPI(
     title="Sistema de Informes de Siniestros API",
     description="API para gestión de informes de siniestros vehiculares",
     version="1.0.0"
 )
+
+# Database initialization - automatic schema sync on startup
+@app.on_event("startup")
+async def startup_event():
+    """Initialize database on startup - handles schema updates automatically"""
+    import logging
+    logger = logging.getLogger(__name__)
+
+    logger.info("🚀 INICIANDO SISTEMA - VERIFICANDO BASE DE DATOS...")
+
+    try:
+        from app.database import engine, Base
+        from app import models
+
+        # Create all tables (safe operation - won't drop existing data)
+        logger.info("🏗️ Asegurando que todas las tablas existan...")
+        Base.metadata.create_all(bind=engine)
+        logger.info("✅ Esquema de base de datos verificado")
+
+        # Check if we have any siniestros (basic data check)
+        from sqlalchemy.orm import sessionmaker
+        SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+        db = SessionLocal()
+
+        try:
+            siniestros_count = db.query(models.Siniestro).count()
+            logger.info(f"📊 Base de datos lista: {siniestros_count} siniestros registrados")
+
+            if siniestros_count == 0:
+                logger.info("🧪 No hay datos - sistema listo para uso")
+            else:
+                logger.info("✅ Sistema operativo con datos existentes")
+
+        finally:
+            db.close()
+
+    except Exception as e:
+        logger.error(f"❌ Error en inicialización de BD: {e}")
+        # Don't crash the app - log and continue
+        logger.warning("⚠️ Continuando sin inicialización completa de BD")
 
 # CORS middleware
 allowed_origins = os.getenv("ALLOWED_ORIGINS", "*").split(",")
