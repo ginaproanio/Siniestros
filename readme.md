@@ -1,6 +1,9 @@
 # Sistema de Informes de Siniestros
 Aplicación web full-stack para generar informes profesionales de investigaciones de siniestros en seguros. Utiliza React para el frontend, FastAPI para el backend, y ReportLab para crear PDFs con diseño corporativo, incluyendo mapas integrados y headers/footers automáticos.
 
+## Comunicación con el Asistente de IA
+Todas las comunicaciones e instrucciones dirigidas al asistente de IA (como Cline) deben realizarse en español. El asistente responderá y ejecutará tareas en español para mantener consistencia con el proyecto.
+
 ## 🎯 OBJETIVOS PRINCIPALES
 
 ### ✅ Funcionalidades Implementadas
