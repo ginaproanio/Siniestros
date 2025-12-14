@@ -291,7 +291,7 @@ async def generar_pdf(siniestro_id: int, db: Session = Depends(get_db)):
                 },
             )
         except Exception as e2:
-            print(f"❌ Error generando PDF de error: {e2}")
+            logger.error(f"❌ Error generando PDF de error: {e2}")
             raise HTTPException(
                 status_code=500, detail=f"Error crítico generando PDF: {str(e)}"
             )
@@ -581,3 +581,55 @@ async def test_pdf():
         raise HTTPException(
             status_code=500, detail=f"Error generando PDF de prueba: {str(e)}"
         )
+
+
+@router.post("/{siniestro_id}/upload-pdf-firmado")
+async def upload_pdf_firmado(
+    siniestro_id: int, file: UploadFile = File(...), db: Session = Depends(get_db)
+):
+    """Subir PDF firmado digitalmente para un siniestro"""
+    import logging
+    logger = logging.getLogger(__name__)
+
+    try:
+        logger.info(f"📤 Subiendo PDF firmado para siniestro ID: {siniestro_id}")
+
+        # Verificar que el siniestro existe
+        siniestro = db.query(models.Siniestro).filter(models.Siniestro.id == siniestro_id).first()
+        if not siniestro:
+            raise HTTPException(status_code=404, detail="Siniestro no encontrado")
+
+        # Validar que es un PDF
+        if not file.filename.lower().endswith('.pdf'):
+            raise HTTPException(status_code=400, detail="Solo se permiten archivos PDF")
+
+        # Leer contenido del archivo
+        content = await file.read()
+        file_size = len(content)
+
+        # Validar tamaño (máximo 50MB)
+        if file_size > 50 * 1024 * 1024:
+            raise HTTPException(status_code=400, detail="El archivo excede el tamaño máximo de 50MB")
+
+        # Subir a S3
+        from app.services.s3_service import upload_file_to_s3
+        presigned_url = await upload_file_to_s3(file, content=content)
+
+        # Actualizar el siniestro con la URL del PDF firmado
+        siniestro.pdf_firmado_url = presigned_url
+        db.commit()
+
+        logger.info(f"✅ PDF firmado subido exitosamente para siniestro {siniestro_id}")
+        return {
+            "message": "PDF firmado subido exitosamente",
+            "url_presigned": presigned_url,
+            "siniestro_id": siniestro_id
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Error subiendo PDF firmado: {e}")
+        import traceback
+        logger.error(f"❌ Traceback: {traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
