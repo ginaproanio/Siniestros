@@ -571,6 +571,14 @@ button[type="button"]:nth-child(2):hover {
   opacity: 0.6;
 }
 
+/* Pestañas no visitadas específicas - sin gris */
+.tab-button[data-tab="1"]:not(.active):not(.completed):not(.visited),
+.tab-button[data-tab="2"]:not(.active):not(.completed):not(.visited),
+.tab-button[data-tab="3"]:not(.active):not(.completed):not(.visited) {
+  opacity: 1;
+  border-bottom: 1px solid rgba(59, 130, 246, 0.3);
+}
+
 .tab-content {
   min-height: 600px;
 }
