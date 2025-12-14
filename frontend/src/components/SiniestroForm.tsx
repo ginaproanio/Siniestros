@@ -2,10 +2,8 @@ import axios from "axios";
 import React, { useState } from "react";
 
 // Configurar base URL para el backend
-const BACKEND_URL =
-  process.env.REACT_APP_BACKEND_URL ||
-  "https://siniestros-production.up.railway.app";
-console.log("🌐 Backend URL:", BACKEND_URL);
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'https://siniestros-production.up.railway.app';
+console.log('🌐 Backend URL:', BACKEND_URL);
 axios.defaults.baseURL = BACKEND_URL;
 
 // Interfaces para futuras expansiones del formulario
@@ -95,7 +93,7 @@ const SiniestroForm: React.FC = () => {
 
   const nextTab = () => {
     if (activeTab < tabs.length - 1) {
-      setCompletedTabs((prev) => [...prev, activeTab]);
+      setCompletedTabs(prev => [...prev, activeTab]);
       setActiveTab(activeTab + 1);
     }
   };
@@ -203,8 +201,8 @@ const SiniestroForm: React.FC = () => {
             <div
               key={tab.id}
               className={`progress-step ${
-                index === activeTab ? "active" : ""
-              } ${completedTabs.includes(index) ? "completed" : ""}`}
+                index === activeTab ? 'active' : ''
+              } ${completedTabs.includes(index) ? 'completed' : ''}`}
             >
               <div className="step-circle">{index + 1}</div>
               <div className="step-label">{tab.title}</div>
@@ -220,9 +218,9 @@ const SiniestroForm: React.FC = () => {
             <button
               key={tab.id}
               type="button"
-              className={`tab-button ${activeTab === tab.id ? "active" : ""} ${
-                completedTabs.includes(tab.id) ? "completed" : ""
-              }`}
+              className={`tab-button ${
+                activeTab === tab.id ? 'active' : ''
+              } ${completedTabs.includes(tab.id) ? 'completed' : ''}`}
               onClick={() => goToTab(tab.id)}
             >
               {tab.icon} {tab.title}
@@ -233,23 +231,15 @@ const SiniestroForm: React.FC = () => {
         {/* Tab Content */}
         <div className="tab-content">
           <form onSubmit={handleSubmit}>
+
             {/* TAB 1: Información Básica del Siniestro */}
-            <div className={`tab-section ${activeTab === 0 ? "active" : ""}`}>
+            <div className={`tab-section ${activeTab === 0 ? 'active' : ''}`}>
               <div className="card-section">
                 <div className="card-header">
-                  <div
-                    className="card-icon"
-                    style={{ backgroundColor: "#e3f2fd" }}
-                  >
-                    📋
-                  </div>
+                  <div className="card-icon" style={{ backgroundColor: '#e3f2fd' }}>📋</div>
                   <div>
-                    <h3 className="card-title">
-                      Información Básica del Siniestro
-                    </h3>
-                    <p className="card-description">
-                      Datos principales del incidente reportado
-                    </p>
+                    <h3 className="card-title">Información Básica del Siniestro</h3>
+                    <p className="card-description">Datos principales del incidente reportado</p>
                   </div>
                 </div>
 
@@ -288,14 +278,20 @@ const SiniestroForm: React.FC = () => {
                     />
                   </div>
                   <div className="form-group">
-                    <label>Fecha de Designación:</label>
+                    <label>Fecha Reportado:</label>
+                    <input
+                      type="date"
+                      name="fecha_reportado"
+                      value={formData.fecha_reportado || ""}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Fecha Designación:</label>
                     <input
                       type="date"
                       name="fecha_designacion"
-                      value={
-                        formData.fecha_designacion ||
-                        new Date().toISOString().split("T")[0]
-                      }
+                      value={formData.fecha_designacion || new Date().toISOString().split('T')[0]}
                       onChange={handleInputChange}
                     />
                   </div>
@@ -392,6 +388,171 @@ const SiniestroForm: React.FC = () => {
                 </button>
               </div>
             </div>
+
+            {/* TAB 2: Parametrización */}
+            <div className={`tab-section ${activeTab === 1 ? 'active' : ''}`}>
+              <div className="card-section">
+                <div className="card-header">
+                  <div className="card-icon" style={{ backgroundColor: '#fff3cd' }}>⚙️</div>
+                  <div>
+                    <h3 className="card-title">Parametrización del Formulario</h3>
+                    <p className="card-description">Configuración específica de la investigación</p>
+                  </div>
+                </div>
+
+                <div className="card-section" style={{ marginBottom: '20px', backgroundColor: '#fff3cd' }}>
+                  <h4 style={{ color: "#0f172a", marginBottom: "10px" }}>📋 Misiva de Investigación</h4>
+                  <div className="form-group">
+                    <label>Instrucciones específicas de la aseguradora:</label>
+                    <textarea
+                      name="misiva_investigacion"
+                      value={formData.misiva_investigacion || ""}
+                      onChange={handleInputChange}
+                      rows={6}
+                      placeholder="Escriba aquí las instrucciones específicas que dio la aseguradora para esta investigación..."
+                    />
+                  </div>
+                  <small style={{ color: "#6c757d", fontStyle: "italic" }}>
+                    * Este campo contiene las instrucciones particulares de la aseguradora para adaptar la investigación a sus requerimientos específicos.
+                  </small>
+                </div>
+
+                <div className="card-section" style={{ backgroundColor: '#e8f4fd' }}>
+                  <h4 style={{ color: "#0f172a", marginBottom: "10px" }}>📝 Declaración del Siniestro</h4>
+
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Tipo de Persona que Declara:</label>
+                      <select
+                        name="persona_declara_tipo"
+                        value={formData.persona_declara_tipo || ""}
+                        onChange={handleInputChange}
+                      >
+                        <option value="">Seleccionar...</option>
+                        <option value="asegurado">Asegurado</option>
+                        <option value="conductor">Conductor</option>
+                        <option value="broker">Bróker</option>
+                        <option value="otro">Otro</option>
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label>Fecha Reportado:</label>
+                      <input
+                        type="date"
+                        name="fecha_reportado"
+                        value={formData.fecha_reportado || ""}
+                        onChange={handleInputChange}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Cédula o RUC de quien declara:</label>
+                      <input
+                        type="text"
+                        name="persona_declara_cedula"
+                        value={formData.persona_declara_cedula || ""}
+                        onChange={handleInputChange}
+                        placeholder="Ej: 1234567890"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Nombre completo:</label>
+                      <input
+                        type="text"
+                        name="persona_declara_nombre"
+                        value={formData.persona_declara_nombre || ""}
+                        onChange={handleInputChange}
+                        placeholder="Ej: Juan Pérez"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Relación con el asegurado:</label>
+                    <input
+                      type="text"
+                      name="persona_declara_relacion"
+                      value={formData.persona_declara_relacion || ""}
+                      onChange={handleInputChange}
+                      placeholder="Ej: Propietario del vehículo, Esposo/a, Hijo/a, etc."
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Tab Navigation */}
+              <div className="tab-navigation">
+                <button type="button" className="btn-prev" onClick={prevTab}>
+                  Anterior
+                </button>
+                <button type="button" className="btn-next" onClick={nextTab}>
+                  Siguiente
+                </button>
+              </div>
+            </div>
+
+            {/* TAB 3: Entidades Relacionadas */}
+            <div className={`tab-section ${activeTab === 2 ? 'active' : ''}`}>
+              <div className="card-section">
+                <div className="card-header">
+                  <div className="card-icon" style={{ backgroundColor: '#f0f9ff' }}>👥</div>
+                  <div>
+                    <h3 className="card-title">Entidades Relacionadas</h3>
+                    <p className="card-description">Datos de las personas y objetos involucrados</p>
+                  </div>
+                </div>
+
+                {/* Placeholder content - to be expanded */}
+                <div className="form-group">
+                  <p style={{ textAlign: 'center', color: '#6c757d', padding: '40px' }}>
+                    📝 Esta sección incluirá los datos del Asegurado, Beneficiario, Conductor y Objeto Asegurado.
+                  </p>
+                </div>
+              </div>
+
+              {/* Tab Navigation */}
+              <div className="tab-navigation">
+                <button type="button" className="btn-prev" onClick={prevTab}>
+                  Anterior
+                </button>
+                <button type="button" className="btn-next" onClick={nextTab}>
+                  Siguiente
+                </button>
+              </div>
+            </div>
+
+            {/* TAB 4: Investigación */}
+            <div className={`tab-section ${activeTab === 3 ? 'active' : ''}`}>
+              <div className="card-section">
+                <div className="card-header">
+                  <div className="card-icon" style={{ backgroundColor: '#fef3c7' }}>🔍</div>
+                  <div>
+                    <h3 className="card-title">Investigación y Evidencia</h3>
+                    <p className="card-description">Recopilación de información y evidencia del siniestro</p>
+                  </div>
+                </div>
+
+                {/* Placeholder content - to be expanded */}
+                <div className="form-group">
+                  <p style={{ textAlign: 'center', color: '#6c757d', padding: '40px' }}>
+                    📋 Esta sección incluirá Antecedentes, Entrevistas, Inspecciones y Testigos.
+                  </p>
+                </div>
+              </div>
+
+              {/* Tab Navigation */}
+              <div className="tab-navigation">
+                <button type="button" className="btn-prev" onClick={prevTab}>
+                  Anterior
+                </button>
+                <button type="button" className="btn-submit-tab" onClick={handleSubmit}>
+                  {loading ? "Guardando..." : "Crear Siniestro"}
+                </button>
+              </div>
+            </div>
+
           </form>
         </div>
       </div>
