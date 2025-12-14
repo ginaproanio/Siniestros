@@ -16,20 +16,39 @@ branch_labels = None
 depends_on = None
 
 def upgrade() -> None:
-    # Drop existing tables if they exist (since user doesn't care about garbage data)
-    # This ensures clean recreation with correct schema
-    tables_to_drop = [
+    # COMPLETE DATABASE RESET - Drop ALL tables and recreate from scratch
+    # Since user doesn't care about data, we start completely fresh
+
+    # Drop ALL existing tables
+    all_tables = [
         'dinamicas_accidente', 'visitas_taller', 'testigos', 'inspecciones',
         'relatos_asegurado', 'antecedentes', 'objetos_asegurados',
-        'conductores', 'beneficiarios', 'asegurados'
+        'conductores', 'beneficiarios', 'asegurados', 'siniestros'
     ]
-    for table in tables_to_drop:
+    for table in all_tables:
         op.execute(f'DROP TABLE IF EXISTS {table} CASCADE')
 
-    # Add missing columns to siniestros table
-    op.add_column('siniestros', sa.Column('fecha_reportado', sa.DateTime(timezone=True), nullable=True))
-    op.add_column('siniestros', sa.Column('cobertura', sa.String(length=100), nullable=True))
-    op.add_column('siniestros', sa.Column('pdf_firmado_url', sa.String(length=500), nullable=True))
+    # Create siniestros table from scratch with all columns
+    op.create_table('siniestros',
+        sa.Column('id', sa.Integer(), nullable=False),
+        sa.Column('compania_seguros', sa.String(length=255), nullable=False),
+        sa.Column('reclamo_num', sa.String(length=100), nullable=False),
+        sa.Column('fecha_siniestro', sa.DateTime(timezone=True), nullable=False),
+        sa.Column('direccion_siniestro', sa.String(length=500), nullable=False),
+        sa.Column('ubicacion_geo_lat', sa.Float(), nullable=True),
+        sa.Column('ubicacion_geo_lng', sa.Float(), nullable=True),
+        sa.Column('danos_terceros', sa.Boolean(), nullable=True),
+        sa.Column('ejecutivo_cargo', sa.String(length=255), nullable=True),
+        sa.Column('fecha_designacion', sa.DateTime(timezone=True), nullable=True),
+        sa.Column('tipo_siniestro', sa.String(length=100), nullable=True),
+        sa.Column('fecha_reportado', sa.DateTime(timezone=True), nullable=True),
+        sa.Column('cobertura', sa.String(length=100), nullable=True),
+        sa.Column('pdf_firmado_url', sa.String(length=500), nullable=True),
+        sa.Column('created_at', sa.DateTime(timezone=True), nullable=True),
+        sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
+        sa.PrimaryKeyConstraint('id'),
+        sa.UniqueConstraint('reclamo_num')
+    )
 
     # Create all related tables
     # Asegurados table
