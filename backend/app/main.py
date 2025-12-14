@@ -105,7 +105,7 @@ async def log_requests(request: Request, call_next):
     return response
 
 # Include routers
-app.include_router(siniestros.router, prefix="/api/v1", tags=["siniestros"])
+app.include_router(siniestros.router, prefix="/api/v1/siniestros", tags=["siniestros"])
 
 @app.get("/")
 async def root():
