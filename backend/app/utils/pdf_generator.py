@@ -1,5 +1,6 @@
 import io
 import logging
+import os
 from datetime import datetime
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -8,28 +9,39 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, Tabl
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER
 from sqlalchemy.orm import Session
-from app import models
-from endesive.pdf import cms
+from ..models import Siniestro
+
+try:
+    from endesive.pdf import cms
+    from cryptography.hazmat.primitives.serialization import pkcs12
+    CRYPTO_AVAILABLE = True
+    logger.info("✅ Bibliotecas de criptografía disponibles")
+except ImportError as e:
+    CRYPTO_AVAILABLE = False
+    logger.warning(f"⚠️ Bibliotecas de criptografía no disponibles: {e}")
 
 logger = logging.getLogger(__name__)
 
 
-def load_certificate_from_s3(cert_key: str = "certificates/maria_susana_espinosa_lozada.p12") -> bytes:
-    """Cargar certificado desde S3 para evitar problemas con filesystem efímero de Railway"""
+def load_certificate_from_s3(cert_key: str = "certificates/maria_susana_espinosa_lozada.p12") -> tuple[bytes, str]:
+    """Cargar certificado desde S3 y retornar datos + contraseña"""
     try:
-        # Importar configuración de S3
-        from app.services.s3_service import get_s3_client, S3_BUCKET_NAME
+        # Importar configuración de S3 con ruta relativa correcta
+        from ..services.s3_service import get_s3_client, S3_BUCKET_NAME
 
         s3_client = get_s3_client()
         response = s3_client.get_object(Bucket=S3_BUCKET_NAME, Key=cert_key)
         cert_data = response['Body'].read()
 
-        logger.info(f"Certificado cargado desde S3: {len(cert_data)} bytes")
-        return cert_data
+        # Obtener contraseña desde variables de entorno
+        password = os.getenv("CERT_PASSWORD", "")
+
+        logger.info(f"✅ Certificado cargado desde S3: {len(cert_data)} bytes")
+        return cert_data, password
 
     except Exception as e:
-        logger.warning(f"No se pudo cargar certificado desde S3: {e}")
-        return None
+        logger.warning(f"❌ No se pudo cargar certificado desde S3: {e}")
+        return None, None
 
 
 def sign_pdf(pdf_data: bytes, certificate_data: bytes = None, password: str = None) -> bytes:
@@ -83,7 +95,7 @@ def sign_pdf(pdf_data: bytes, certificate_data: bytes = None, password: str = No
         return pdf_data
 
 
-def generate_simple_pdf(siniestro: models.Siniestro) -> bytes:
+def generate_simple_pdf(siniestro: Siniestro) -> bytes:
     """Generar PDF simple y básico del siniestro"""
     logger.info(f"🔄 Generando PDF para siniestro ID: {siniestro.id}")
 
@@ -181,11 +193,11 @@ def generate_simple_pdf(siniestro: models.Siniestro) -> bytes:
             raise Exception("PDF generado es corrupto - no cumple formato PDF estándar")
 
         # Intentar firmar PDF usando certificado desde S3
-        cert_data = load_certificate_from_s3()
-        if cert_data:
+        cert_data, password = load_certificate_from_s3()
+        if cert_data and password:
             logger.info("🔐 Firmando PDF con certificado digital desde S3...")
             try:
-                signed_pdf = sign_pdf(pdf_data, cert_data)
+                signed_pdf = sign_pdf(pdf_data, cert_data, password)
                 # Validar que el PDF firmado siga siendo válido
                 if signed_pdf.startswith(b'%PDF-'):
                     pdf_data = signed_pdf
@@ -207,15 +219,24 @@ def generate_simple_pdf(siniestro: models.Siniestro) -> bytes:
     except Exception as e:
         logger.error(f"❌ Error generando PDF: {e}")
         # PDF de error mínimo
-        buffer = io.BytesIO()
-        doc = SimpleDocTemplate(buffer, pagesize=letter)
-        story = [Paragraph("ERROR: No se pudo generar el PDF", styles["Normal"])]
-        doc.build(story)
-        buffer.seek(0)
-        return buffer.getvalue()
+        error_buffer = io.BytesIO()
+        try:
+            doc = SimpleDocTemplate(error_buffer, pagesize=letter)
+            story = [Paragraph("ERROR: No se pudo generar el PDF", styles["Normal"])]
+            doc.build(story)
+            error_buffer.seek(0)
+            return error_buffer.read()
+        finally:
+            error_buffer.close()
+    finally:
+        # Cerrar buffer correctamente
+        try:
+            buffer.close()
+        except:
+            pass
 
 
-def generate_unsigned_pdf(siniestro: models.Siniestro) -> bytes:
+def generate_unsigned_pdf(siniestro: Siniestro) -> bytes:
     """Generar PDF sin firma digital para pruebas"""
     logger.info(f"🔄 Generando PDF SIN FIRMA para siniestro ID: {siniestro.id}")
 
@@ -335,10 +356,10 @@ def generate_unsigned_pdf(siniestro: models.Siniestro) -> bytes:
 class SiniestroPDFGenerator:
     """Generador de PDF con firma digital"""
 
-    def generate_pdf(self, siniestro: models.Siniestro, db: Session) -> bytes:
+    def generate_pdf(self, siniestro: Siniestro, db: Session) -> bytes:
         """Generar PDF del siniestro con firma digital"""
         return generate_simple_pdf(siniestro)
 
-    def generate_unsigned_pdf(self, siniestro: models.Siniestro, db: Session) -> bytes:
+    def generate_unsigned_pdf(self, siniestro: Siniestro, db: Session) -> bytes:
         """Generar PDF del siniestro sin firma digital (para pruebas)"""
         return generate_unsigned_pdf(siniestro)
