@@ -614,36 +614,36 @@ const SiniestroForm: React.FC = () => {
           <div style={{ marginBottom: "20px", padding: "15px", backgroundColor: "#f0fdf4", borderRadius: "5px" }}>
             <h4 style={{ color: "#0f172a", marginBottom: "10px" }}>🎯 Datos del Beneficiario</h4>
 
-            <div className="form-group" style={{ marginBottom: "15px" }}>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={formData.beneficiario?.es_asegurado || false}
-                  onChange={(e) => {
-                    const checked = e.target.checked;
-                    setFormData((prev) => ({
-                      ...prev,
-                      beneficiario: checked ? {
-                        ...prev.beneficiario,
-                        es_asegurado: true,
-                        cedula: prev.asegurado?.cedula || "",
-                        nombre: prev.asegurado?.nombre || "",
-                        relacion: "Asegurado"
-                      } : {
-                        ...prev.beneficiario,
-                        es_asegurado: false
-                      }
-                    }));
-                  }}
-                />
-                Es el asegurado
-              </label>
-            </div>
-
-            {!formData.beneficiario?.es_asegurado && (
-              <>
-                <div className="form-group" style={{ marginBottom: "15px" }}>
-                  <label>Tipo de Persona:</label>
+            {/* Checkbox compacto */}
+            <div className="form-row" style={{ marginBottom: "15px", alignItems: "center" }}>
+              <div className="form-group" style={{ flex: "0 0 auto", marginRight: "15px" }}>
+                <label style={{ display: "flex", alignItems: "center", fontWeight: "normal", margin: 0 }}>
+                  <input
+                    type="checkbox"
+                    checked={formData.beneficiario?.es_asegurado || false}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      setFormData((prev) => ({
+                        ...prev,
+                        beneficiario: checked ? {
+                          ...prev.beneficiario,
+                          es_asegurado: true,
+                          cedula: prev.asegurado?.cedula || "",
+                          nombre: prev.asegurado?.nombre || "",
+                          relacion: "Asegurado"
+                        } : {
+                          ...prev.beneficiario,
+                          es_asegurado: false
+                        }
+                      }));
+                    }}
+                    style={{ marginRight: "5px" }}
+                  />
+                  Beneficiario es el Asegurado
+                </label>
+              </div>
+              {!formData.beneficiario?.es_asegurado && (
+                <div className="form-group" style={{ flex: "0 0 150px", margin: 0 }}>
                   <select
                     value={formData.beneficiario?.tipo || ""}
                     onChange={(e) => {
@@ -653,13 +653,18 @@ const SiniestroForm: React.FC = () => {
                         beneficiario: { ...prev.beneficiario, tipo: value }
                       }));
                     }}
+                    style={{ width: "100%", padding: "6px" }}
                   >
-                    <option value="">Seleccionar...</option>
-                    <option value="natural">Persona Natural</option>
-                    <option value="juridica">Persona Jurídica</option>
+                    <option value="">Tipo...</option>
+                    <option value="natural">Natural</option>
+                    <option value="juridica">Jurídica</option>
                   </select>
                 </div>
+              )}
+            </div>
 
+            {!formData.beneficiario?.es_asegurado && (
+              <>
                 {formData.beneficiario?.tipo === "natural" && (
                   <>
                     <div className="form-row">
