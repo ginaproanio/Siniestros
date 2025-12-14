@@ -21,11 +21,11 @@ const SiniestrosList: React.FC = () => {
   const fetchSiniestros = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('/api/v1/');
+      const response = await axios.get('/api/v1/siniestros/');
       setSiniestros(response.data);
     } catch (err: any) {
       setError('Error al cargar siniestros');
-      console.error(err);
+      console.error('Error fetching siniestros:', err);
     } finally {
       setLoading(false);
     }

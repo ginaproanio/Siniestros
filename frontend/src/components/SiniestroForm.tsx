@@ -40,6 +40,7 @@ interface FormData {
   compania_seguros: string;
   reclamo_num: string;
   fecha_siniestro: string;
+  fecha_reportado?: string;
   direccion_siniestro: string;
   ubicacion_geo_lat?: number;
   ubicacion_geo_lng?: number;
@@ -47,12 +48,27 @@ interface FormData {
   ejecutivo_cargo?: string;
   fecha_designacion?: string;
   tipo_siniestro?: string;
+  cobertura?: string;
+
+  // Nuevos campos de declaración
+  fecha_declaracion?: string;
+  persona_declara_tipo?: string;
+  persona_declara_cedula?: string;
+  persona_declara_nombre?: string;
+  persona_declara_relacion?: string;
+  misiva_investigacion?: string;
 
   // Secciones dinámicas
   antecedentes?: AntecedenteData[];
   relatos_asegurado?: RelatoData[];
   inspecciones?: InspeccionData[];
   testigos?: TestigoData[];
+
+  // Datos relacionados
+  asegurado?: any;
+  beneficiario?: any;
+  conductor?: any;
+  objeto_asegurado?: any;
 }
 
 const SiniestroForm: React.FC = () => {
