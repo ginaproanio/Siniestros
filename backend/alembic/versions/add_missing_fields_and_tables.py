@@ -16,6 +16,16 @@ branch_labels = None
 depends_on = None
 
 def upgrade() -> None:
+    # Drop existing tables if they exist (since user doesn't care about garbage data)
+    # This ensures clean recreation with correct schema
+    tables_to_drop = [
+        'dinamicas_accidente', 'visitas_taller', 'testigos', 'inspecciones',
+        'relatos_asegurado', 'antecedentes', 'objetos_asegurados',
+        'conductores', 'beneficiarios', 'asegurados'
+    ]
+    for table in tables_to_drop:
+        op.execute(f'DROP TABLE IF EXISTS {table} CASCADE')
+
     # Add missing columns to siniestros table
     op.add_column('siniestros', sa.Column('fecha_reportado', sa.DateTime(timezone=True), nullable=True))
     op.add_column('siniestros', sa.Column('cobertura', sa.String(length=100), nullable=True))
