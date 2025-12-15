@@ -266,6 +266,22 @@ const SiniestroEdit: React.FC = () => {
         <p style={{ marginTop: "10px", fontSize: "12px", color: "#6c757d" }}>
           Estás en la sección 7: Investigación Recabada. Completa todas las secciones antes de generar el PDF.
         </p>
+        <div style={{ marginTop: "15px" }}>
+          <a
+            href="#investigacion-recabada"
+            style={{
+              backgroundColor: "#17a2b8",
+              color: "white",
+              padding: "8px 16px",
+              borderRadius: "5px",
+              textDecoration: "none",
+              fontWeight: "bold",
+              display: "inline-block"
+            }}
+          >
+            ⬇️ Ir a Secciones de Investigación
+          </a>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit}>
@@ -1076,6 +1092,35 @@ const SiniestroEdit: React.FC = () => {
               </div>
             </div>
           ))}
+        </div>
+
+        {/* SECCIONES DE INVESTIGACIÓN RECABADA */}
+        <div id="investigacion-recabada" style={{
+          marginTop: "50px",
+          padding: "30px",
+          backgroundColor: "#e8f5e8",
+          borderRadius: "15px",
+          border: "4px solid #28a745",
+          boxShadow: "0 6px 12px rgba(0,0,0,0.15)"
+        }}>
+          <h2 style={{
+            color: "#0f172a",
+            marginBottom: "20px",
+            fontSize: "28px",
+            fontWeight: "bold",
+            textAlign: "center"
+          }}>
+            🔍 SECCIONES DE INVESTIGACIÓN RECABADA
+          </h2>
+          <p style={{
+            color: "#666",
+            fontSize: "18px",
+            marginBottom: "30px",
+            fontStyle: "italic",
+            textAlign: "center"
+          }}>
+            Complete todas las secciones siguientes para completar la investigación del siniestro
+          </p>
         </div>
 
         {/* EVIDENCIAS COMPLEMENTARIAS */}
