@@ -68,8 +68,6 @@ interface FormData {
 
 const SiniestroForm: React.FC = () => {
   const [activeTab, setActiveTab] = useState(0);
-  const [completedTabs, setCompletedTabs] = useState<number[]>([]);
-  const [visitedTabs, setVisitedTabs] = useState<number[]>([]); // Start empty, will be populated on navigation
 
   const [formData, setFormData] = useState<FormData>({
     compania_seguros: "Zurich Seguros Ecuador S.A.",
@@ -94,25 +92,8 @@ const SiniestroForm: React.FC = () => {
     { id: 3, title: "Investigación", icon: "🔍" },
   ];
 
-  const nextTab = () => {
-    if (activeTab < tabs.length - 1) {
-      setCompletedTabs((prev) => [...prev, activeTab]);
-      setActiveTab(activeTab + 1);
-    }
-  };
-
-  const prevTab = () => {
-    if (activeTab > 0) {
-      setActiveTab(activeTab - 1);
-    }
-  };
-
   const goToTab = (tabId: number) => {
     setActiveTab(tabId);
-    // Mark tab as visited when navigating to it
-    if (!visitedTabs.includes(tabId)) {
-      setVisitedTabs((prev) => [...prev, tabId]);
-    }
   };
 
   const handleInputChange = (
@@ -179,46 +160,18 @@ const SiniestroForm: React.FC = () => {
         <h2>Registro de Siniestro</h2>
       </div>
 
-      {/* Progress Bar */}
-      <div className="progress-container">
-        <div className="progress-bar">
-          {tabs.map((tab, index) => (
-            <React.Fragment key={tab.id}>
-              <div
-                className={`progress-step ${
-                  activeTab === tab.id ? "active" : ""
-                } ${completedTabs.includes(tab.id) ? "completed" : ""}`}
-              >
-                <div className="progress-circle">
-                  {completedTabs.includes(tab.id) ? "✓" : index + 1}
-                </div>
-                <div className="progress-label">{tab.title}</div>
-              </div>
-              {index < tabs.length - 1 && <div className="progress-line"></div>}
-            </React.Fragment>
-          ))}
-        </div>
-      </div>
-
       {/* Tab Navigation */}
       <div className="tabs-container">
         <div className="tabs-header">
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id;
-            const isCompleted = completedTabs.includes(tab.id);
-            const isVisited = visitedTabs.includes(tab.id);
-
-            let buttonClass = "tab-button";
-            if (isActive) buttonClass += " active";
-            else if (isCompleted) buttonClass += " completed";
-            else if (isVisited) buttonClass += " visited";
+            const buttonClass = `tab-button${isActive ? " active" : ""}`;
 
             return (
               <button
                 key={tab.id}
                 type="button"
                 className={buttonClass}
-                data-tab={tab.id}
                 onClick={() => goToTab(tab.id)}
               >
                 {tab.icon} {tab.title}
@@ -381,15 +334,7 @@ const SiniestroForm: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Tab Navigation */}
-                  <div className="tab-navigation">
-                    <button type="button" className="btn-prev" disabled>
-                      Anterior
-                    </button>
-                    <button type="button" className="btn-next" onClick={nextTab}>
-                      Siguiente
-                    </button>
-                  </div>
+
                 </div>
               </div>
             )}
@@ -509,15 +454,7 @@ const SiniestroForm: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Tab Navigation */}
-                  <div className="tab-navigation">
-                    <button type="button" className="btn-prev" onClick={prevTab}>
-                      Anterior
-                    </button>
-                    <button type="button" className="btn-next" onClick={nextTab}>
-                      Siguiente
-                    </button>
-                  </div>
+
                 </div>
               </div>
             )}
@@ -811,15 +748,7 @@ const SiniestroForm: React.FC = () => {
                       </>
                     )}
 
-                    {/* Tab Navigation */}
-                    <div className="tab-navigation">
-                      <button type="button" className="btn-prev" onClick={prevTab}>
-                        Anterior
-                      </button>
-                      <button type="button" className="btn-next" onClick={nextTab}>
-                        Siguiente
-                      </button>
-                    </div>
+
                   </div>
                 </div>
               </div>
@@ -866,15 +795,11 @@ const SiniestroForm: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Tab Navigation */}
-                  <div className="tab-navigation">
-                    <button type="button" className="btn-prev" onClick={prevTab}>
-                      Anterior
-                    </button>
+                  {/* Submit Button */}
+                  <div className="tab-navigation" style={{ justifyContent: "center" }}>
                     <button
-                      type="button"
+                      type="submit"
                       className="btn-submit-tab"
-                      onClick={handleSubmit}
                     >
                       {loading ? "Guardando..." : "Crear Siniestro"}
                     </button>
