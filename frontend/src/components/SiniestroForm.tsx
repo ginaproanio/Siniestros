@@ -76,7 +76,6 @@ const SiniestroForm: React.FC = () => {
   const siniestroId = parseInt(id || '0');
 
   const [activeTab, setActiveTab] = useState(0);
-  const [loading, setLoading] = useState(isEditMode);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -153,8 +152,6 @@ const SiniestroForm: React.FC = () => {
         } catch (error) {
           console.error("Error loading siniestro:", error);
           setMessage("Error al cargar los datos del siniestro");
-        } finally {
-          setLoading(false);
         }
       };
 
