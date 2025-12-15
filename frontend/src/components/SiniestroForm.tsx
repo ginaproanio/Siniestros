@@ -236,6 +236,7 @@ const SiniestroForm: React.FC = () => {
                     </div>
                   </div>
 
+                  {/* Primera línea: Número de Reclamo, Tipo de Reclamo, Póliza, Fecha Designación */}
                   <div className="form-row">
                     <div className="form-group">
                       <label>Número de Reclamo:</label>
@@ -271,28 +272,6 @@ const SiniestroForm: React.FC = () => {
                         placeholder="Ej: 3351"
                       />
                     </div>
-                  </div>
-
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Fecha del Siniestro:</label>
-                      <input
-                        type="date"
-                        name="fecha_siniestro"
-                        value={formData.fecha_siniestro}
-                        onChange={handleInputChange}
-                        required
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>Fecha Reportado:</label>
-                      <input
-                        type="date"
-                        name="fecha_reportado"
-                        value={formData.fecha_reportado || ""}
-                        onChange={handleInputChange}
-                      />
-                    </div>
                     <div className="form-group">
                       <label>Fecha Designación:</label>
                       <input
@@ -307,18 +286,27 @@ const SiniestroForm: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="form-group">
-                    <label>Dirección del Siniestro:</label>
-                    <textarea
-                      name="direccion_siniestro"
-                      value={formData.direccion_siniestro}
-                      onChange={handleInputChange}
-                      rows={3}
-                      required
-                    />
-                  </div>
-
+                  {/* Segunda línea: Fecha Reportado, Fecha del Siniestro, Latitud, Longitud */}
                   <div className="form-row">
+                    <div className="form-group">
+                      <label>Fecha Reportado:</label>
+                      <input
+                        type="date"
+                        name="fecha_reportado"
+                        value={formData.fecha_reportado || ""}
+                        onChange={handleInputChange}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Fecha del Siniestro:</label>
+                      <input
+                        type="date"
+                        name="fecha_siniestro"
+                        value={formData.fecha_siniestro}
+                        onChange={handleInputChange}
+                        required
+                      />
+                    </div>
                     <div className="form-group">
                       <label>Latitud:</label>
                       <input
@@ -339,6 +327,17 @@ const SiniestroForm: React.FC = () => {
                         onChange={handleInputChange}
                       />
                     </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Dirección del Siniestro:</label>
+                    <textarea
+                      name="direccion_siniestro"
+                      value={formData.direccion_siniestro}
+                      onChange={handleInputChange}
+                      rows={3}
+                      required
+                    />
                   </div>
 
                   <div className="form-row">
@@ -1071,7 +1070,8 @@ const SiniestroForm: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => {
-                          const currentRelatos = formData.relatos_asegurado || [];
+                          const currentRelatos =
+                            formData.relatos_asegurado || [];
                           const nextNumero = currentRelatos.length + 1;
                           setFormData((prev) => ({
                             ...prev,
@@ -1113,9 +1113,7 @@ const SiniestroForm: React.FC = () => {
                             marginBottom: "10px",
                           }}
                         >
-                          <h4
-                            style={{ color: "#0f172a", margin: 0 }}
-                          >
+                          <h4 style={{ color: "#0f172a", margin: 0 }}>
                             Relato {relato.numero_relato}
                           </h4>
                           <button
@@ -1152,9 +1150,7 @@ const SiniestroForm: React.FC = () => {
                                 ...prev,
                                 relatos_asegurado:
                                   prev.relatos_asegurado?.map((r, i) =>
-                                    i === index
-                                      ? { ...r, texto: value }
-                                      : r
+                                    i === index ? { ...r, texto: value } : r
                                   ) || [],
                               }));
                             }}
@@ -1196,7 +1192,10 @@ const SiniestroForm: React.FC = () => {
                                       ) || [],
                                   }));
                                 } catch (error) {
-                                  console.error("Error subiendo imagen:", error);
+                                  console.error(
+                                    "Error subiendo imagen:",
+                                    error
+                                  );
                                   alert(
                                     "Error al subir la imagen. Intente nuevamente."
                                   );
@@ -1238,7 +1237,8 @@ const SiniestroForm: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => {
-                          const currentInspecciones = formData.inspecciones || [];
+                          const currentInspecciones =
+                            formData.inspecciones || [];
                           const nextNumero = currentInspecciones.length + 1;
                           setFormData((prev) => ({
                             ...prev,
@@ -1280,9 +1280,7 @@ const SiniestroForm: React.FC = () => {
                             marginBottom: "10px",
                           }}
                         >
-                          <h4
-                            style={{ color: "#0f172a", margin: 0 }}
-                          >
+                          <h4 style={{ color: "#0f172a", margin: 0 }}>
                             Inspección {inspeccion.numero_inspeccion}
                           </h4>
                           <button
@@ -1363,7 +1361,10 @@ const SiniestroForm: React.FC = () => {
                                       ) || [],
                                   }));
                                 } catch (error) {
-                                  console.error("Error subiendo imagen:", error);
+                                  console.error(
+                                    "Error subiendo imagen:",
+                                    error
+                                  );
                                   alert(
                                     "Error al subir la imagen. Intente nuevamente."
                                   );
@@ -1447,9 +1448,7 @@ const SiniestroForm: React.FC = () => {
                             marginBottom: "10px",
                           }}
                         >
-                          <h4
-                            style={{ color: "#0f172a", margin: 0 }}
-                          >
+                          <h4 style={{ color: "#0f172a", margin: 0 }}>
                             Testigo {testigo.numero_relato}
                           </h4>
                           <button
@@ -1458,8 +1457,9 @@ const SiniestroForm: React.FC = () => {
                               setFormData((prev) => ({
                                 ...prev,
                                 testigos:
-                                  prev.testigos?.filter((_, i) => i !== index) ||
-                                  [],
+                                  prev.testigos?.filter(
+                                    (_, i) => i !== index
+                                  ) || [],
                               }));
                             }}
                             style={{
@@ -1483,11 +1483,12 @@ const SiniestroForm: React.FC = () => {
                               const value = e.target.value;
                               setFormData((prev) => ({
                                 ...prev,
-                                testigos: prev.testigos?.map((test, i) =>
-                                  i === index
-                                    ? { ...test, texto: value }
-                                    : test
-                                ) || [],
+                                testigos:
+                                  prev.testigos?.map((test, i) =>
+                                    i === index
+                                      ? { ...test, texto: value }
+                                      : test
+                                  ) || [],
                               }));
                             }}
                             rows={3}
@@ -1520,14 +1521,18 @@ const SiniestroForm: React.FC = () => {
                                   const imageUrl = response.data.url;
                                   setFormData((prev) => ({
                                     ...prev,
-                                    testigos: prev.testigos?.map((test, i) =>
-                                      i === index
-                                        ? { ...test, imagen_url: imageUrl }
-                                        : test
-                                    ) || [],
+                                    testigos:
+                                      prev.testigos?.map((test, i) =>
+                                        i === index
+                                          ? { ...test, imagen_url: imageUrl }
+                                          : test
+                                      ) || [],
                                   }));
                                 } catch (error) {
-                                  console.error("Error subiendo imagen:", error);
+                                  console.error(
+                                    "Error subiendo imagen:",
+                                    error
+                                  );
                                   alert(
                                     "Error al subir la imagen. Intente nuevamente."
                                   );
