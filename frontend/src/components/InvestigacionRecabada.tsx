@@ -27,6 +27,8 @@ interface Props {
 }
 
 const InvestigacionRecabada: React.FC<Props> = ({ siniestroId }) => {
+  console.log("🔍 InvestigacionRecabada component rendered with siniestroId:", siniestroId);
+
   const [formData, setFormData] = useState<FormData>({});
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
