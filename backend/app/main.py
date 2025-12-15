@@ -76,7 +76,45 @@ async def startup_event():
             # Test basic query
             siniestros_count = db.query(models.Siniestro).count()
             logger.info(f"📊 Base de datos lista: {siniestros_count} siniestros registrados")
-            logger.info("✅ Sistema operativo y listo para uso")
+        logger.info("✅ Sistema operativo y listo para uso")
+
+        # AUTO-LOAD TEST DATA FOR RAILWAY DEPLOYMENT
+        # Only load test data if we're in Railway environment and no siniestros exist
+        railway_env = os.getenv("RAILWAY_ENVIRONMENT", "").lower()
+        if railway_env in ["production", "staging"] or "railway" in os.getenv("DATABASE_URL", "").lower():
+            try:
+                from sqlalchemy.orm import sessionmaker
+                SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+                db = SessionLocal()
+
+                siniestro_count = db.query(models.Siniestro).count()
+                if siniestro_count == 0:
+                    logger.info("🚀 AUTO-LOADING TEST DATA FOR RAILWAY DEPLOYMENT...")
+
+                    # Execute create_test_data.py script
+                    import subprocess
+                    import sys
+                    import os
+
+                    current_dir = os.path.dirname(os.path.dirname(__file__))
+                    logger.info(f"Running test data creation from: {current_dir}")
+
+                    result = subprocess.run([
+                        sys.executable, "create_test_data.py"
+                    ], capture_output=True, text=True, cwd=current_dir)
+
+                    if result.returncode == 0:
+                        logger.info("✅ Test data created successfully for Railway")
+                        logger.info("🎯 Railway deployment ready with test data!")
+                    else:
+                        logger.warning(f"⚠️ Failed to create test data: {result.stderr}")
+                else:
+                    logger.info(f"ℹ️ Database already has {siniestro_count} siniestros")
+
+                db.close()
+            except Exception as e:
+                logger.error(f"❌ Error auto-loading test data: {e}")
+                logger.info("⚠️ Continuing without test data")
 
         finally:
             db.close()
