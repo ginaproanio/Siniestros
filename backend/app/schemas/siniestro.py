@@ -168,6 +168,13 @@ class TestigoResponse(RelatoBase):
     class Config:
         from_attributes = True
 
+class RelatoConductorResponse(RelatoBase):
+    id: int
+    siniestro_id: int
+
+    class Config:
+        from_attributes = True
+
 class AntecedenteResponse(BaseModel):
     id: int
     siniestro_id: int
@@ -200,6 +207,7 @@ class SiniestroFullResponse(SiniestroResponse):
     objeto_asegurado: Optional[ObjetoAseguradoResponse] = None
     antecedentes: List[AntecedenteResponse] = []
     relatos_asegurado: List[RelatoAseguradoResponse] = []
+    relatos_conductor: List[RelatoConductorResponse] = []
     inspecciones: List[InspeccionResponse] = []
     testigos: List[TestigoResponse] = []
     visita_taller: Optional[VisitaTallerResponse] = None
@@ -241,10 +249,17 @@ class SiniestroUpdate(BaseModel):
     otras_diligencias_imagen_url: Optional[str] = None
     visita_taller_descripcion: Optional[str] = None
     visita_taller_imagen_url: Optional[str] = None
-    observaciones: Optional[str] = None
-    recomendacion_pago_cobertura: Optional[str] = None
-    conclusiones: Optional[str] = None
-    anexo: Optional[str] = None
+    observaciones: Optional[List[str]] = None
+    recomendacion_pago_cobertura: Optional[List[str]] = None
+    conclusiones: Optional[List[str]] = None
+    anexo: Optional[List[str]] = None
+
+    # Arrays de investigación que vienen del frontend
+    antecedentes: Optional[List[AntecedenteCreate]] = None
+    relatos_asegurado: Optional[List[RelatoAseguradoCreate]] = None
+    relatos_conductor: Optional[List[RelatoBase]] = None  # Usando RelatoBase ya que es similar
+    inspecciones: Optional[List[InspeccionCreate]] = None
+    testigos: Optional[List[TestigoCreate]] = None
 
     # Relaciones anidadas para actualización
     objeto_asegurado: Optional[ObjetoAseguradoCreate] = None

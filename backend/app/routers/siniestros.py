@@ -89,32 +89,56 @@ async def update_siniestro(
     db: Session = Depends(get_db),
 ):
     """Actualizar un siniestro"""
+    import logging
+    import json
+
+    logger = logging.getLogger(__name__)
+
+    logger.info(f"🔄 Iniciando actualización de siniestro ID: {siniestro_id}")
+
     db_siniestro = (
         db.query(models.Siniestro).filter(models.Siniestro.id == siniestro_id).first()
     )
     if not db_siniestro:
+        logger.warning(f"⚠️ Siniestro {siniestro_id} no encontrado")
         raise HTTPException(status_code=404, detail="Siniestro no encontrado")
 
     update_data = siniestro_update.model_dump(exclude_unset=True)
+    logger.info(f"📋 Datos de actualización: {list(update_data.keys())}")
 
-    # Manejar campos especiales que no están en el modelo base
+    # Extraer datos de relaciones anidadas
     objeto_asegurado_data = update_data.pop('objeto_asegurado', None)
     asegurado_data = update_data.pop('asegurado', None)
     beneficiario_data = update_data.pop('beneficiario', None)
     conductor_data = update_data.pop('conductor', None)
 
+    # Extraer datos de investigación (arrays que vienen del frontend)
+    antecedentes_data = update_data.pop('antecedentes', None)
+    relatos_asegurado_data = update_data.pop('relatos_asegurado', None)
+    relatos_conductor_data = update_data.pop('relatos_conductor', None)
+    inspecciones_data = update_data.pop('inspecciones', None)
+    testigos_data = update_data.pop('testigos', None)
+
+    # Convertir arrays de strings a JSON strings para campos que lo requieren
+    json_fields = ['observaciones', 'recomendacion_pago_cobertura', 'conclusiones', 'anexo']
+    for field in json_fields:
+        if field in update_data and isinstance(update_data[field], list):
+            update_data[field] = json.dumps(update_data[field])
+            logger.info(f"🔄 Convertido {field} a JSON: {update_data[field]}")
+
     # Actualizar campos del siniestro principal
     for field, value in update_data.items():
+        logger.info(f"📝 Actualizando campo {field}: {value}")
         setattr(db_siniestro, field, value)
 
     # Manejar objeto asegurado
     if objeto_asegurado_data:
         if db_siniestro.objeto_asegurado:
-            # Actualizar objeto existente
+            logger.info("🔄 Actualizando objeto asegurado existente")
             for field, value in objeto_asegurado_data.items():
                 setattr(db_siniestro.objeto_asegurado, field, value)
         else:
-            # Crear nuevo objeto asegurado
+            logger.info("➕ Creando nuevo objeto asegurado")
             objeto_asegurado_data['siniestro_id'] = siniestro_id
             db_objeto = models.ObjetoAsegurado(**objeto_asegurado_data)
             db.add(db_objeto)
@@ -122,11 +146,11 @@ async def update_siniestro(
     # Manejar asegurado
     if asegurado_data:
         if db_siniestro.asegurado:
-            # Actualizar asegurado existente
+            logger.info("🔄 Actualizando asegurado existente")
             for field, value in asegurado_data.items():
                 setattr(db_siniestro.asegurado, field, value)
         else:
-            # Crear nuevo asegurado
+            logger.info("➕ Creando nuevo asegurado")
             asegurado_data['siniestro_id'] = siniestro_id
             db_asegurado = models.Asegurado(**asegurado_data)
             db.add(db_asegurado)
@@ -134,11 +158,11 @@ async def update_siniestro(
     # Manejar beneficiario
     if beneficiario_data:
         if db_siniestro.beneficiario:
-            # Actualizar beneficiario existente
+            logger.info("🔄 Actualizando beneficiario existente")
             for field, value in beneficiario_data.items():
                 setattr(db_siniestro.beneficiario, field, value)
         else:
-            # Crear nuevo beneficiario
+            logger.info("➕ Creando nuevo beneficiario")
             beneficiario_data['siniestro_id'] = siniestro_id
             db_beneficiario = models.Beneficiario(**beneficiario_data)
             db.add(db_beneficiario)
@@ -146,121 +170,97 @@ async def update_siniestro(
     # Manejar conductor
     if conductor_data:
         if db_siniestro.conductor:
-            # Actualizar conductor existente
+            logger.info("🔄 Actualizando conductor existente")
             for field, value in conductor_data.items():
                 setattr(db_siniestro.conductor, field, value)
         else:
-            # Crear nuevo conductor
+            logger.info("➕ Creando nuevo conductor")
             conductor_data['siniestro_id'] = siniestro_id
             db_conductor = models.Conductor(**conductor_data)
             db.add(db_conductor)
 
-    db.commit()
-    db.refresh(db_siniestro)
-    return db_siniestro
+    # Manejar antecedentes
+    if antecedentes_data is not None:
+        logger.info(f"🔄 Actualizando antecedentes: {len(antecedentes_data)} items")
+        # Eliminar antecedentes existentes
+        db.query(models.Antecedente).filter(models.Antecedente.siniestro_id == siniestro_id).delete()
+        # Crear nuevos antecedentes
+        for antecedente in antecedentes_data:
+            db_antecedente = models.Antecedente(
+                siniestro_id=siniestro_id,
+                descripcion=antecedente.get('descripcion', '')
+            )
+            db.add(db_antecedente)
 
+    # Manejar relatos del asegurado
+    if relatos_asegurado_data is not None:
+        logger.info(f"🔄 Actualizando relatos asegurado: {len(relatos_asegurado_data)} items")
+        # Eliminar relatos existentes
+        db.query(models.RelatoAsegurado).filter(models.RelatoAsegurado.siniestro_id == siniestro_id).delete()
+        # Crear nuevos relatos
+        for relato in relatos_asegurado_data:
+            db_relato = models.RelatoAsegurado(
+                siniestro_id=siniestro_id,
+                numero_relato=relato.get('numero_relato', 1),
+                texto=relato.get('texto', ''),
+                imagen_url=relato.get('imagen_url')
+            )
+            db.add(db_relato)
 
-@router.delete("/{siniestro_id}")
-async def delete_siniestro(siniestro_id: int, db: Session = Depends(get_db)):
-    """Eliminar un siniestro"""
-    db_siniestro = (
-        db.query(models.Siniestro).filter(models.Siniestro.id == siniestro_id).first()
-    )
-    if not db_siniestro:
-        raise HTTPException(status_code=404, detail="Siniestro no encontrado")
+    # Manejar relatos del conductor
+    if relatos_conductor_data is not None:
+        logger.info(f"🔄 Actualizando relatos conductor: {len(relatos_conductor_data)} items")
+        # Eliminar relatos existentes
+        db.query(models.RelatoConductor).filter(models.RelatoConductor.siniestro_id == siniestro_id).delete()
+        # Crear nuevos relatos
+        for relato in relatos_conductor_data:
+            db_relato = models.RelatoConductor(
+                siniestro_id=siniestro_id,
+                numero_relato=relato.get('numero_relato', 1),
+                texto=relato.get('texto', ''),
+                imagen_url=relato.get('imagen_url')
+            )
+            db.add(db_relato)
 
-    db.delete(db_siniestro)
-    db.commit()
-    return {"message": "Siniestro eliminado exitosamente"}
+    # Manejar inspecciones
+    if inspecciones_data is not None:
+        logger.info(f"🔄 Actualizando inspecciones: {len(inspecciones_data)} items")
+        # Eliminar inspecciones existentes
+        db.query(models.Inspeccion).filter(models.Inspeccion.siniestro_id == siniestro_id).delete()
+        # Crear nuevas inspecciones
+        for inspeccion in inspecciones_data:
+            db_inspeccion = models.Inspeccion(
+                siniestro_id=siniestro_id,
+                numero_inspeccion=inspeccion.get('numero_inspeccion', 1),
+                descripcion=inspeccion.get('descripcion', ''),
+                imagen_url=inspeccion.get('imagen_url')
+            )
+            db.add(db_inspeccion)
 
+    # Manejar testigos
+    if testigos_data is not None:
+        logger.info(f"🔄 Actualizando testigos: {len(testigos_data)} items")
+        # Eliminar testigos existentes
+        db.query(models.Testigo).filter(models.Testigo.siniestro_id == siniestro_id).delete()
+        # Crear nuevos testigos
+        for testigo in testigos_data:
+            db_testigo = models.Testigo(
+                siniestro_id=siniestro_id,
+                numero_relato=testigo.get('numero_relato', 1),
+                texto=testigo.get('texto', ''),
+                imagen_url=testigo.get('imagen_url')
+            )
+            db.add(db_testigo)
 
-# Additional endpoints for related entities
-@router.post("/{siniestro_id}/asegurado", response_model=schemas.AseguradoResponse)
-async def create_asegurado(
-    siniestro_id: int, asegurado: schemas.AseguradoCreate, db: Session = Depends(get_db)
-):
-    """Crear asegurado para un siniestro"""
-    db_asegurado = models.Asegurado(siniestro_id=siniestro_id, **asegurado.model_dump())
-    db.add(db_asegurado)
-    db.commit()
-    db.refresh(db_asegurado)
-    return db_asegurado
-
-
-@router.post("/{siniestro_id}/beneficiario", response_model=schemas.BeneficiarioResponse)
-async def create_beneficiario(
-    siniestro_id: int, beneficiario: schemas.BeneficiarioCreate, db: Session = Depends(get_db)
-):
-    """Crear beneficiario para un siniestro"""
-    db_beneficiario = models.Beneficiario(siniestro_id=siniestro_id, **beneficiario.model_dump())
-    db.add(db_beneficiario)
-    db.commit()
-    db.refresh(db_beneficiario)
-    return db_beneficiario
-
-
-@router.post("/{siniestro_id}/objeto-asegurado", response_model=schemas.ObjetoAseguradoResponse)
-async def create_objeto_asegurado(
-    siniestro_id: int, objeto_asegurado: schemas.ObjetoAseguradoCreate, db: Session = Depends(get_db)
-):
-    """Crear objeto asegurado para un siniestro"""
-    db_objeto = models.ObjetoAsegurado(siniestro_id=siniestro_id, **objeto_asegurado.model_dump())
-    db.add(db_objeto)
-    db.commit()
-    db.refresh(db_objeto)
-    return db_objeto
-
-
-@router.post(
-    "/{siniestro_id}/relato-asegurado", response_model=schemas.RelatoAseguradoResponse
-)
-async def create_relato_asegurado(
-    siniestro_id: int,
-    relato: schemas.RelatoAseguradoCreate,
-    db: Session = Depends(get_db),
-):
-    """Crear relato del asegurado"""
-    # Get the next numero_relato
-    max_num = (
-        db.query(models.RelatoAsegurado)
-        .filter(models.RelatoAsegurado.siniestro_id == siniestro_id)
-        .count()
-    )
-    numero_relato = max_num + 1
-
-    db_relato = models.RelatoAsegurado(
-        siniestro_id=siniestro_id, numero_relato=numero_relato, **relato.model_dump()
-    )
-    db.add(db_relato)
-    db.commit()
-    db.refresh(db_relato)
-    return db_relato
-
-
-# Similar endpoints for other entities...
-@router.post("/{siniestro_id}/inspeccion", response_model=schemas.InspeccionResponse)
-async def create_inspeccion(
-    siniestro_id: int,
-    inspeccion: schemas.InspeccionCreate,
-    db: Session = Depends(get_db),
-):
-    """Crear inspección del lugar del siniestro"""
-    max_num = (
-        db.query(models.Inspeccion)
-        .filter(models.Inspeccion.siniestro_id == siniestro_id)
-        .count()
-    )
-    numero_inspeccion = max_num + 1
-
-    db_inspeccion = models.Inspeccion(
-        siniestro_id=siniestro_id,
-        numero_inspeccion=numero_inspeccion,
-        **inspeccion.model_dump(),
-    )
-    db.add(db_inspeccion)
-    db.commit()
-    db.refresh(db_inspeccion)
-    return db_inspeccion
+    try:
+        logger.info("💾 Confirmando cambios en base de datos...")
+        db.commit()
+        db.refresh(db_siniestro)
+        logger.info(f"✅ Siniestro {siniestro_id} actualizado exitosamente")
+        return db_siniestro
+    except Exception as e:
+        logger.error(f"❌ Error al actualizar siniestro: {e}")
+        db.rollback()
 
 
 @router.post("/{siniestro_id}/testigo", response_model=schemas.TestigoResponse)
