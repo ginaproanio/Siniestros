@@ -62,6 +62,18 @@ interface FormData {
   inspecciones?: InspeccionData[];
   testigos?: TestigoData[];
 
+  // Campos de investigación recabada
+  evidencias_complementarias_descripcion?: string;
+  evidencias_complementarias_imagen_url?: string;
+  otras_diligencias_descripcion?: string;
+  otras_diligencias_imagen_url?: string;
+  visita_taller_descripcion?: string;
+  visita_taller_imagen_url?: string;
+  observaciones?: string[]; // Array of strings for numbered list
+  recomendacion_pago_cobertura?: string[]; // Array of strings for numbered list
+  conclusiones?: string[]; // Array of strings for numbered list
+  anexo?: string[]; // Array of strings for numbered list
+
   // Datos relacionados
   asegurado?: any;
   beneficiario?: any;
