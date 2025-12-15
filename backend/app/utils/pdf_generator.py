@@ -264,10 +264,10 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
             ),
         )
         story.append(fecha_gen)
-        story.append(Spacer(1, 120))  # Salto de página completo
+        story.append(Spacer(1, 40))  # Espacio antes del índice
 
-        # ==================== ÍNDICE ====================
-        logger.info("📋 Generando índice...")
+        # ==================== ÍNDICE EN LA MISMA PÁGINA ====================
+        logger.info("📋 Generando índice en la misma página...")
 
         indice_title = Paragraph("ÍNDICE", subtitle_style)
         story.append(indice_title)
@@ -275,85 +275,38 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
 
         # Crear índice dinámico basado en secciones que tienen contenido
         indice_items = []
-        page_num = 3  # Comenzar desde página 3
+        page_num = 2  # Página del registro del siniestro
 
         # Siempre incluir registro del siniestro
         indice_items.append(f"{page_num}. REGISTRO DEL SINIESTRO")
-        page_num += 1
 
         # Verificar qué secciones de investigación tienen contenido
-        has_investigacion = False
-
-        if siniestro.antecedentes:
-            has_investigacion = True
-            indice_items.append(f"   {page_num}.1 Antecedentes")
-
-        if siniestro.relatos_asegurado:
-            has_investigacion = True
-            indice_items.append(f"   {page_num}.2 Entrevista al Asegurado")
-
-        if siniestro.relatos_conductor:
-            has_investigacion = True
-            indice_items.append(f"   {page_num}.3 Entrevista al Conductor")
-
-        if siniestro.inspecciones:
-            has_investigacion = True
-            indice_items.append(f"   {page_num}.4 Inspección del Lugar")
-
-        if siniestro.testigos:
-            has_investigacion = True
-            indice_items.append(f"   {page_num}.5 Testigos")
-
-        if (
-            siniestro.evidencias_complementarias
-            and siniestro.evidencias_complementarias.strip()
-        ):
-            has_investigacion = True
-            indice_items.append(f"   {page_num}.6 Evidencias Complementarias")
-
-        if siniestro.otras_diligencias and siniestro.otras_diligencias.strip():
-            has_investigacion = True
-            indice_items.append(f"   {page_num}.7 Otras Diligencias")
-
-        if (
-            siniestro.visita_taller
-            and siniestro.visita_taller.descripcion
-            and siniestro.visita_taller.descripcion.strip()
-        ):
-            has_investigacion = True
-            indice_items.append(f"   {page_num}.8 Visita al Taller")
-
-        if siniestro.observaciones and siniestro.observaciones.strip():
-            has_investigacion = True
-            indice_items.append(f"   {page_num}.9 Observaciones")
-
-        if (
-            siniestro.recomendacion_pago_cobertura
-            and siniestro.recomendacion_pago_cobertura.strip()
-        ):
-            has_investigacion = True
-            indice_items.append(
-                f"   {page_num}.10 Recomendación sobre el Pago de la Cobertura"
-            )
-
-        if siniestro.conclusiones and siniestro.conclusiones.strip():
-            has_investigacion = True
-            indice_items.append(f"   {page_num}.11 Conclusiones")
-
-        if siniestro.anexo and siniestro.anexo.strip():
-            has_investigacion = True
-            indice_items.append(f"   {page_num}.12 Anexo")
+        has_investigacion = (
+            siniestro.antecedentes or
+            siniestro.relatos_asegurado or
+            siniestro.relatos_conductor or
+            siniestro.inspecciones or
+            siniestro.testigos or
+            (siniestro.evidencias_complementarias and siniestro.evidencias_complementarias.strip()) or
+            (siniestro.otras_diligencias and siniestro.otras_diligencias.strip()) or
+            (siniestro.visita_taller and siniestro.visita_taller.descripcion and siniestro.visita_taller.descripcion.strip()) or
+            (siniestro.observaciones and siniestro.observaciones.strip()) or
+            (siniestro.recomendacion_pago_cobertura and siniestro.recomendacion_pago_cobertura.strip()) or
+            (siniestro.conclusiones and siniestro.conclusiones.strip()) or
+            (siniestro.anexo and siniestro.anexo.strip())
+        )
 
         if has_investigacion:
-            indice_items.insert(1, f"{page_num}. INVESTIGACIÓN")
+            indice_items.append(f"{page_num + 1}. INVESTIGACIÓN")
             page_num += 1
 
         # Agregar anexos si hay
         if siniestro.anexo and siniestro.anexo.strip():
-            indice_items.append(f"{page_num}. ANEXOS")
+            indice_items.append(f"{page_num + 1}. ANEXOS")
+            page_num += 1
 
         # Siempre agregar cierre
-        indice_items.append(f"{page_num + (1 if has_investigacion else 0)}. CIERRE")
+        indice_items.append(f"{page_num + 1}. CIERRE")
 
         for item in indice_items:
             story.append(Paragraph(item, normal_style))
@@ -684,7 +637,7 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                 for antecedente in siniestro.antecedentes:
                     story.append(Paragraph(antecedente.descripcion, normal_style))
                     story.append(Spacer(1, 10))
-                story.append(Spacer(1, 120))  # Salto de página
+                story.append(Spacer(1, 15))
                 section_num += 1
 
             # 2.2 Entrevista al Asegurado
@@ -706,7 +659,7 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                     )
                     story.append(Paragraph(relato.texto, normal_style))
                     story.append(Spacer(1, 10))
-                story.append(Spacer(1, 120))  # Salto de página
+                story.append(Spacer(1, 15))
                 section_num += 1
 
             # 2.3 Entrevista al Conductor
@@ -728,7 +681,7 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                     )
                     story.append(Paragraph(relato.texto, normal_style))
                     story.append(Spacer(1, 10))
-                story.append(Spacer(1, 120))  # Salto de página
+                story.append(Spacer(1, 15))
                 section_num += 1
 
             # 2.4 Inspección del Lugar
@@ -750,7 +703,7 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                     )
                     story.append(Paragraph(inspeccion.descripcion, normal_style))
                     story.append(Spacer(1, 10))
-                story.append(Spacer(1, 120))  # Salto de página
+                story.append(Spacer(1, 15))
                 section_num += 1
 
             # 2.5 Testigos
@@ -770,7 +723,7 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                     )
                     story.append(Paragraph(testigo.texto, normal_style))
                     story.append(Spacer(1, 10))
-                story.append(Spacer(1, 120))  # Salto de página
+                story.append(Spacer(1, 15))
                 section_num += 1
 
             # 2.6 Evidencias Complementarias
@@ -786,7 +739,7 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                 story.append(
                     Paragraph(siniestro.evidencias_complementarias, normal_style)
                 )
-                story.append(Spacer(1, 120))  # Salto de página
+                story.append(Spacer(1, 15))
                 section_num += 1
 
             # 2.7 Otras Diligencias
@@ -795,7 +748,7 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                     Paragraph(f"{section_num}. Otras Diligencias", section_style)
                 )
                 story.append(Paragraph(siniestro.otras_diligencias, normal_style))
-                story.append(Spacer(1, 120))  # Salto de página
+                story.append(Spacer(1, 15))
                 section_num += 1
 
             # 2.8 Visita al Taller
@@ -810,7 +763,7 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                 story.append(
                     Paragraph(siniestro.visita_taller.descripcion, normal_style)
                 )
-                story.append(Spacer(1, 120))  # Salto de página
+                story.append(Spacer(1, 15))
                 section_num += 1
 
             # 2.9 Observaciones
@@ -829,7 +782,7 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                         story.append(Spacer(1, 5))
                 except:
                     story.append(Paragraph(siniestro.observaciones, normal_style))
-                story.append(Spacer(1, 120))  # Salto de página
+                story.append(Spacer(1, 15))
                 section_num += 1
 
             # 2.10 Recomendación sobre el Pago de la Cobertura
@@ -858,7 +811,7 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                     story.append(
                         Paragraph(siniestro.recomendacion_pago_cobertura, normal_style)
                     )
-                story.append(Spacer(1, 120))  # Salto de página
+                story.append(Spacer(1, 15))
                 section_num += 1
 
             # 2.11 Conclusiones
@@ -877,10 +830,10 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                         story.append(Spacer(1, 5))
                 except:
                     story.append(Paragraph(siniestro.conclusiones, normal_style))
-                story.append(Spacer(1, 120))  # Salto de página
+                story.append(Spacer(1, 15))
                 section_num += 1
 
-            # 2.12 Anexo
+            # 2.12 Anexo (si está en la sección de investigación)
             if siniestro.anexo and siniestro.anexo.strip():
                 story.append(Paragraph(f"{section_num}. Anexo", section_style))
                 import json
@@ -896,8 +849,11 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                         story.append(Spacer(1, 5))
                 except:
                     story.append(Paragraph(siniestro.anexo, normal_style))
-                story.append(Spacer(1, 120))  # Salto de página
+                story.append(Spacer(1, 15))
                 section_num += 1
+
+            # Después de TODA la investigación, salto de página
+            story.append(Spacer(1, 120))  # Salto de página completo
 
         # ==================== ANEXOS ====================
         if siniestro.anexo and siniestro.anexo.strip():
