@@ -1,4 +1,4 @@
 # Railway deployment trigger
 # This file forces Railway to redeploy when changed
-# Last update: 2025-12-15 09:16 UTC-5 - Force redeploy after architecture fix
-# Separated Siniestro and Investigacion components for clean architecture
+# Last update: 2025-12-15 09:30 UTC-5 - FORCE REDEPLOY - InvestigacionForm.tsx FIXED
+# Critical fix: InvestigacionForm.tsx now available in repository
