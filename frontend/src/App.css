@@ -320,6 +320,8 @@
   align-items: center;
   gap: 8px;
   font-weight: normal !important;
+  flex-direction: row-reverse; /* Texto primero, luego checkbox */
+  justify-content: flex-end; /* Alinea checkbox a la derecha del texto */
 }
 
 .checkbox-label input[type="checkbox"] {

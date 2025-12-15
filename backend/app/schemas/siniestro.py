@@ -5,6 +5,9 @@ from datetime import datetime
 # Base schemas
 class SiniestroBase(BaseModel):
     compania_seguros: str = Field(..., max_length=255)
+    ruc_compania: Optional[str] = Field(None, max_length=20)
+    tipo_reclamo: Optional[str] = Field(None, max_length=50)
+    poliza: Optional[str] = Field(None, max_length=50)
     reclamo_num: str = Field(..., max_length=100)
     fecha_siniestro: datetime
     fecha_reportado: Optional[datetime] = None
@@ -205,6 +208,9 @@ class SiniestroFullResponse(SiniestroResponse):
 # Update schemas
 class SiniestroUpdate(BaseModel):
     compania_seguros: Optional[str] = None
+    ruc_compania: Optional[str] = None
+    tipo_reclamo: Optional[str] = None
+    poliza: Optional[str] = None
     reclamo_num: Optional[str] = None
     fecha_siniestro: Optional[datetime] = None
     fecha_reportado: Optional[datetime] = None

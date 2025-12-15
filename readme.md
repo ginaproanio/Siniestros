@@ -225,7 +225,17 @@ railway logs --service backend
 railway logs --service frontend
 ```
 
-## 📞 **Soporte y Contacto**
+## � **Características Futuras**
+
+### **Integración con Superintendencia de Bancos**
+- **Web Service SOAP/REST** para consulta automática de información de pólizas
+- **Validación en tiempo real** de datos de asegurados y vehículos
+- **Sincronización automática** de información regulatoria
+- **Alertas de cumplimiento** normativo
+
+*Esta funcionalidad será implementada en futuras versiones para mejorar la eficiencia y precisión en la gestión de siniestros.*
+
+## �📞 **Soporte y Contacto**
 
 Para soporte técnico o preguntas sobre el proyecto:
 - Crear issue en GitHub

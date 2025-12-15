@@ -7,6 +7,9 @@ class Siniestro(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     compania_seguros = Column(String(255), nullable=False)
+    ruc_compania = Column(String(20))  # RUC de la compañía de seguros
+    tipo_reclamo = Column(String(50))  # Tipo de reclamo (ROBO, etc.)
+    poliza = Column(String(50))  # Número de póliza
     reclamo_num = Column(String(100), unique=True, nullable=False)
     fecha_siniestro = Column(DateTime(timezone=True), nullable=False)
     direccion_siniestro = Column(String(500), nullable=False)

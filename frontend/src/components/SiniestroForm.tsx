@@ -34,6 +34,9 @@ interface AntecedenteData {
 interface FormData {
   // Datos básicos del siniestro (según backend schema)
   compania_seguros: string;
+  ruc_compania?: string;
+  tipo_reclamo?: string;
+  poliza?: string;
   reclamo_num: string;
   fecha_siniestro: string;
   fecha_reportado?: string;
@@ -70,7 +73,10 @@ const SiniestroForm: React.FC = () => {
   const [activeTab, setActiveTab] = useState(0);
 
   const [formData, setFormData] = useState<FormData>({
-    compania_seguros: "Zurich Seguros Ecuador S.A.",
+    compania_seguros: "ZURICH SEGUROS ECUADOR S.A.",
+    ruc_compania: "1791240014001",
+    tipo_reclamo: "ROBO",
+    poliza: "3351",
     reclamo_num: "25-01-VH-7079448",
     fecha_siniestro: "2023-10-15",
     direccion_siniestro: "Av. Amazonas y Naciones Unidas, Quito",
@@ -209,6 +215,19 @@ const SiniestroForm: React.FC = () => {
                       />
                     </div>
                     <div className="form-group">
+                      <label>RUC Compañía:</label>
+                      <input
+                        type="text"
+                        name="ruc_compania"
+                        value={formData.ruc_compania || ""}
+                        onChange={handleInputChange}
+                        placeholder="Ej: 1791240014001"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group">
                       <label>Número de Reclamo:</label>
                       <input
                         type="text"
@@ -216,6 +235,30 @@ const SiniestroForm: React.FC = () => {
                         value={formData.reclamo_num}
                         onChange={handleInputChange}
                         required
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Tipo de Reclamo:</label>
+                      <select
+                        name="tipo_reclamo"
+                        value={formData.tipo_reclamo || ""}
+                        onChange={handleInputChange}
+                      >
+                        <option value="">Seleccionar...</option>
+                        <option value="ROBO">Robo</option>
+                        <option value="ACCIDENTE">Accidente</option>
+                        <option value="INCENDIO">Incendio</option>
+                        <option value="OTRO">Otro</option>
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label>Póliza:</label>
+                      <input
+                        type="text"
+                        name="poliza"
+                        value={formData.poliza || ""}
+                        onChange={handleInputChange}
+                        placeholder="Ej: 3351"
                       />
                     </div>
                   </div>
@@ -749,6 +792,143 @@ const SiniestroForm: React.FC = () => {
                     )}
 
 
+                  </div>
+
+                  {/* Objeto Asegurado */}
+                  <div className="card-section" style={{ marginBottom: "20px", backgroundColor: "#fff8e1" }}>
+                    <h4 style={{ color: "#0f172a", marginBottom: "15px" }}>
+                      🚗 Datos del Objeto Asegurado
+                    </h4>
+
+                    <div className="form-row">
+                      <div className="form-group">
+                        <label>Placa:</label>
+                        <input
+                          type="text"
+                          value={formData.objeto_asegurado?.placa || ""}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setFormData((prev) => ({
+                              ...prev,
+                              objeto_asegurado: { ...prev.objeto_asegurado, placa: value },
+                            }));
+                          }}
+                          placeholder="Ej: PFB4337"
+                          required
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Marca:</label>
+                        <input
+                          type="text"
+                          value={formData.objeto_asegurado?.marca || ""}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setFormData((prev) => ({
+                              ...prev,
+                              objeto_asegurado: { ...prev.objeto_asegurado, marca: value },
+                            }));
+                          }}
+                          placeholder="Ej: TOYOTA"
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Modelo:</label>
+                        <input
+                          type="text"
+                          value={formData.objeto_asegurado?.modelo || ""}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setFormData((prev) => ({
+                              ...prev,
+                              objeto_asegurado: { ...prev.objeto_asegurado, modelo: value },
+                            }));
+                          }}
+                          placeholder="Ej: Corolla Cross High AC 1.8 5P 4x2"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="form-row">
+                      <div className="form-group">
+                        <label>Tipo:</label>
+                        <input
+                          type="text"
+                          value={formData.objeto_asegurado?.tipo || ""}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setFormData((prev) => ({
+                              ...prev,
+                              objeto_asegurado: { ...prev.objeto_asegurado, tipo: value },
+                            }));
+                          }}
+                          placeholder="Ej: Jeep"
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Color:</label>
+                        <input
+                          type="text"
+                          value={formData.objeto_asegurado?.color || ""}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setFormData((prev) => ({
+                              ...prev,
+                              objeto_asegurado: { ...prev.objeto_asegurado, color: value },
+                            }));
+                          }}
+                          placeholder="Ej: Blanco"
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Año:</label>
+                        <input
+                          type="number"
+                          value={formData.objeto_asegurado?.ano || ""}
+                          onChange={(e) => {
+                            const value = parseInt(e.target.value) || undefined;
+                            setFormData((prev) => ({
+                              ...prev,
+                              objeto_asegurado: { ...prev.objeto_asegurado, ano: value },
+                            }));
+                          }}
+                          placeholder="Ej: 2023"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="form-row">
+                      <div className="form-group">
+                        <label>Serie Motor:</label>
+                        <input
+                          type="text"
+                          value={formData.objeto_asegurado?.serie_motor || ""}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setFormData((prev) => ({
+                              ...prev,
+                              objeto_asegurado: { ...prev.objeto_asegurado, serie_motor: value },
+                            }));
+                          }}
+                          placeholder="Ej: 2ZR2X01895"
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Chasis:</label>
+                        <input
+                          type="text"
+                          value={formData.objeto_asegurado?.chasis || ""}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setFormData((prev) => ({
+                              ...prev,
+                              objeto_asegurado: { ...prev.objeto_asegurado, chasis: value },
+                            }));
+                          }}
+                          placeholder="Ej: 9BRKZAAGXR0669964"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

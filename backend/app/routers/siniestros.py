@@ -143,6 +143,18 @@ async def create_beneficiario(
     return db_beneficiario
 
 
+@router.post("/{siniestro_id}/objeto-asegurado", response_model=schemas.ObjetoAseguradoResponse)
+async def create_objeto_asegurado(
+    siniestro_id: int, objeto_asegurado: schemas.ObjetoAseguradoCreate, db: Session = Depends(get_db)
+):
+    """Crear objeto asegurado para un siniestro"""
+    db_objeto = models.ObjetoAsegurado(siniestro_id=siniestro_id, **objeto_asegurado.model_dump())
+    db.add(db_objeto)
+    db.commit()
+    db.refresh(db_objeto)
+    return db_objeto
+
+
 @router.post(
     "/{siniestro_id}/relato-asegurado", response_model=schemas.RelatoAseguradoResponse
 )

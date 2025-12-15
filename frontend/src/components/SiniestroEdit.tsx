@@ -27,6 +27,9 @@ interface AntecedenteData {
 interface FormData {
   // Datos básicos del siniestro
   compania_seguros: string;
+  ruc_compania?: string;
+  tipo_reclamo?: string;
+  poliza?: string;
   reclamo_num: string;
   fecha_siniestro: string;
   fecha_reportado?: string;
@@ -93,7 +96,10 @@ const SiniestroEdit: React.FC = () => {
 
         setFormData({
           // Datos básicos
-          compania_seguros: data.compania_seguros || "Zurich Seguros Ecuador S.A.",
+          compania_seguros: data.compania_seguros || "ZURICH SEGUROS ECUADOR S.A.",
+          ruc_compania: data.ruc_compania || "",
+          tipo_reclamo: data.tipo_reclamo || "",
+          poliza: data.poliza || "",
           reclamo_num: data.reclamo_num || "",
           fecha_siniestro: data.fecha_siniestro ? new Date(data.fecha_siniestro).toISOString().split('T')[0] : "",
           fecha_reportado: data.fecha_reportado ? new Date(data.fecha_reportado).toISOString().split('T')[0] : "",

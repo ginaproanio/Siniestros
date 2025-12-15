@@ -37,7 +37,10 @@ def create_test_data():
 
         # Crear siniestro principal
         siniestro = models.Siniestro(
-            compania_seguros="Zurich Seguros Ecuador S.A.",
+            compania_seguros="ZURICH SEGUROS ECUADOR S.A.",
+            ruc_compania="1791240014001",
+            tipo_reclamo="ROBO",
+            poliza="3351",
             reclamo_num="25-01-VH-7079448",
             fecha_siniestro="2025-11-28T10:49:00",
             fecha_reportado="2025-11-30T10:49:00",
