@@ -1,7 +1,6 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import InvestigacionRecabada from "./InvestigacionRecabada";
 
 interface RelatoData {
   numero_relato: number;
@@ -57,6 +56,18 @@ interface FormData {
   inspecciones?: InspeccionData[];
   testigos?: TestigoData[];
 
+  // Campos de investigación recabada
+  evidencias_complementarias_descripcion?: string;
+  evidencias_complementarias_imagen_url?: string;
+  otras_diligencias_descripcion?: string;
+  otras_diligencias_imagen_url?: string;
+  visita_taller_descripcion?: string;
+  visita_taller_imagen_url?: string;
+  observaciones?: string[]; // Array of strings for numbered list
+  recomendacion_pago_cobertura?: string[]; // Array of strings for numbered list
+  conclusiones?: string[]; // Array of strings for numbered list
+  anexo?: string[]; // Array of strings for numbered list
+
   // Datos relacionados
   asegurado?: any;
   beneficiario?: any;
@@ -86,6 +97,17 @@ const SiniestroEdit: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+
+  // Función para parsear arrays JSON
+  const parseJsonArray = (jsonString: string | null): string[] => {
+    if (!jsonString) return [];
+    try {
+      const parsed = JSON.parse(jsonString);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  };
 
   useEffect(() => {
     const fetchSiniestro = async () => {
@@ -136,6 +158,18 @@ const SiniestroEdit: React.FC = () => {
           inspecciones: data.inspecciones || [],
           testigos: data.testigos || [],
 
+          // Campos de investigación recabada
+          evidencias_complementarias_descripcion: data.evidencias_complementarias || "",
+          evidencias_complementarias_imagen_url: data.evidencias_complementarias_imagen_url || "",
+          otras_diligencias_descripcion: data.otras_diligencias || "",
+          otras_diligencias_imagen_url: data.otras_diligencias_imagen_url || "",
+          visita_taller_descripcion: data.visita_taller_descripcion || "",
+          visita_taller_imagen_url: data.visita_taller_imagen_url || "",
+          observaciones: parseJsonArray(data.observaciones),
+          recomendacion_pago_cobertura: parseJsonArray(data.recomendacion_pago_cobertura),
+          conclusiones: parseJsonArray(data.conclusiones),
+          anexo: parseJsonArray(data.anexo),
+
           // Datos relacionados
           asegurado: data.asegurado || null,
           beneficiario: data.beneficiario || null,
@@ -177,7 +211,16 @@ const SiniestroEdit: React.FC = () => {
     console.log("🚀 Enviando datos actualizados:", formData);
 
     try {
-      await axios.put(`/api/v1/${id}`, formData);
+      // Preparar datos para envío - serializar arrays a JSON strings
+      const submitData = {
+        ...formData,
+        observaciones: JSON.stringify(formData.observaciones || []),
+        recomendacion_pago_cobertura: JSON.stringify(formData.recomendacion_pago_cobertura || []),
+        conclusiones: JSON.stringify(formData.conclusiones || []),
+        anexo: JSON.stringify(formData.anexo || []),
+      };
+
+      await axios.put(`/api/v1/${id}`, submitData);
       setMessage("Siniestro actualizado exitosamente!");
       setTimeout(() => {
         window.location.href = `/siniestro/${id}`;
@@ -195,6 +238,36 @@ const SiniestroEdit: React.FC = () => {
   return (
     <div className="form-container">
       <h2>Editar Siniestro</h2>
+
+      {/* INDICADOR DE PROGRESO */}
+      <div style={{
+        marginBottom: "30px",
+        padding: "20px",
+        backgroundColor: "#f8f9fa",
+        borderRadius: "8px",
+        border: "2px solid #007bff"
+      }}>
+        <h3 style={{ marginBottom: "15px", color: "#007bff" }}>📊 Progreso del Informe</h3>
+        <div style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "10px",
+          fontSize: "14px"
+        }}>
+          <span style={{ padding: "5px 10px", backgroundColor: "#28a745", color: "white", borderRadius: "15px" }}>✅ 1. Datos Básicos</span>
+          <span style={{ padding: "5px 10px", backgroundColor: "#28a745", color: "white", borderRadius: "15px" }}>✅ 2. Objeto Asegurado</span>
+          <span style={{ padding: "5px 10px", backgroundColor: "#28a745", color: "white", borderRadius: "15px" }}>✅ 3. Antecedentes</span>
+          <span style={{ padding: "5px 10px", backgroundColor: "#28a745", color: "white", borderRadius: "15px" }}>✅ 4. Entrevista Asegurado</span>
+          <span style={{ padding: "5px 10px", backgroundColor: "#28a745", color: "white", borderRadius: "15px" }}>✅ 5. Inspección Lugar</span>
+          <span style={{ padding: "5px 10px", backgroundColor: "#28a745", color: "white", borderRadius: "15px" }}>✅ 6. Testigos</span>
+          <span style={{ padding: "5px 10px", backgroundColor: "#17a2b8", color: "white", borderRadius: "15px", fontWeight: "bold" }}>🔍 7. Investigación Recabada</span>
+          <span style={{ padding: "5px 10px", backgroundColor: "#6c757d", color: "white", borderRadius: "15px" }}>⏳ 8. Generar PDF</span>
+        </div>
+        <p style={{ marginTop: "10px", fontSize: "12px", color: "#6c757d" }}>
+          Estás en la sección 7: Investigación Recabada. Completa todas las secciones antes de generar el PDF.
+        </p>
+      </div>
+
       <form onSubmit={handleSubmit}>
         <div className="form-row">
           <div className="form-group">
@@ -1005,83 +1078,421 @@ const SiniestroEdit: React.FC = () => {
           ))}
         </div>
 
-        {/* INVESTIGACIÓN RECABADA */}
-        <div style={{
-          marginTop: '40px',
-          padding: '25px',
-          backgroundColor: '#e8f5e8',
-          borderRadius: '12px',
-          border: '3px solid #28a745',
-          boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
-        }}>
-          <h2 style={{
-            color: '#0f172a',
-            marginBottom: '10px',
-            fontSize: '24px',
-            fontWeight: 'bold'
-          }}>
-            🔍 SECCIONES DE INVESTIGACIÓN RECABADA
-          </h2>
-          <p style={{
-            color: '#666',
-            fontSize: '16px',
-            marginBottom: '20px',
-            fontStyle: 'italic'
-          }}>
-            Las siguientes secciones aparecen después de "Testigos" para completar la investigación
-          </p>
-          <div style={{
-            backgroundColor: '#fff3cd',
-            padding: '15px',
-            borderRadius: '8px',
-            marginBottom: '20px',
-            border: '1px solid #ffc107'
-          }}>
-            <strong>📋 Secciones disponibles:</strong>
-            <ul style={{ marginTop: '10px', paddingLeft: '20px' }}>
-              <li>Evidencias Complementarias (con imagen condicional para "Parte Policial")</li>
-              <li>Otras Diligencias (texto + imagen)</li>
-              <li>Visita al Taller (texto + imagen)</li>
-              <li>Observaciones (lista numerada)</li>
-              <li>Recomendación sobre el Pago de la Cobertura (lista numerada)</li>
-              <li>Conclusiones (lista numerada)</li>
-              <li>Anexo (lista numerada)</li>
-            </ul>
+        {/* EVIDENCIAS COMPLEMENTARIAS */}
+        <div className="section-container">
+          <h3 className="section-header">📎 Evidencias Complementarias</h3>
+          <div className="form-group">
+            <label>Descripción:</label>
+            <textarea
+              value={formData.evidencias_complementarias_descripcion || ""}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  evidencias_complementarias_descripcion: e.target.value,
+                }))
+              }
+              rows={4}
+              placeholder="Describe las evidencias complementarias..."
+            />
           </div>
-          {id ? (
-            <div>
-              <div style={{
-                backgroundColor: '#ff6b6b',
-                color: 'white',
-                padding: '20px',
-                margin: '20px 0',
-                borderRadius: '8px',
-                border: '3px solid #d63031',
-                fontSize: '18px',
-                fontWeight: 'bold',
-                textAlign: 'center'
-              }}>
-                🔴 DEBUG: COMPONENTE DEBE APARECER AQUÍ 🔴
-                <br />
-                ID del siniestro: {id}
-                <br />
-                Timestamp: {new Date().toISOString()}
-              </div>
-              <InvestigacionRecabada />
-            </div>
-          ) : (
-            <div style={{
-              backgroundColor: '#ffa726',
-              color: 'white',
-              padding: '15px',
-              margin: '15px 0',
-              borderRadius: '5px',
-              textAlign: 'center',
-              fontWeight: 'bold'
-            }}>
-              ⚠️ NO HAY ID - COMPONENTE NO SE RENDERIZA ⚠️
+
+          {/* Mostrar campo de imagen solo si contiene "Parte Policial" */}
+          {(formData.evidencias_complementarias_descripcion || "").toLowerCase().includes("parte policial") && (
+            <div className="form-group">
+              <label>Imagen (Parte Policial):</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    try {
+                      const formDataUpload = new FormData();
+                      formDataUpload.append("file", file);
+
+                      const response = await axios.post(
+                        "/api/v1/siniestros/upload-image",
+                        formDataUpload,
+                        {
+                          headers: { "Content-Type": "multipart/form-data" },
+                        }
+                      );
+
+                      const imageUrl = response.data.url;
+                      setFormData((prev) => ({
+                        ...prev,
+                        evidencias_complementarias_imagen_url: imageUrl,
+                      }));
+                    } catch (error) {
+                      console.error("Error subiendo imagen:", error);
+                      alert("Error al subir la imagen. Intente nuevamente.");
+                    }
+                  }
+                }}
+              />
+              {formData.evidencias_complementarias_imagen_url && (
+                <div>
+                  <img
+                    src={`${BACKEND_URL}${formData.evidencias_complementarias_imagen_url}`}
+                    alt="Parte Policial"
+                    className="image-preview"
+                  />
+                </div>
+              )}
             </div>
           )}
+        </div>
+
+        {/* OTRAS DILIGENCIAS */}
+        <div className="section-container">
+          <h3 className="section-header">📋 Otras Diligencias</h3>
+          <div className="form-group">
+            <label>Descripción:</label>
+            <textarea
+              value={formData.otras_diligencias_descripcion || ""}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  otras_diligencias_descripcion: e.target.value,
+                }))
+              }
+              rows={4}
+              placeholder="Describe otras diligencias realizadas..."
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Imagen:</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  try {
+                    const formDataUpload = new FormData();
+                    formDataUpload.append("file", file);
+
+                    const response = await axios.post(
+                      "/api/v1/siniestros/upload-image",
+                      formDataUpload,
+                      {
+                        headers: { "Content-Type": "multipart/form-data" },
+                      }
+                    );
+
+                    const imageUrl = response.data.url;
+                    setFormData((prev) => ({
+                      ...prev,
+                      otras_diligencias_imagen_url: imageUrl,
+                    }));
+                  } catch (error) {
+                    console.error("Error subiendo imagen:", error);
+                    alert("Error al subir la imagen. Intente nuevamente.");
+                  }
+                }
+              }}
+            />
+            {formData.otras_diligencias_imagen_url && (
+              <div>
+                <img
+                  src={`${BACKEND_URL}${formData.otras_diligencias_imagen_url}`}
+                  alt="Otras Diligencias"
+                  className="image-preview"
+                />
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* VISITA AL TALLER */}
+        <div className="section-container">
+          <h3 className="section-header">🔧 Visita al Taller</h3>
+          <div className="form-group">
+            <label>Descripción:</label>
+            <textarea
+              value={formData.visita_taller_descripcion || ""}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  visita_taller_descripcion: e.target.value,
+                }))
+              }
+              rows={4}
+              placeholder="Describe los hallazgos de la visita al taller..."
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Imagen:</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  try {
+                    const formDataUpload = new FormData();
+                    formDataUpload.append("file", file);
+
+                    const response = await axios.post(
+                      "/api/v1/siniestros/upload-image",
+                      formDataUpload,
+                      {
+                        headers: { "Content-Type": "multipart/form-data" },
+                      }
+                    );
+
+                    const imageUrl = response.data.url;
+                    setFormData((prev) => ({
+                      ...prev,
+                      visita_taller_imagen_url: imageUrl,
+                    }));
+                  } catch (error) {
+                    console.error("Error subiendo imagen:", error);
+                    alert("Error al subir la imagen. Intente nuevamente.");
+                  }
+                }
+              }}
+            />
+            {formData.visita_taller_imagen_url && (
+              <div>
+                <img
+                  src={`${BACKEND_URL}${formData.visita_taller_imagen_url}`}
+                  alt="Visita al Taller"
+                  className="image-preview"
+                />
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* OBSERVACIONES */}
+        <div className="section-container">
+          <h3 className="section-header">👁️ Observaciones</h3>
+          <button
+            type="button"
+            className="btn-add"
+            onClick={() => {
+              const currentObservaciones = formData.observaciones || [];
+              setFormData((prev) => ({
+                ...prev,
+                observaciones: [...currentObservaciones, ""],
+              }));
+            }}
+          >
+            ➕ Agregar Observación
+          </button>
+
+          {(formData.observaciones || []).map((observacion, index) => (
+            <div key={index} className="dynamic-item">
+              <div className="dynamic-item-header">
+                <h4 className="dynamic-item-title">Observación {index + 1}</h4>
+                <button
+                  type="button"
+                  className="btn-delete"
+                  onClick={() => {
+                    const currentObservaciones = formData.observaciones || [];
+                    setFormData((prev) => ({
+                      ...prev,
+                      observaciones: currentObservaciones.filter((_, i) => i !== index),
+                    }));
+                  }}
+                >
+                  ❌ Eliminar
+                </button>
+              </div>
+
+              <div className="form-group">
+                <textarea
+                  value={observacion}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    const currentObservaciones = formData.observaciones || [];
+                    const newObservaciones = [...currentObservaciones];
+                    newObservaciones[index] = value;
+                    setFormData((prev) => ({
+                      ...prev,
+                      observaciones: newObservaciones,
+                    }));
+                  }}
+                  rows={3}
+                  placeholder="Escribe la observación..."
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* RECOMENDACIÓN SOBRE EL PAGO DE LA COBERTURA */}
+        <div className="section-container">
+          <h3 className="section-header">💰 Recomendación (Sobre el Pago de la Cobertura)</h3>
+          <button
+            type="button"
+            className="btn-add"
+            onClick={() => {
+              const currentRecomendaciones = formData.recomendacion_pago_cobertura || [];
+              setFormData((prev) => ({
+                ...prev,
+                recomendacion_pago_cobertura: [...currentRecomendaciones, ""],
+              }));
+            }}
+          >
+            ➕ Agregar Recomendación
+          </button>
+
+          {(formData.recomendacion_pago_cobertura || []).map((recomendacion, index) => (
+            <div key={index} className="dynamic-item">
+              <div className="dynamic-item-header">
+                <h4 className="dynamic-item-title">Recomendación {index + 1}</h4>
+                <button
+                  type="button"
+                  className="btn-delete"
+                  onClick={() => {
+                    const currentRecomendaciones = formData.recomendacion_pago_cobertura || [];
+                    setFormData((prev) => ({
+                      ...prev,
+                      recomendacion_pago_cobertura: currentRecomendaciones.filter((_, i) => i !== index),
+                    }));
+                  }}
+                >
+                  ❌ Eliminar
+                </button>
+              </div>
+
+              <div className="form-group">
+                <textarea
+                  value={recomendacion}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    const currentRecomendaciones = formData.recomendacion_pago_cobertura || [];
+                    const newRecomendaciones = [...currentRecomendaciones];
+                    newRecomendaciones[index] = value;
+                    setFormData((prev) => ({
+                      ...prev,
+                      recomendacion_pago_cobertura: newRecomendaciones,
+                    }));
+                  }}
+                  rows={3}
+                  placeholder="Escribe la recomendación sobre el pago de la cobertura..."
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* CONCLUSIONES */}
+        <div className="section-container">
+          <h3 className="section-header">📊 Conclusiones</h3>
+          <button
+            type="button"
+            className="btn-add"
+            onClick={() => {
+              const currentConclusiones = formData.conclusiones || [];
+              setFormData((prev) => ({
+                ...prev,
+                conclusiones: [...currentConclusiones, ""],
+              }));
+            }}
+          >
+            ➕ Agregar Conclusión
+          </button>
+
+          {(formData.conclusiones || []).map((conclusion, index) => (
+            <div key={index} className="dynamic-item">
+              <div className="dynamic-item-header">
+                <h4 className="dynamic-item-title">Conclusión {index + 1}</h4>
+                <button
+                  type="button"
+                  className="btn-delete"
+                  onClick={() => {
+                    const currentConclusiones = formData.conclusiones || [];
+                    setFormData((prev) => ({
+                      ...prev,
+                      conclusiones: currentConclusiones.filter((_, i) => i !== index),
+                    }));
+                  }}
+                >
+                  ❌ Eliminar
+                </button>
+              </div>
+
+              <div className="form-group">
+                <textarea
+                  value={conclusion}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    const currentConclusiones = formData.conclusiones || [];
+                    const newConclusiones = [...currentConclusiones];
+                    newConclusiones[index] = value;
+                    setFormData((prev) => ({
+                      ...prev,
+                      conclusiones: newConclusiones,
+                    }));
+                  }}
+                  rows={3}
+                  placeholder="Escribe la conclusión..."
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* ANEXO */}
+        <div className="section-container">
+          <h3 className="section-header">📎 Anexo</h3>
+          <button
+            type="button"
+            className="btn-add"
+            onClick={() => {
+              const currentAnexo = formData.anexo || [];
+              setFormData((prev) => ({
+                ...prev,
+                anexo: [...currentAnexo, ""],
+              }));
+            }}
+          >
+            ➕ Agregar Anexo
+          </button>
+
+          {(formData.anexo || []).map((anexoItem, index) => (
+            <div key={index} className="dynamic-item">
+              <div className="dynamic-item-header">
+                <h4 className="dynamic-item-title">Anexo {index + 1}</h4>
+                <button
+                  type="button"
+                  className="btn-delete"
+                  onClick={() => {
+                    const currentAnexo = formData.anexo || [];
+                    setFormData((prev) => ({
+                      ...prev,
+                      anexo: currentAnexo.filter((_, i) => i !== index),
+                    }));
+                  }}
+                >
+                  ❌ Eliminar
+                </button>
+              </div>
+
+              <div className="form-group">
+                <textarea
+                  value={anexoItem}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    const currentAnexo = formData.anexo || [];
+                    const newAnexo = [...currentAnexo];
+                    newAnexo[index] = value;
+                    setFormData((prev) => ({
+                      ...prev,
+                      anexo: newAnexo,
+                    }));
+                  }}
+                  rows={3}
+                  placeholder="Escribe el anexo..."
+                />
+              </div>
+            </div>
+          ))}
         </div>
 
         <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
