@@ -5,7 +5,6 @@ import SiniestroForm from './components/SiniestroForm';
 import SiniestrosList from './components/SiniestrosList';
 import SiniestroDetail from './components/SiniestroDetail';
 import SiniestroEdit from './components/SiniestroEdit';
-import InvestigacionRecabada from './components/InvestigacionRecabada';
 
 function App() {
   return (
@@ -22,8 +21,6 @@ function App() {
           <Switch>
             <Route exact path="/" component={SiniestroForm} />
             <Route path="/siniestros" component={SiniestrosList} />
-            <Route exact path="/investigacion" component={SiniestrosList} />
-            <Route path="/siniestro/:id/investigacion" component={InvestigacionRecabada} />
             <Route path="/siniestro/:id/editar" component={SiniestroEdit} />
             <Route path="/siniestro/:id" component={SiniestroDetail} />
           </Switch>
