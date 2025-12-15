@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 
 // Configurar base URL para el backend
 const BACKEND_URL =
@@ -7,19 +7,6 @@ const BACKEND_URL =
   "https://siniestros-production.up.railway.app";
 console.log("🌐 Backend URL:", BACKEND_URL);
 axios.defaults.baseURL = BACKEND_URL;
-
-interface VisitaTaller {
-  id?: number;
-  fecha_visita: string;
-  descripcion: string;
-  imagen_url?: string;
-}
-
-interface DinamicaAccidente {
-  id?: number;
-  descripcion: string;
-  imagen_url?: string;
-}
 
 interface FormData {
   // Campos de investigación recabada según requerimientos
@@ -45,11 +32,7 @@ const InvestigacionRecabada: React.FC<Props> = ({ siniestroId }) => {
   const [message, setMessage] = useState("");
   const [siniestroData, setSiniestroData] = useState<any>(null);
 
-  useEffect(() => {
-    loadSiniestroData();
-  }, [siniestroId]);
-
-  const loadSiniestroData = async () => {
+  const loadSiniestroData = useCallback(async () => {
     try {
       const response = await axios.get(`/api/v1/siniestros/${siniestroId}`);
       setSiniestroData(response.data);
@@ -87,15 +70,11 @@ const InvestigacionRecabada: React.FC<Props> = ({ siniestroId }) => {
       console.error("Error cargando datos del siniestro:", error);
       setMessage("Error al cargar los datos del siniestro");
     }
-  };
+  }, [siniestroId]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
+  useEffect(() => {
+    loadSiniestroData();
+  }, [loadSiniestroData]);
 
   const handleArrayInputChange = (arrayName: keyof FormData, index: number, value: string) => {
     setFormData((prev) => {
