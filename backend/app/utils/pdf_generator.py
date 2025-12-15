@@ -5,7 +5,16 @@ from datetime import datetime
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageTemplate, Frame, NextPageTemplate
+from reportlab.platypus import (
+    SimpleDocTemplate,
+    Paragraph,
+    Spacer,
+    Table,
+    TableStyle,
+    PageTemplate,
+    Frame,
+    NextPageTemplate,
+)
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 from reportlab.pdfgen import canvas
@@ -22,16 +31,22 @@ def header_footer(canvas, doc):
     # Línea superior
     canvas.setStrokeColor(colors.black)
     canvas.setLineWidth(1)
-    canvas.line(0.5 * inch, height - 0.5 * inch, width - 0.5 * inch, height - 0.5 * inch)
+    canvas.line(
+        0.5 * inch, height - 0.5 * inch, width - 0.5 * inch, height - 0.5 * inch
+    )
 
     # Título del header
     canvas.setFont("Helvetica-Bold", 10)
-    canvas.drawString(0.75 * inch, height - 0.7 * inch, "INFORME DE INVESTIGACIÓN DE SINIESTRO")
+    canvas.drawString(
+        0.75 * inch, height - 0.7 * inch, "INFORME DE INVESTIGACIÓN DE SINIESTRO"
+    )
 
     # Número de página en el header (derecha)
     page_num = canvas.getPageNumber()
     canvas.setFont("Helvetica", 8)
-    canvas.drawRightString(width - 0.75 * inch, height - 0.7 * inch, f"Página {page_num}")
+    canvas.drawRightString(
+        width - 0.75 * inch, height - 0.7 * inch, f"Página {page_num}"
+    )
 
     # ==================== FOOTER ====================
     # Línea inferior
@@ -47,6 +62,7 @@ def header_footer(canvas, doc):
     # Fecha en el footer (derecha)
     fecha_actual = datetime.now().strftime("%d/%m/%Y")
     canvas.drawRightString(width - 0.75 * inch, 0.3 * inch, f"Fecha: {fecha_actual}")
+
 
 logger = logging.getLogger(__name__)
 
@@ -204,7 +220,14 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
         caratula_data = [
             ["Compañía de Seguros:", siniestro.compania_seguros or ""],
             ["Número de Reclamo:", siniestro.reclamo_num or ""],
-            ["Asegurado:", siniestro.asegurado.nombre if siniestro.asegurado and siniestro.asegurado.nombre else ""],
+            [
+                "Asegurado:",
+                (
+                    siniestro.asegurado.nombre
+                    if siniestro.asegurado and siniestro.asegurado.nombre
+                    else ""
+                ),
+            ],
             ["Nombre de Investigador:", "Susana Espinosa"],
         ]
 
@@ -212,19 +235,23 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
         caratula_data_filtered = [row for row in caratula_data if row[1].strip()]
 
         if caratula_data_filtered:
-            caratula_table = Table(caratula_data_filtered, colWidths=[2.2 * inch, 4.3 * inch])
+            caratula_table = Table(
+                caratula_data_filtered, colWidths=[2.2 * inch, 4.3 * inch]
+            )
             caratula_table.setStyle(
-                TableStyle([
-                    ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
-                    ("FONTSIZE", (0, 0), (-1, -1), 12),
-                    ("ALIGN", (0, 0), (-1, -1), "LEFT"),
-                    ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
-                    ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-                    ("LEFTPADDING", (0, 0), (-1, -1), 6),
-                    ("RIGHTPADDING", (0, 0), (-1, -1), 6),
-                    ("TOPPADDING", (0, 0), (-1, -1), 4),
-                    ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-                ])
+                TableStyle(
+                    [
+                        ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
+                        ("FONTSIZE", (0, 0), (-1, -1), 12),
+                        ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                        ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
+                        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                        ("LEFTPADDING", (0, 0), (-1, -1), 6),
+                        ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+                        ("TOPPADDING", (0, 0), (-1, -1), 4),
+                        ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+                    ]
+                )
             )
             story.append(caratula_table)
             story.append(Spacer(1, 40))
@@ -232,7 +259,9 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
         # Fecha de generación
         fecha_gen = Paragraph(
             f"Fecha de Generación: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}",
-            ParagraphStyle("Fecha", parent=styles["Normal"], fontSize=10, alignment=TA_CENTER)
+            ParagraphStyle(
+                "Fecha", parent=styles["Normal"], fontSize=10, alignment=TA_CENTER
+            ),
         )
         story.append(fecha_gen)
         story.append(Spacer(1, 120))  # Salto de página completo
@@ -275,7 +304,10 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
             has_investigacion = True
             indice_items.append(f"   {page_num}.5 Testigos")
 
-        if siniestro.evidencias_complementarias and siniestro.evidencias_complementarias.strip():
+        if (
+            siniestro.evidencias_complementarias
+            and siniestro.evidencias_complementarias.strip()
+        ):
             has_investigacion = True
             indice_items.append(f"   {page_num}.6 Evidencias Complementarias")
 
@@ -283,7 +315,11 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
             has_investigacion = True
             indice_items.append(f"   {page_num}.7 Otras Diligencias")
 
-        if siniestro.visita_taller and siniestro.visita_taller.descripcion and siniestro.visita_taller.descripcion.strip():
+        if (
+            siniestro.visita_taller
+            and siniestro.visita_taller.descripcion
+            and siniestro.visita_taller.descripcion.strip()
+        ):
             has_investigacion = True
             indice_items.append(f"   {page_num}.8 Visita al Taller")
 
@@ -291,9 +327,14 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
             has_investigacion = True
             indice_items.append(f"   {page_num}.9 Observaciones")
 
-        if siniestro.recomendacion_pago_cobertura and siniestro.recomendacion_pago_cobertura.strip():
+        if (
+            siniestro.recomendacion_pago_cobertura
+            and siniestro.recomendacion_pago_cobertura.strip()
+        ):
             has_investigacion = True
-            indice_items.append(f"   {page_num}.10 Recomendación sobre el Pago de la Cobertura")
+            indice_items.append(
+                f"   {page_num}.10 Recomendación sobre el Pago de la Cobertura"
+            )
 
         if siniestro.conclusiones and siniestro.conclusiones.strip():
             has_investigacion = True
@@ -334,14 +375,41 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
             ["Tipo de Reclamo:", siniestro.tipo_reclamo or ""],
             ["Póliza:", siniestro.poliza or ""],
             ["Número de Reclamo:", siniestro.reclamo_num or ""],
-            ["Fecha del Siniestro:", siniestro.fecha_siniestro.strftime("%d/%m/%Y") if siniestro.fecha_siniestro else ""],
-            ["Fecha Reportado:", siniestro.fecha_reportado.strftime("%d/%m/%Y") if siniestro.fecha_reportado else ""],
+            [
+                "Fecha del Siniestro:",
+                (
+                    siniestro.fecha_siniestro.strftime("%d/%m/%Y")
+                    if siniestro.fecha_siniestro
+                    else ""
+                ),
+            ],
+            [
+                "Fecha Reportado:",
+                (
+                    siniestro.fecha_reportado.strftime("%d/%m/%Y")
+                    if siniestro.fecha_reportado
+                    else ""
+                ),
+            ],
             ["Dirección del Siniestro:", siniestro.direccion_siniestro or ""],
-            ["Ubicación Geo Lat:", str(siniestro.ubicacion_geo_lat) if siniestro.ubicacion_geo_lat else ""],
-            ["Ubicación Geo Lng:", str(siniestro.ubicacion_geo_lng) if siniestro.ubicacion_geo_lng else ""],
+            [
+                "Ubicación Geo Lat:",
+                str(siniestro.ubicacion_geo_lat) if siniestro.ubicacion_geo_lat else "",
+            ],
+            [
+                "Ubicación Geo Lng:",
+                str(siniestro.ubicacion_geo_lng) if siniestro.ubicacion_geo_lng else "",
+            ],
             ["Daños a Terceros:", "Sí" if siniestro.danos_terceros else ""],
             ["Ejecutivo a Cargo:", siniestro.ejecutivo_cargo or ""],
-            ["Fecha de Designación:", siniestro.fecha_designacion.strftime("%d/%m/%Y") if siniestro.fecha_designacion else ""],
+            [
+                "Fecha de Designación:",
+                (
+                    siniestro.fecha_designacion.strftime("%d/%m/%Y")
+                    if siniestro.fecha_designacion
+                    else ""
+                ),
+            ],
             ["Tipo de Siniestro:", siniestro.tipo_siniestro or ""],
             ["Cobertura:", siniestro.cobertura or ""],
         ]
@@ -352,73 +420,8 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
         if registro_data:
             registro_table = Table(registro_data, colWidths=[2.5 * inch, 4 * inch])
             registro_table.setStyle(
-                TableStyle([
-                    ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
-                    ("FONTSIZE", (0, 0), (-1, -1), 10),
-                    ("GRID", (0, 0), (-1, -1), 1, colors.black),
-                    ("ALIGN", (0, 0), (0, -1), "LEFT"),
-                    ("ALIGN", (1, 0), (1, -1), "LEFT"),
-                    ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
-                    ("LEFTPADDING", (0, 0), (-1, -1), 6),
-                    ("RIGHTPADDING", (0, 0), (-1, -1), 6),
-                    ("TOPPADDING", (0, 0), (-1, -1), 4),
-                    ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-                ])
-            )
-            story.append(registro_table)
-            story.append(Spacer(1, 20))
-
-        # Declaración del siniestro (solo si tiene información)
-        declaracion_data_raw = [
-            ["Fecha de Declaración:", siniestro.fecha_declaracion.strftime("%d/%m/%Y") if siniestro.fecha_declaracion else ""],
-            ["Persona que Declara (Tipo):", siniestro.persona_declara_tipo or ""],
-            ["Cédula/RUC:", siniestro.persona_declara_cedula or ""],
-            ["Nombre/Razón Social:", siniestro.persona_declara_nombre or ""],
-            ["Relación:", siniestro.persona_declara_relacion or ""],
-        ]
-
-        declaracion_data = [row for row in declaracion_data_raw if row[1].strip()]
-
-        if declaracion_data:
-            story.append(Paragraph("Declaración del Siniestro:", section_style))
-            declaracion_table = Table(declaracion_data, colWidths=[2.5 * inch, 4 * inch])
-            declaracion_table.setStyle(
-                TableStyle([
-                    ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
-                    ("FONTSIZE", (0, 0), (-1, -1), 10),
-                    ("GRID", (0, 0), (-1, -1), 1, colors.black),
-                    ("ALIGN", (0, 0), (0, -1), "LEFT"),
-                    ("ALIGN", (1, 0), (1, -1), "LEFT"),
-                    ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
-                    ("LEFTPADDING", (0, 0), (-1, -1), 6),
-                    ("RIGHTPADDING", (0, 0), (-1, -1), 6),
-                    ("TOPPADDING", (0, 0), (-1, -1), 4),
-                    ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-                ])
-            )
-            story.append(declaracion_table)
-            story.append(Spacer(1, 15))
-
-        # Información de partes relacionadas (solo si tienen información)
-        if siniestro.asegurado:
-            asegurado_data_raw = [
-                ["Tipo:", siniestro.asegurado.tipo or ""],
-                ["Cédula/RUC:", siniestro.asegurado.cedula or siniestro.asegurado.ruc or ""],
-                ["Nombre/Empresa:", siniestro.asegurado.nombre or siniestro.asegurado.empresa or ""],
-                ["Representante Legal:", siniestro.asegurado.representante_legal or ""],
-                ["Celular:", siniestro.asegurado.celular or siniestro.asegurado.telefono or ""],
-                ["Correo:", siniestro.asegurado.correo or ""],
-                ["Dirección:", siniestro.asegurado.direccion or ""],
-                ["Parentesco:", siniestro.asegurado.parentesco or ""],
-            ]
-
-            asegurado_data = [row for row in asegurado_data_raw if row[1].strip()]
-
-            if asegurado_data:
-                story.append(Paragraph("Información del Asegurado:", section_style))
-                asegurado_table = Table(asegurado_data, colWidths=[2.5 * inch, 4 * inch])
-                asegurado_table.setStyle(
-                    TableStyle([
+                TableStyle(
+                    [
                         ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
                         ("FONTSIZE", (0, 0), (-1, -1), 10),
                         ("GRID", (0, 0), (-1, -1), 1, colors.black),
@@ -429,7 +432,98 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                         ("RIGHTPADDING", (0, 0), (-1, -1), 6),
                         ("TOPPADDING", (0, 0), (-1, -1), 4),
                         ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-                    ])
+                    ]
+                )
+            )
+            story.append(registro_table)
+            story.append(Spacer(1, 20))
+
+        # Declaración del siniestro (solo título si tiene información)
+        declaracion_data_raw = [
+            [
+                "Fecha de Declaración:",
+                (
+                    siniestro.fecha_declaracion.strftime("%d/%m/%Y")
+                    if siniestro.fecha_declaracion
+                    else ""
+                ),
+            ],
+            ["Persona que Declara (Tipo):", siniestro.persona_declara_tipo or ""],
+            ["Cédula/RUC:", siniestro.persona_declara_cedula or ""],
+            ["Nombre/Razón Social:", siniestro.persona_declara_nombre or ""],
+            ["Relación:", siniestro.persona_declara_relacion or ""],
+        ]
+
+        declaracion_data = [row for row in declaracion_data_raw if row[1].strip()]
+
+        if declaracion_data:
+            story.append(Paragraph("Declaración del Siniestro:", section_style))
+            declaracion_table = Table(
+                declaracion_data, colWidths=[2.5 * inch, 4 * inch]
+            )
+            declaracion_table.setStyle(
+                TableStyle(
+                    [
+                        ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
+                        ("FONTSIZE", (0, 0), (-1, -1), 10),
+                        ("GRID", (0, 0), (-1, -1), 1, colors.black),
+                        ("ALIGN", (0, 0), (0, -1), "LEFT"),
+                        ("ALIGN", (1, 0), (1, -1), "LEFT"),
+                        ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
+                        ("LEFTPADDING", (0, 0), (-1, -1), 6),
+                        ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+                        ("TOPPADDING", (0, 0), (-1, -1), 4),
+                        ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+                    ]
+                )
+            )
+            story.append(declaracion_table)
+            story.append(Spacer(1, 15))
+
+        # Información de partes relacionadas (solo títulos si hay contenido)
+        if siniestro.asegurado:
+            asegurado_data_raw = [
+                ["Tipo:", siniestro.asegurado.tipo or ""],
+                [
+                    "Cédula/RUC:",
+                    siniestro.asegurado.cedula or siniestro.asegurado.ruc or "",
+                ],
+                [
+                    "Nombre/Empresa:",
+                    siniestro.asegurado.nombre or siniestro.asegurado.empresa or "",
+                ],
+                ["Representante Legal:", siniestro.asegurado.representante_legal or ""],
+                [
+                    "Celular:",
+                    siniestro.asegurado.celular or siniestro.asegurado.telefono or "",
+                ],
+                ["Correo:", siniestro.asegurado.correo or ""],
+                ["Dirección:", siniestro.asegurado.direccion or ""],
+                ["Parentesco:", siniestro.asegurado.parentesco or ""],
+            ]
+
+            asegurado_data = [row for row in asegurado_data_raw if row[1].strip()]
+
+            if asegurado_data:
+                story.append(Paragraph("Información del Asegurado:", section_style))
+                asegurado_table = Table(
+                    asegurado_data, colWidths=[2.5 * inch, 4 * inch]
+                )
+                asegurado_table.setStyle(
+                    TableStyle(
+                        [
+                            ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
+                            ("FONTSIZE", (0, 0), (-1, -1), 10),
+                            ("GRID", (0, 0), (-1, -1), 1, colors.black),
+                            ("ALIGN", (0, 0), (0, -1), "LEFT"),
+                            ("ALIGN", (1, 0), (1, -1), "LEFT"),
+                            ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
+                            ("LEFTPADDING", (0, 0), (-1, -1), 6),
+                            ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+                            ("TOPPADDING", (0, 0), (-1, -1), 4),
+                            ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+                        ]
+                    )
                 )
                 story.append(asegurado_table)
                 story.append(Spacer(1, 15))
@@ -445,20 +539,24 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
 
             if beneficiario_data:
                 story.append(Paragraph("Información del Beneficiario:", section_style))
-                beneficiario_table = Table(beneficiario_data, colWidths=[2.5 * inch, 4 * inch])
+                beneficiario_table = Table(
+                    beneficiario_data, colWidths=[2.5 * inch, 4 * inch]
+                )
                 beneficiario_table.setStyle(
-                    TableStyle([
-                        ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
-                        ("FONTSIZE", (0, 0), (-1, -1), 10),
-                        ("GRID", (0, 0), (-1, -1), 1, colors.black),
-                        ("ALIGN", (0, 0), (0, -1), "LEFT"),
-                        ("ALIGN", (1, 0), (1, -1), "LEFT"),
-                        ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
-                        ("LEFTPADDING", (0, 0), (-1, -1), 6),
-                        ("RIGHTPADDING", (0, 0), (-1, -1), 6),
-                        ("TOPPADDING", (0, 0), (-1, -1), 4),
-                        ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-                    ])
+                    TableStyle(
+                        [
+                            ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
+                            ("FONTSIZE", (0, 0), (-1, -1), 10),
+                            ("GRID", (0, 0), (-1, -1), 1, colors.black),
+                            ("ALIGN", (0, 0), (0, -1), "LEFT"),
+                            ("ALIGN", (1, 0), (1, -1), "LEFT"),
+                            ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
+                            ("LEFTPADDING", (0, 0), (-1, -1), 6),
+                            ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+                            ("TOPPADDING", (0, 0), (-1, -1), 4),
+                            ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+                        ]
+                    )
                 )
                 story.append(beneficiario_table)
                 story.append(Spacer(1, 15))
@@ -476,20 +574,24 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
 
             if conductor_data:
                 story.append(Paragraph("Información del Conductor:", section_style))
-                conductor_table = Table(conductor_data, colWidths=[2.5 * inch, 4 * inch])
+                conductor_table = Table(
+                    conductor_data, colWidths=[2.5 * inch, 4 * inch]
+                )
                 conductor_table.setStyle(
-                    TableStyle([
-                        ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
-                        ("FONTSIZE", (0, 0), (-1, -1), 10),
-                        ("GRID", (0, 0), (-1, -1), 1, colors.black),
-                        ("ALIGN", (0, 0), (0, -1), "LEFT"),
-                        ("ALIGN", (1, 0), (1, -1), "LEFT"),
-                        ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
-                        ("LEFTPADDING", (0, 0), (-1, -1), 6),
-                        ("RIGHTPADDING", (0, 0), (-1, -1), 6),
-                        ("TOPPADDING", (0, 0), (-1, -1), 4),
-                        ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-                    ])
+                    TableStyle(
+                        [
+                            ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
+                            ("FONTSIZE", (0, 0), (-1, -1), 10),
+                            ("GRID", (0, 0), (-1, -1), 1, colors.black),
+                            ("ALIGN", (0, 0), (0, -1), "LEFT"),
+                            ("ALIGN", (1, 0), (1, -1), "LEFT"),
+                            ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
+                            ("LEFTPADDING", (0, 0), (-1, -1), 6),
+                            ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+                            ("TOPPADDING", (0, 0), (-1, -1), 4),
+                            ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+                        ]
+                    )
                 )
                 story.append(conductor_table)
                 story.append(Spacer(1, 15))
@@ -501,7 +603,14 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                 ["Modelo:", siniestro.objeto_asegurado.modelo or ""],
                 ["Tipo:", siniestro.objeto_asegurado.tipo or ""],
                 ["Color:", siniestro.objeto_asegurado.color or ""],
-                ["Año:", str(siniestro.objeto_asegurado.ano) if siniestro.objeto_asegurado.ano else ""],
+                [
+                    "Año:",
+                    (
+                        str(siniestro.objeto_asegurado.ano)
+                        if siniestro.objeto_asegurado.ano
+                        else ""
+                    ),
+                ],
                 ["Serie Motor:", siniestro.objeto_asegurado.serie_motor or ""],
                 ["Chasis:", siniestro.objeto_asegurado.chasis or ""],
             ]
@@ -509,21 +618,25 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
             objeto_data = [row for row in objeto_data_raw if row[1].strip()]
 
             if objeto_data:
-                story.append(Paragraph("Información del Objeto Asegurado:", section_style))
+                story.append(
+                    Paragraph("Información del Objeto Asegurado:", section_style)
+                )
                 objeto_table = Table(objeto_data, colWidths=[2.5 * inch, 4 * inch])
                 objeto_table.setStyle(
-                    TableStyle([
-                        ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
-                        ("FONTSIZE", (0, 0), (-1, -1), 10),
-                        ("GRID", (0, 0), (-1, -1), 1, colors.black),
-                        ("ALIGN", (0, 0), (0, -1), "LEFT"),
-                        ("ALIGN", (1, 0), (1, -1), "LEFT"),
-                        ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
-                        ("LEFTPADDING", (0, 0), (-1, -1), 6),
-                        ("RIGHTPADDING", (0, 0), (-1, -1), 6),
-                        ("TOPPADDING", (0, 0), (-1, -1), 4),
-                        ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-                    ])
+                    TableStyle(
+                        [
+                            ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
+                            ("FONTSIZE", (0, 0), (-1, -1), 10),
+                            ("GRID", (0, 0), (-1, -1), 1, colors.black),
+                            ("ALIGN", (0, 0), (0, -1), "LEFT"),
+                            ("ALIGN", (1, 0), (1, -1), "LEFT"),
+                            ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
+                            ("LEFTPADDING", (0, 0), (-1, -1), 6),
+                            ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+                            ("TOPPADDING", (0, 0), (-1, -1), 4),
+                            ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+                        ]
+                    )
                 )
                 story.append(objeto_table)
                 story.append(Spacer(1, 15))
@@ -534,18 +647,28 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
         logger.info("🔍 Generando sección de investigación...")
 
         has_any_investigation = (
-            siniestro.antecedentes or
-            siniestro.relatos_asegurado or
-            siniestro.relatos_conductor or
-            siniestro.inspecciones or
-            siniestro.testigos or
-            (siniestro.evidencias_complementarias and siniestro.evidencias_complementarias.strip()) or
-            (siniestro.otras_diligencias and siniestro.otras_diligencias.strip()) or
-            (siniestro.visita_taller and siniestro.visita_taller.descripcion and siniestro.visita_taller.descripcion.strip()) or
-            (siniestro.observaciones and siniestro.observaciones.strip()) or
-            (siniestro.recomendacion_pago_cobertura and siniestro.recomendacion_pago_cobertura.strip()) or
-            (siniestro.conclusiones and siniestro.conclusiones.strip()) or
-            (siniestro.anexo and siniestro.anexo.strip())
+            siniestro.antecedentes
+            or siniestro.relatos_asegurado
+            or siniestro.relatos_conductor
+            or siniestro.inspecciones
+            or siniestro.testigos
+            or (
+                siniestro.evidencias_complementarias
+                and siniestro.evidencias_complementarias.strip()
+            )
+            or (siniestro.otras_diligencias and siniestro.otras_diligencias.strip())
+            or (
+                siniestro.visita_taller
+                and siniestro.visita_taller.descripcion
+                and siniestro.visita_taller.descripcion.strip()
+            )
+            or (siniestro.observaciones and siniestro.observaciones.strip())
+            or (
+                siniestro.recomendacion_pago_cobertura
+                and siniestro.recomendacion_pago_cobertura.strip()
+            )
+            or (siniestro.conclusiones and siniestro.conclusiones.strip())
+            or (siniestro.anexo and siniestro.anexo.strip())
         )
 
         if has_any_investigation:
@@ -566,9 +689,21 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
 
             # 2.2 Entrevista al Asegurado
             if siniestro.relatos_asegurado:
-                story.append(Paragraph(f"{section_num}. Entrevista al Asegurado", section_style))
+                story.append(
+                    Paragraph(f"{section_num}. Entrevista al Asegurado", section_style)
+                )
                 for i, relato in enumerate(siniestro.relatos_asegurado, 1):
-                    story.append(Paragraph(f"Relato {i}:", ParagraphStyle("Subsection", parent=styles["Heading4"], fontSize=12, fontName="Helvetica-Bold")))
+                    story.append(
+                        Paragraph(
+                            f"Relato {i}:",
+                            ParagraphStyle(
+                                "Subsection",
+                                parent=styles["Heading4"],
+                                fontSize=12,
+                                fontName="Helvetica-Bold",
+                            ),
+                        )
+                    )
                     story.append(Paragraph(relato.texto, normal_style))
                     story.append(Spacer(1, 10))
                 story.append(Spacer(1, 120))  # Salto de página
@@ -576,9 +711,21 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
 
             # 2.3 Entrevista al Conductor
             if siniestro.relatos_conductor:
-                story.append(Paragraph(f"{section_num}. Entrevista al Conductor", section_style))
+                story.append(
+                    Paragraph(f"{section_num}. Entrevista al Conductor", section_style)
+                )
                 for i, relato in enumerate(siniestro.relatos_conductor, 1):
-                    story.append(Paragraph(f"Relato {i}:", ParagraphStyle("Subsection", parent=styles["Heading4"], fontSize=12, fontName="Helvetica-Bold")))
+                    story.append(
+                        Paragraph(
+                            f"Relato {i}:",
+                            ParagraphStyle(
+                                "Subsection",
+                                parent=styles["Heading4"],
+                                fontSize=12,
+                                fontName="Helvetica-Bold",
+                            ),
+                        )
+                    )
                     story.append(Paragraph(relato.texto, normal_style))
                     story.append(Spacer(1, 10))
                 story.append(Spacer(1, 120))  # Salto de página
@@ -586,9 +733,21 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
 
             # 2.4 Inspección del Lugar
             if siniestro.inspecciones:
-                story.append(Paragraph(f"{section_num}. Inspección del Lugar", section_style))
+                story.append(
+                    Paragraph(f"{section_num}. Inspección del Lugar", section_style)
+                )
                 for i, inspeccion in enumerate(siniestro.inspecciones, 1):
-                    story.append(Paragraph(f"Inspección {i}:", ParagraphStyle("Subsection", parent=styles["Heading4"], fontSize=12, fontName="Helvetica-Bold")))
+                    story.append(
+                        Paragraph(
+                            f"Inspección {i}:",
+                            ParagraphStyle(
+                                "Subsection",
+                                parent=styles["Heading4"],
+                                fontSize=12,
+                                fontName="Helvetica-Bold",
+                            ),
+                        )
+                    )
                     story.append(Paragraph(inspeccion.descripcion, normal_style))
                     story.append(Spacer(1, 10))
                 story.append(Spacer(1, 120))  # Salto de página
@@ -598,30 +757,59 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
             if siniestro.testigos:
                 story.append(Paragraph(f"{section_num}. Testigos", section_style))
                 for i, testigo in enumerate(siniestro.testigos, 1):
-                    story.append(Paragraph(f"Testigo {i}:", ParagraphStyle("Subsection", parent=styles["Heading4"], fontSize=12, fontName="Helvetica-Bold")))
+                    story.append(
+                        Paragraph(
+                            f"Testigo {i}:",
+                            ParagraphStyle(
+                                "Subsection",
+                                parent=styles["Heading4"],
+                                fontSize=12,
+                                fontName="Helvetica-Bold",
+                            ),
+                        )
+                    )
                     story.append(Paragraph(testigo.texto, normal_style))
                     story.append(Spacer(1, 10))
                 story.append(Spacer(1, 120))  # Salto de página
                 section_num += 1
 
             # 2.6 Evidencias Complementarias
-            if siniestro.evidencias_complementarias and siniestro.evidencias_complementarias.strip():
-                story.append(Paragraph(f"{section_num}. Evidencias Complementarias", section_style))
-                story.append(Paragraph(siniestro.evidencias_complementarias, normal_style))
+            if (
+                siniestro.evidencias_complementarias
+                and siniestro.evidencias_complementarias.strip()
+            ):
+                story.append(
+                    Paragraph(
+                        f"{section_num}. Evidencias Complementarias", section_style
+                    )
+                )
+                story.append(
+                    Paragraph(siniestro.evidencias_complementarias, normal_style)
+                )
                 story.append(Spacer(1, 120))  # Salto de página
                 section_num += 1
 
             # 2.7 Otras Diligencias
             if siniestro.otras_diligencias and siniestro.otras_diligencias.strip():
-                story.append(Paragraph(f"{section_num}. Otras Diligencias", section_style))
+                story.append(
+                    Paragraph(f"{section_num}. Otras Diligencias", section_style)
+                )
                 story.append(Paragraph(siniestro.otras_diligencias, normal_style))
                 story.append(Spacer(1, 120))  # Salto de página
                 section_num += 1
 
             # 2.8 Visita al Taller
-            if siniestro.visita_taller and siniestro.visita_taller.descripcion and siniestro.visita_taller.descripcion.strip():
-                story.append(Paragraph(f"{section_num}. Visita al Taller", section_style))
-                story.append(Paragraph(siniestro.visita_taller.descripcion, normal_style))
+            if (
+                siniestro.visita_taller
+                and siniestro.visita_taller.descripcion
+                and siniestro.visita_taller.descripcion.strip()
+            ):
+                story.append(
+                    Paragraph(f"{section_num}. Visita al Taller", section_style)
+                )
+                story.append(
+                    Paragraph(siniestro.visita_taller.descripcion, normal_style)
+                )
                 story.append(Spacer(1, 120))  # Salto de página
                 section_num += 1
 
@@ -629,8 +817,13 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
             if siniestro.observaciones and siniestro.observaciones.strip():
                 story.append(Paragraph(f"{section_num}. Observaciones", section_style))
                 import json
+
                 try:
-                    observaciones_list = json.loads(siniestro.observaciones) if isinstance(siniestro.observaciones, str) else siniestro.observaciones
+                    observaciones_list = (
+                        json.loads(siniestro.observaciones)
+                        if isinstance(siniestro.observaciones, str)
+                        else siniestro.observaciones
+                    )
                     for i, obs in enumerate(observaciones_list, 1):
                         story.append(Paragraph(f"{i}. {obs}", normal_style))
                         story.append(Spacer(1, 5))
@@ -640,16 +833,31 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                 section_num += 1
 
             # 2.10 Recomendación sobre el Pago de la Cobertura
-            if siniestro.recomendacion_pago_cobertura and siniestro.recomendacion_pago_cobertura.strip():
-                story.append(Paragraph(f"{section_num}. Recomendación sobre el Pago de la Cobertura", section_style))
+            if (
+                siniestro.recomendacion_pago_cobertura
+                and siniestro.recomendacion_pago_cobertura.strip()
+            ):
+                story.append(
+                    Paragraph(
+                        f"{section_num}. Recomendación sobre el Pago de la Cobertura",
+                        section_style,
+                    )
+                )
                 import json
+
                 try:
-                    recomendaciones_list = json.loads(siniestro.recomendacion_pago_cobertura) if isinstance(siniestro.recomendacion_pago_cobertura, str) else siniestro.recomendacion_pago_cobertura
+                    recomendaciones_list = (
+                        json.loads(siniestro.recomendacion_pago_cobertura)
+                        if isinstance(siniestro.recomendacion_pago_cobertura, str)
+                        else siniestro.recomendacion_pago_cobertura
+                    )
                     for i, rec in enumerate(recomendaciones_list, 1):
                         story.append(Paragraph(f"{i}. {rec}", normal_style))
                         story.append(Spacer(1, 5))
                 except:
-                    story.append(Paragraph(siniestro.recomendacion_pago_cobertura, normal_style))
+                    story.append(
+                        Paragraph(siniestro.recomendacion_pago_cobertura, normal_style)
+                    )
                 story.append(Spacer(1, 120))  # Salto de página
                 section_num += 1
 
@@ -657,8 +865,13 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
             if siniestro.conclusiones and siniestro.conclusiones.strip():
                 story.append(Paragraph(f"{section_num}. Conclusiones", section_style))
                 import json
+
                 try:
-                    conclusiones_list = json.loads(siniestro.conclusiones) if isinstance(siniestro.conclusiones, str) else siniestro.conclusiones
+                    conclusiones_list = (
+                        json.loads(siniestro.conclusiones)
+                        if isinstance(siniestro.conclusiones, str)
+                        else siniestro.conclusiones
+                    )
                     for i, conc in enumerate(conclusiones_list, 1):
                         story.append(Paragraph(f"{i}. {conc}", normal_style))
                         story.append(Spacer(1, 5))
@@ -671,8 +884,13 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
             if siniestro.anexo and siniestro.anexo.strip():
                 story.append(Paragraph(f"{section_num}. Anexo", section_style))
                 import json
+
                 try:
-                    anexo_list = json.loads(siniestro.anexo) if isinstance(siniestro.anexo, str) else siniestro.anexo
+                    anexo_list = (
+                        json.loads(siniestro.anexo)
+                        if isinstance(siniestro.anexo, str)
+                        else siniestro.anexo
+                    )
                     for i, anex in enumerate(anexo_list, 1):
                         story.append(Paragraph(f"{i}. {anex}", normal_style))
                         story.append(Spacer(1, 5))
@@ -689,10 +907,25 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
             story.append(Spacer(1, 15))
 
             import json
+
             try:
-                anexo_list = json.loads(siniestro.anexo) if isinstance(siniestro.anexo, str) else siniestro.anexo
+                anexo_list = (
+                    json.loads(siniestro.anexo)
+                    if isinstance(siniestro.anexo, str)
+                    else siniestro.anexo
+                )
                 for i, anex in enumerate(anexo_list, 1):
-                    story.append(Paragraph(f"Anexo {i}:", ParagraphStyle("Subsection", parent=styles["Heading4"], fontSize=12, fontName="Helvetica-Bold")))
+                    story.append(
+                        Paragraph(
+                            f"Anexo {i}:",
+                            ParagraphStyle(
+                                "Subsection",
+                                parent=styles["Heading4"],
+                                fontSize=12,
+                                fontName="Helvetica-Bold",
+                            ),
+                        )
+                    )
                     story.append(Paragraph(anex, normal_style))
                     story.append(Spacer(1, 20))
             except:
@@ -703,44 +936,55 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
         # ==================== CIERRE ====================
         logger.info("📝 Generando sección de cierre...")
 
-        cierre_title = Paragraph("CIERRE", section_style)
-        story.append(cierre_title)
-        story.append(Spacer(1, 20))
-
-        # Texto de despedida
+        # Texto de despedida (sin título "CIERRE")
         despedida = Paragraph(
             "Sin otro particular, me despido atentamente esperando que la presente investigación "
             "haya sido de su completa satisfacción y utilidad. Quedo a sus órdenes para cualquier "
             "consulta adicional que pueda surgir en relación con este caso.",
-            normal_style
+            normal_style,
         )
         story.append(despedida)
         story.append(Spacer(1, 40))
 
-        # Espacio para firma electrónica
-        firma_title = Paragraph("Firma Electrónica:", ParagraphStyle("Firma", parent=styles["Heading4"], fontSize=12, fontName="Helvetica-Bold"))
-        story.append(firma_title)
+        # Espacio para firma (sin texto "Firma Electrónica:")
         story.append(Spacer(1, 60))  # Espacio para firma
 
         # Línea para firma
-        firma_line = Paragraph("_______________________________", ParagraphStyle("Linea", parent=styles["Normal"], fontSize=10, alignment=TA_CENTER))
+        firma_line = Paragraph(
+            "_______________________________",
+            ParagraphStyle(
+                "Linea", parent=styles["Normal"], fontSize=10, alignment=TA_CENTER
+            ),
+        )
         story.append(firma_line)
         story.append(Spacer(1, 10))
 
         # Nombre del investigador
-        nombre_investigador = Paragraph("Susana Espinosa", ParagraphStyle("Nombre", parent=styles["Normal"], fontSize=10, alignment=TA_CENTER))
+        nombre_investigador = Paragraph(
+            "Susana Espinosa",
+            ParagraphStyle(
+                "Nombre", parent=styles["Normal"], fontSize=10, alignment=TA_CENTER
+            ),
+        )
         story.append(nombre_investigador)
         story.append(Spacer(1, 5))
 
         # Título
-        titulo_investigador = Paragraph("Investigador de Siniestros", ParagraphStyle("Titulo", parent=styles["Normal"], fontSize=9, alignment=TA_CENTER))
+        titulo_investigador = Paragraph(
+            "Investigador de Siniestros",
+            ParagraphStyle(
+                "Titulo", parent=styles["Normal"], fontSize=9, alignment=TA_CENTER
+            ),
+        )
         story.append(titulo_investigador)
         story.append(Spacer(1, 30))
 
         # Fecha del informe
         fecha_cierre = Paragraph(
             f"Quito, {datetime.now().strftime('%d de %B de %Y')}",
-            ParagraphStyle("FechaCierre", parent=styles["Normal"], fontSize=10, alignment=TA_CENTER)
+            ParagraphStyle(
+                "FechaCierre", parent=styles["Normal"], fontSize=10, alignment=TA_CENTER
+            ),
         )
         story.append(fecha_cierre)
 

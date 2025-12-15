@@ -236,7 +236,7 @@ const InvestigacionForm: React.FC = () => {
                           headers: { "Content-Type": "multipart/form-data" },
                         });
 
-                        const imageUrl = response.data.url;
+                        const imageUrl = response.data.url_presigned;
                         setFormData((prev) => ({
                           ...prev,
                           relatos_asegurado: prev.relatos_asegurado?.map((r, i) =>
@@ -347,7 +347,7 @@ const InvestigacionForm: React.FC = () => {
                           headers: { "Content-Type": "multipart/form-data" },
                         });
 
-                        const imageUrl = response.data.url;
+                        const imageUrl = response.data.url_presigned;
                         setFormData((prev) => ({
                           ...prev,
                           relatos_conductor: prev.relatos_conductor?.map((r, i) =>
