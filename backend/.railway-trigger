@@ -1,4 +1,4 @@
 # Railway deployment trigger
 # This file forces Railway to redeploy when changed
-# Last update: 2025-12-15 09:30 UTC-5 - FORCE REDEPLOY - InvestigacionForm.tsx FIXED
-# Critical fix: InvestigacionForm.tsx now available in repository
+# Last update: 2025-12-15 09:46 UTC-5 - FINAL REDEPLOY - RelatosConductor + Entrevista FIXED
+# Added RelatoConductor model, table migration, and Entrevista al Conductor section
