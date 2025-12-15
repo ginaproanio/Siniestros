@@ -145,7 +145,6 @@ async def auto_load_test_data():
             # Execute create_test_data.py script
             import subprocess
             import sys
-            import os
 
             current_dir = os.path.dirname(os.path.dirname(__file__))
             logger.info(f"Running test data creation from: {current_dir}")
