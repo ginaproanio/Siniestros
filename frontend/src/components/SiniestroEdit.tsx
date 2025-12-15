@@ -661,7 +661,7 @@ const SiniestroEdit: React.FC = () => {
                         formDataUpload.append("file", file);
 
                         const response = await axios.post(
-                          "/api/v1/upload-imagen",
+                          "/api/v1/siniestros/upload-image",
                           formDataUpload,
                           {
                             headers: { "Content-Type": "multipart/form-data" },
@@ -813,7 +813,7 @@ const SiniestroEdit: React.FC = () => {
                         formDataUpload.append("file", file);
 
                         const response = await axios.post(
-                          "/api/v1/upload-imagen",
+                          "/api/v1/siniestros/upload-image",
                           formDataUpload,
                           {
                             headers: { "Content-Type": "multipart/form-data" },
@@ -963,7 +963,7 @@ const SiniestroEdit: React.FC = () => {
                         formDataUpload.append("file", file);
 
                         const response = await axios.post(
-                          "/api/v1/upload-imagen",
+                          "/api/v1/siniestros/upload-image",
                           formDataUpload,
                           {
                             headers: { "Content-Type": "multipart/form-data" },
