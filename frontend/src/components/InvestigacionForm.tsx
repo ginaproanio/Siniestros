@@ -59,39 +59,39 @@ const InvestigacionForm: React.FC = () => {
   const [siniestroInfo, setSiniestroInfo] = useState<any>(null);
 
   useEffect(() => {
+    const fetchSiniestroData = async () => {
+      try {
+        const response = await axios.get(`/api/v1/siniestros/${siniestroId}`);
+        const siniestro = response.data;
+        setSiniestroInfo(siniestro);
+
+        // Cargar datos de investigación existentes
+        setFormData({
+          antecedentes: siniestro.antecedentes || [],
+          relatos_asegurado: siniestro.relatos_asegurado || [],
+          inspecciones: siniestro.inspecciones || [],
+          testigos: siniestro.testigos || [],
+          evidencias_complementarias_descripcion: siniestro.evidencias_complementarias_descripcion,
+          evidencias_complementarias_imagen_url: siniestro.evidencias_complementarias_imagen_url,
+          otras_diligencias_descripcion: siniestro.otras_diligencias_descripcion,
+          otras_diligencias_imagen_url: siniestro.otras_diligencias_imagen_url,
+          visita_taller_descripcion: siniestro.visita_taller_descripcion,
+          visita_taller_imagen_url: siniestro.visita_taller_imagen_url,
+          observaciones: siniestro.observaciones || [],
+          recomendacion_pago_cobertura: siniestro.recomendacion_pago_cobertura || [],
+          conclusiones: siniestro.conclusiones || [],
+          anexo: siniestro.anexo || []
+        });
+      } catch (error) {
+        console.error('Error fetching siniestro data:', error);
+        setMessage('Error al cargar los datos del siniestro');
+      }
+    };
+
     if (siniestroId) {
       fetchSiniestroData();
     }
   }, [siniestroId]);
-
-  const fetchSiniestroData = async () => {
-    try {
-      const response = await axios.get(`/api/v1/siniestros/${siniestroId}`);
-      const siniestro = response.data;
-      setSiniestroInfo(siniestro);
-
-      // Cargar datos de investigación existentes
-      setFormData({
-        antecedentes: siniestro.antecedentes || [],
-        relatos_asegurado: siniestro.relatos_asegurado || [],
-        inspecciones: siniestro.inspecciones || [],
-        testigos: siniestro.testigos || [],
-        evidencias_complementarias_descripcion: siniestro.evidencias_complementarias_descripcion,
-        evidencias_complementarias_imagen_url: siniestro.evidencias_complementarias_imagen_url,
-        otras_diligencias_descripcion: siniestro.otras_diligencias_descripcion,
-        otras_diligencias_imagen_url: siniestro.otras_diligencias_imagen_url,
-        visita_taller_descripcion: siniestro.visita_taller_descripcion,
-        visita_taller_imagen_url: siniestro.visita_taller_imagen_url,
-        observaciones: siniestro.observaciones || [],
-        recomendacion_pago_cobertura: siniestro.recomendacion_pago_cobertura || [],
-        conclusiones: siniestro.conclusiones || [],
-        anexo: siniestro.anexo || []
-      });
-    } catch (error) {
-      console.error('Error fetching siniestro data:', error);
-      setMessage('Error al cargar los datos del siniestro');
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
