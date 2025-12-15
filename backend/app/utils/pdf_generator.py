@@ -5,11 +5,48 @@ from datetime import datetime
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageTemplate, Frame, NextPageTemplate
 from reportlab.lib import colors
-from reportlab.lib.enums import TA_CENTER
+from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+from reportlab.pdfgen import canvas
 from sqlalchemy.orm import Session
 from ..models import Siniestro
+
+
+def header_footer(canvas, doc):
+    """Función para dibujar header y footer en cada página"""
+    # Obtener el ancho y alto de la página
+    width, height = letter
+
+    # ==================== HEADER ====================
+    # Línea superior
+    canvas.setStrokeColor(colors.black)
+    canvas.setLineWidth(1)
+    canvas.line(0.5 * inch, height - 0.5 * inch, width - 0.5 * inch, height - 0.5 * inch)
+
+    # Título del header
+    canvas.setFont("Helvetica-Bold", 10)
+    canvas.drawString(0.75 * inch, height - 0.7 * inch, "INFORME DE INVESTIGACIÓN DE SINIESTRO")
+
+    # Número de página en el header (derecha)
+    page_num = canvas.getPageNumber()
+    canvas.setFont("Helvetica", 8)
+    canvas.drawRightString(width - 0.75 * inch, height - 0.7 * inch, f"Página {page_num}")
+
+    # ==================== FOOTER ====================
+    # Línea inferior
+    canvas.setStrokeColor(colors.black)
+    canvas.setLineWidth(1)
+    canvas.line(0.5 * inch, 0.5 * inch, width - 0.5 * inch, 0.5 * inch)
+
+    # Información del footer
+    canvas.setFont("Helvetica", 8)
+    footer_text = "Sistema de Gestión de Siniestros - Susana Espinosa"
+    canvas.drawString(0.75 * inch, 0.3 * inch, footer_text)
+
+    # Fecha en el footer (derecha)
+    fecha_actual = datetime.now().strftime("%d/%m/%Y")
+    canvas.drawRightString(width - 0.75 * inch, 0.3 * inch, f"Fecha: {fecha_actual}")
 
 logger = logging.getLogger(__name__)
 
@@ -108,7 +145,7 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
         # Crear buffer para el PDF
         buffer = io.BytesIO()
 
-        # Crear documento
+        # Crear documento con headers/footers
         doc = SimpleDocTemplate(
             buffer,
             pagesize=letter,
@@ -117,6 +154,10 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
             leftMargin=1 * inch,
             rightMargin=1 * inch,
         )
+
+        # Agregar función de header/footer
+        doc.onFirstPage = header_footer
+        doc.onLaterPages = header_footer
         styles = getSampleStyleSheet()
 
         # Estilos personalizados
