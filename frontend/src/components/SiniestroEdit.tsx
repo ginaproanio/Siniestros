@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
+import InvestigacionRecabada from './InvestigacionRecabada';
 
 interface RelatoData {
   numero_relato: number;
@@ -810,6 +811,9 @@ const SiniestroEdit: React.FC = () => {
             </div>
           ))}
         </div>
+
+        {/* INVESTIGACIÓN RECABADA */}
+        {id && <InvestigacionRecabada siniestroId={parseInt(id)} />}
 
         <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
           <button
