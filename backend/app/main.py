@@ -76,15 +76,17 @@ async def startup_event():
             # Test basic query
             siniestros_count = db.query(models.Siniestro).count()
             logger.info(f"📊 Base de datos lista: {siniestros_count} siniestros registrados")
+        except Exception as e:
+            logger.warning(f"⚠️ Error verificando BD: {e}")
+        finally:
+            db.close()
+
         logger.info("✅ Sistema operativo y listo para uso")
 
         # Store railway detection for later use
         railway_env = os.getenv("RAILWAY_ENVIRONMENT", "").lower()
         is_railway = railway_env in ["production", "staging"] or "railway" in os.getenv("DATABASE_URL", "").lower()
         logger.info(f"🚀 Railway deployment detected: {is_railway}")
-
-        finally:
-            db.close()
 
     except Exception as e:
         logger.error(f"❌ Error en reset completo de BD: {e}")
