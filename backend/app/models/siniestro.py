@@ -57,6 +57,7 @@ class Siniestro(Base):
     dinamica_accidente = relationship("DinamicaAccidente", back_populates="siniestro", uselist=False, cascade="all, delete-orphan")
     antecedentes = relationship("Antecedente", back_populates="siniestro")
     relatos_asegurado = relationship("RelatoAsegurado", back_populates="siniestro")
+    relatos_conductor = relationship("RelatoConductor", back_populates="siniestro")
     inspecciones = relationship("Inspeccion", back_populates="siniestro")
     testigos = relationship("Testigo", back_populates="siniestro")
 
@@ -139,6 +140,17 @@ class RelatoAsegurado(Base):
     imagen_url = Column(String(500))  # URL de la imagen subida
 
     siniestro = relationship("Siniestro", back_populates="relatos_asegurado")
+
+class RelatoConductor(Base):
+    __tablename__ = "relatos_conductor"
+
+    id = Column(Integer, primary_key=True, index=True)
+    siniestro_id = Column(Integer, ForeignKey("siniestros.id"))
+    numero_relato = Column(Integer, nullable=False)
+    texto = Column(Text, nullable=False)
+    imagen_url = Column(String(500))  # URL de la imagen subida
+
+    siniestro = relationship("Siniestro", back_populates="relatos_conductor")
 
 class Inspeccion(Base):
     __tablename__ = "inspecciones"
