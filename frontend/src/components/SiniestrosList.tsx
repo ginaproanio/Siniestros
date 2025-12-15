@@ -92,12 +92,6 @@ const SiniestrosList: React.FC = () => {
                     >
                       Editar
                     </button>
-                    <button
-                      onClick={() => window.location.href = `/siniestro/${siniestro.id}/investigacion`}
-                      style={{ backgroundColor: '#28a745', marginLeft: '5px' }}
-                    >
-                      Registrar Investigación
-                    </button>
                   </td>
                 </tr>
               ))}

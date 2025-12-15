@@ -1,5 +1,6 @@
 import axios from "axios";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useParams, useLocation } from "react-router-dom";
 
 // Configurar base URL para el backend
 const BACKEND_URL =
@@ -70,7 +71,28 @@ interface FormData {
 }
 
 const SiniestroForm: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const location = useLocation();
+
+  // Detectar si estamos en modo edición
+  const isEditMode = Boolean(id && location.pathname.includes('/editar'));
+  const siniestroId = parseInt(id || '0');
+
   const [activeTab, setActiveTab] = useState(0);
+  const [loading, setLoading] = useState(isEditMode); // Cargar datos si estamos editando
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
+
+  // Función para parsear arrays JSON
+  const parseJsonArray = (jsonString: string | null): string[] => {
+    if (!jsonString) return [];
+    try {
+      const parsed = JSON.parse(jsonString);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  };
 
   const [formData, setFormData] = useState<FormData>({
     compania_seguros: "ZURICH SEGUROS ECUADOR S.A.",
@@ -88,18 +110,100 @@ const SiniestroForm: React.FC = () => {
     tipo_siniestro: "Vehicular",
   });
 
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
-
-  const tabs = [
-    { id: 0, title: "Información Básica", icon: "📋" },
-    { id: 1, title: "Parametrización", icon: "⚙️" },
-    { id: 2, title: "Entidades", icon: "👥" },
-  ];
+  // Tabs dinámicos según el modo
+  const tabs = isEditMode
+    ? [
+        { id: 0, title: "Información Básica", icon: "📋" },
+        { id: 1, title: "Parametrización", icon: "⚙️" },
+        { id: 2, title: "Entidades", icon: "👥" },
+        { id: 3, title: "Investigación", icon: "🔍" },
+      ]
+    : [
+        { id: 0, title: "Información Básica", icon: "📋" },
+        { id: 1, title: "Parametrización", icon: "⚙️" },
+        { id: 2, title: "Entidades", icon: "👥" },
+      ];
 
   const goToTab = (tabId: number) => {
     setActiveTab(tabId);
   };
+
+  // Cargar datos si estamos en modo edición
+  useEffect(() => {
+    if (isEditMode && siniestroId) {
+      const fetchSiniestro = async () => {
+        try {
+          const response = await axios.get(`/api/v1/siniestros/${siniestroId}`);
+          const data = response.data;
+
+          console.log("Datos cargados del siniestro:", data);
+
+          setFormData({
+            // Datos básicos
+            compania_seguros: data.compania_seguros || "ZURICH SEGUROS ECUADOR S.A.",
+            ruc_compania: data.ruc_compania || "",
+            tipo_reclamo: data.tipo_reclamo || "",
+            poliza: data.poliza || "",
+            reclamo_num: data.reclamo_num || "",
+            fecha_siniestro: data.fecha_siniestro
+              ? new Date(data.fecha_siniestro).toISOString().split("T")[0]
+              : "",
+            fecha_reportado: data.fecha_reportado
+              ? new Date(data.fecha_reportado).toISOString().split("T")[0]
+              : "",
+            direccion_siniestro: data.direccion_siniestro || "",
+            ubicacion_geo_lat: data.ubicacion_geo_lat || undefined,
+            ubicacion_geo_lng: data.ubicacion_geo_lng || undefined,
+            danos_terceros: data.danos_terceros || false,
+            ejecutivo_cargo: data.ejecutivo_cargo || "",
+            fecha_designacion: data.fecha_designacion
+              ? new Date(data.fecha_designacion).toISOString().split("T")[0]
+              : "",
+            tipo_siniestro: data.tipo_siniestro || "Vehicular",
+            cobertura: data.cobertura || "",
+
+            // Nuevos campos de declaración
+            persona_declara_tipo: data.persona_declara_tipo || "",
+            persona_declara_cedula: data.persona_declara_cedula || "",
+            persona_declara_nombre: data.persona_declara_nombre || "",
+            persona_declara_relacion: data.persona_declara_relacion || "",
+            misiva_investigacion: data.misiva_investigacion || "",
+
+            // Secciones dinámicas
+            antecedentes: data.antecedentes || [],
+            relatos_asegurado: data.relatos_asegurado || [],
+            inspecciones: data.inspecciones || [],
+            testigos: data.testigos || [],
+
+            // Campos de investigación recabada
+            evidencias_complementarias_descripcion: data.evidencias_complementarias || "",
+            evidencias_complementarias_imagen_url: data.evidencias_complementarias_imagen_url || "",
+            otras_diligencias_descripcion: data.otras_diligencias || "",
+            otras_diligencias_imagen_url: data.otras_diligencias_imagen_url || "",
+            visita_taller_descripcion: data.visita_taller_descripcion || "",
+            visita_taller_imagen_url: data.visita_taller_imagen_url || "",
+            observaciones: parseJsonArray(data.observaciones),
+            recomendacion_pago_cobertura: parseJsonArray(data.recomendacion_pago_cobertura),
+            conclusiones: parseJsonArray(data.conclusiones),
+            anexo: parseJsonArray(data.anexo),
+
+            // Datos relacionados
+            asegurado: data.asegurado || null,
+            beneficiario: data.beneficiario || null,
+            conductor: data.conductor || null,
+            objeto_asegurado: data.objeto_asegurado || null,
+          });
+        } catch (error) {
+          console.error("Error loading siniestro:", error);
+          setMessage("Error al cargar los datos del siniestro");
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchSiniestro();
+    }
+  }, [isEditMode, siniestroId]);
 
   const handleInputChange = (
     e: React.ChangeEvent<
