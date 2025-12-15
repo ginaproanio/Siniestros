@@ -33,6 +33,7 @@ interface FormData {
   // Secciones de investigación
   antecedentes?: AntecedenteData[];
   relatos_asegurado?: RelatoData[];
+  relatos_conductor?: RelatoData[]; // Nueva sección para conductor
   inspecciones?: InspeccionData[];
   testigos?: TestigoData[];
 
@@ -70,6 +71,7 @@ const InvestigacionForm: React.FC = () => {
         setFormData({
           antecedentes: siniestro.antecedentes || [],
           relatos_asegurado: siniestro.relatos_asegurado || [],
+          relatos_conductor: siniestro.relatos_conductor || [],
           inspecciones: siniestro.inspecciones || [],
           testigos: siniestro.testigos || [],
           evidencias_complementarias_descripcion: siniestro.evidencias_complementarias_descripcion,
@@ -151,10 +153,10 @@ const InvestigacionForm: React.FC = () => {
           </div>
         </div>
 
-        {/* ENTREVISTA CON EL ASEGURADO */}
+        {/* ENTREVISTA AL ASEGURADO */}
         <div style={{ marginBottom: "30px", padding: "20px", backgroundColor: "#f8f9fa", borderRadius: "8px" }}>
           <h3 style={{ color: "#0f172a", marginBottom: "15px" }}>
-            🎤 Entrevista con el Asegurado
+            🎤 Entrevista al Asegurado
           </h3>
           <div style={{ marginBottom: "15px" }}>
             <button
@@ -238,6 +240,117 @@ const InvestigacionForm: React.FC = () => {
                         setFormData((prev) => ({
                           ...prev,
                           relatos_asegurado: prev.relatos_asegurado?.map((r, i) =>
+                            i === index ? { ...r, imagen_url: imageUrl } : r
+                          ) || [],
+                        }));
+                      } catch (error) {
+                        console.error("Error subiendo imagen:", error);
+                        alert("Error al subir la imagen. Intente nuevamente.");
+                      }
+                    }
+                  }}
+                />
+                {relato.imagen_url && (
+                  <div style={{ marginTop: "5px" }}>
+                    <img
+                      src={`${BACKEND_URL}${relato.imagen_url}`}
+                      alt={`Relato ${relato.numero_relato}`}
+                      style={{ maxWidth: "200px", maxHeight: "150px", border: "1px solid #ddd" }}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* ENTREVISTA AL CONDUCTOR */}
+        <div style={{ marginBottom: "30px", padding: "20px", backgroundColor: "#f8f9fa", borderRadius: "8px" }}>
+          <h3 style={{ color: "#0f172a", marginBottom: "15px" }}>
+            🚗 Entrevista al Conductor
+          </h3>
+          <div style={{ marginBottom: "15px" }}>
+            <button
+              type="button"
+              onClick={() => {
+                const currentRelatos = formData.relatos_conductor || [];
+                const nextNumero = currentRelatos.length + 1;
+                setFormData((prev) => ({
+                  ...prev,
+                  relatos_conductor: [
+                    ...currentRelatos,
+                    {
+                      numero_relato: nextNumero,
+                      texto: "",
+                      imagen_url: "",
+                    },
+                  ],
+                }));
+              }}
+              style={{ backgroundColor: "#28a745", marginBottom: "10px" }}
+            >
+              ➕ Agregar Relato
+            </button>
+          </div>
+
+          {(formData.relatos_conductor || []).map((relato, index) => (
+            <div key={index} style={{ marginBottom: "20px", padding: "15px", backgroundColor: "#ffffff", borderRadius: "5px", border: "1px solid #e2e8f0" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+                <h4 style={{ color: "#0f172a", margin: 0 }}>
+                  Relato {relato.numero_relato}
+                </h4>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      relatos_conductor: prev.relatos_conductor?.filter((_, i) => i !== index) || [],
+                    }));
+                  }}
+                  style={{ backgroundColor: "#dc3545", color: "white", border: "none", borderRadius: "3px", padding: "5px 10px", cursor: "pointer" }}
+                >
+                  ❌ Eliminar
+                </button>
+              </div>
+
+              <div className="form-group">
+                <label>Texto del relato:</label>
+                <textarea
+                  value={relato.texto}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setFormData((prev) => ({
+                      ...prev,
+                      relatos_conductor: prev.relatos_conductor?.map((r, i) =>
+                        i === index ? { ...r, texto: value } : r
+                      ) || [],
+                    }));
+                  }}
+                  rows={3}
+                  placeholder="Escriba el relato del conductor..."
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Imagen:</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      try {
+                        const formDataUpload = new FormData();
+                        formDataUpload.append("file", file);
+
+                        const response = await axios.post("/api/v1/upload-image", formDataUpload, {
+                          headers: { "Content-Type": "multipart/form-data" },
+                        });
+
+                        const imageUrl = response.data.url;
+                        setFormData((prev) => ({
+                          ...prev,
+                          relatos_conductor: prev.relatos_conductor?.map((r, i) =>
                             i === index ? { ...r, imagen_url: imageUrl } : r
                           ) || [],
                         }));
