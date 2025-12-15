@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 
 // Configurar base URL para el backend
@@ -15,6 +16,9 @@ interface Siniestro {
 }
 
 const SiniestrosList: React.FC = () => {
+  const location = useLocation();
+  const isFromInvestigacion = location.pathname === '/investigacion';
+
   const [siniestros, setSiniestros] = useState<Siniestro[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -41,7 +45,23 @@ const SiniestrosList: React.FC = () => {
 
   return (
     <div className="siniestros-list">
-      <h2>Siniestros Registrados</h2>
+      <h2>{isFromInvestigacion ? 'Selecciona un Siniestro para Investigar' : 'Siniestros Registrados'}</h2>
+      {isFromInvestigacion && (
+        <div style={{
+          backgroundColor: '#e8f5e8',
+          padding: '15px',
+          borderRadius: '8px',
+          marginBottom: '20px',
+          border: '2px solid #28a745'
+        }}>
+          <p style={{ margin: 0, fontWeight: 'bold', color: '#0f172a' }}>
+            🔍 Modo Investigación: Selecciona un siniestro para completar la investigación recabada
+          </p>
+          <p style={{ margin: '5px 0 0 0', fontSize: '14px', color: '#666' }}>
+            Al hacer clic en "Editar", podrás acceder a todas las secciones de investigación después de Testigos.
+          </p>
+        </div>
+      )}
       {siniestros.length === 0 ? (
         <p>No hay siniestros registrados aún.</p>
       ) : (
