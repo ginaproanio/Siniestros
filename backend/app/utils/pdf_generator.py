@@ -101,7 +101,7 @@ def sign_pdf(
 
 
 def generate_simple_pdf(siniestro: Siniestro) -> bytes:
-    """Generar PDF completo del informe de siniestro con caratula, indice, registro e investigación"""
+    """Generar PDF completo del informe de siniestro con saltos de página entre secciones"""
     logger.info(f"🔄 Generando PDF completo para siniestro ID: {siniestro.id}")
 
     try:
@@ -194,7 +194,7 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
             ParagraphStyle("Fecha", parent=styles["Normal"], fontSize=10, alignment=TA_CENTER)
         )
         story.append(fecha_gen)
-        story.append(Spacer(1, 60))  # Salto de página
+        story.append(Spacer(1, 120))  # Salto de página completo
 
         # ==================== ÍNDICE ====================
         logger.info("📋 Generando índice...")
@@ -203,33 +203,86 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
         story.append(indice_title)
         story.append(Spacer(1, 20))
 
-        indice_items = [
-            "1. REGISTRO DEL SINIESTRO ............................... 3",
-            "2. INVESTIGACIÓN ......................................... 4",
-            "   2.1 Antecedentes ...................................... 4",
-            "   2.2 Entrevista al Asegurado .......................... 4",
-            "   2.3 Entrevista al Conductor .......................... 5",
-            "   2.4 Inspección del Lugar ............................ 5",
-            "   2.5 Testigos ......................................... 6",
-            "   2.6 Evidencias Complementarias ...................... 6",
-            "   2.7 Otras Diligencias ............................... 6",
-            "   2.8 Visita al Taller ................................ 7",
-            "   2.9 Observaciones ................................... 7",
-            "   2.10 Recomendación sobre el Pago de la Cobertura ... 7",
-            "   2.11 Conclusiones ................................... 8",
-            "   2.12 Anexo .......................................... 8",
-        ]
+        # Crear índice dinámico basado en secciones que tienen contenido
+        indice_items = []
+        page_num = 3  # Comenzar desde página 3
+
+        # Siempre incluir registro del siniestro
+        indice_items.append(f"{page_num}. REGISTRO DEL SINIESTRO")
+        page_num += 1
+
+        # Verificar qué secciones de investigación tienen contenido
+        has_investigacion = False
+
+        if siniestro.antecedentes:
+            has_investigacion = True
+            indice_items.append(f"   {page_num}.1 Antecedentes")
+
+        if siniestro.relatos_asegurado:
+            has_investigacion = True
+            indice_items.append(f"   {page_num}.2 Entrevista al Asegurado")
+
+        if siniestro.relatos_conductor:
+            has_investigacion = True
+            indice_items.append(f"   {page_num}.3 Entrevista al Conductor")
+
+        if siniestro.inspecciones:
+            has_investigacion = True
+            indice_items.append(f"   {page_num}.4 Inspección del Lugar")
+
+        if siniestro.testigos:
+            has_investigacion = True
+            indice_items.append(f"   {page_num}.5 Testigos")
+
+        if siniestro.evidencias_complementarias and siniestro.evidencias_complementarias.strip():
+            has_investigacion = True
+            indice_items.append(f"   {page_num}.6 Evidencias Complementarias")
+
+        if siniestro.otras_diligencias and siniestro.otras_diligencias.strip():
+            has_investigacion = True
+            indice_items.append(f"   {page_num}.7 Otras Diligencias")
+
+        if siniestro.visita_taller and siniestro.visita_taller.descripcion and siniestro.visita_taller.descripcion.strip():
+            has_investigacion = True
+            indice_items.append(f"   {page_num}.8 Visita al Taller")
+
+        if siniestro.observaciones and siniestro.observaciones.strip():
+            has_investigacion = True
+            indice_items.append(f"   {page_num}.9 Observaciones")
+
+        if siniestro.recomendacion_pago_cobertura and siniestro.recomendacion_pago_cobertura.strip():
+            has_investigacion = True
+            indice_items.append(f"   {page_num}.10 Recomendación sobre el Pago de la Cobertura")
+
+        if siniestro.conclusiones and siniestro.conclusiones.strip():
+            has_investigacion = True
+            indice_items.append(f"   {page_num}.11 Conclusiones")
+
+        if siniestro.anexo and siniestro.anexo.strip():
+            has_investigacion = True
+            indice_items.append(f"   {page_num}.12 Anexo")
+
+        if has_investigacion:
+            indice_items.insert(1, f"{page_num}. INVESTIGACIÓN")
+            page_num += 1
+
+        # Agregar anexos si hay
+        if siniestro.anexo and siniestro.anexo.strip():
+            indice_items.append(f"{page_num}. ANEXOS")
+
+        # Siempre agregar cierre
+        indice_items.append(f"{page_num + (1 if has_investigacion else 0)}. CIERRE")
 
         for item in indice_items:
             story.append(Paragraph(item, normal_style))
             story.append(Spacer(1, 5))
 
-        story.append(Spacer(1, 60))  # Salto de página
+        story.append(Spacer(1, 120))  # Salto de página completo
 
         # ==================== REGISTRO DEL SINIESTRO ====================
         logger.info("📝 Generando registro del siniestro...")
 
-        registro_title = Paragraph("1. REGISTRO DEL SINIESTRO", section_style)
+        registro_title = Paragraph("REGISTRO DEL SINIESTRO", section_style)
         story.append(registro_title)
         story.append(Spacer(1, 15))
 
@@ -434,160 +487,221 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                 story.append(objeto_table)
                 story.append(Spacer(1, 15))
 
-        story.append(Spacer(1, 40))  # Salto de página
+        story.append(Spacer(1, 120))  # Salto de página completo
 
         # ==================== INVESTIGACIÓN ====================
         logger.info("🔍 Generando sección de investigación...")
 
-        investigacion_title = Paragraph("2. INVESTIGACIÓN", section_style)
-        story.append(investigacion_title)
-        story.append(Spacer(1, 15))
+        has_any_investigation = (
+            siniestro.antecedentes or
+            siniestro.relatos_asegurado or
+            siniestro.relatos_conductor or
+            siniestro.inspecciones or
+            siniestro.testigos or
+            (siniestro.evidencias_complementarias and siniestro.evidencias_complementarias.strip()) or
+            (siniestro.otras_diligencias and siniestro.otras_diligencias.strip()) or
+            (siniestro.visita_taller and siniestro.visita_taller.descripcion and siniestro.visita_taller.descripcion.strip()) or
+            (siniestro.observaciones and siniestro.observaciones.strip()) or
+            (siniestro.recomendacion_pago_cobertura and siniestro.recomendacion_pago_cobertura.strip()) or
+            (siniestro.conclusiones and siniestro.conclusiones.strip()) or
+            (siniestro.anexo and siniestro.anexo.strip())
+        )
 
-        # 2.1 Antecedentes
-        story.append(Paragraph("2.1 Antecedentes", section_style))
-        if siniestro.antecedentes:
-            for antecedente in siniestro.antecedentes:
-                story.append(Paragraph(antecedente.descripcion, normal_style))
-                story.append(Spacer(1, 10))
-        else:
-            story.append(Paragraph("No se registraron antecedentes.", normal_style))
-        story.append(Spacer(1, 15))
+        if has_any_investigation:
+            investigacion_title = Paragraph("INVESTIGACIÓN", section_style)
+            story.append(investigacion_title)
+            story.append(Spacer(1, 15))
 
-        # 2.2 Entrevista al Asegurado
-        story.append(Paragraph("2.2 Entrevista al Asegurado", section_style))
-        if siniestro.relatos_asegurado:
-            for i, relato in enumerate(siniestro.relatos_asegurado, 1):
-                story.append(Paragraph(f"Relato {i}:", ParagraphStyle("Subsection", parent=styles["Heading4"], fontSize=12, fontName="Helvetica-Bold")))
-                story.append(Paragraph(relato.texto, normal_style))
-                story.append(Spacer(1, 10))
-        else:
-            story.append(Paragraph("No se registraron relatos del asegurado.", normal_style))
-        story.append(Spacer(1, 15))
+            section_num = 1
 
-        # 2.3 Entrevista al Conductor
-        story.append(Paragraph("2.3 Entrevista al Conductor", section_style))
-        if siniestro.relatos_conductor:
-            for i, relato in enumerate(siniestro.relatos_conductor, 1):
-                story.append(Paragraph(f"Relato {i}:", ParagraphStyle("Subsection", parent=styles["Heading4"], fontSize=12, fontName="Helvetica-Bold")))
-                story.append(Paragraph(relato.texto, normal_style))
-                story.append(Spacer(1, 10))
-        else:
-            story.append(Paragraph("No se registraron relatos del conductor.", normal_style))
-        story.append(Spacer(1, 15))
+            # 2.1 Antecedentes
+            if siniestro.antecedentes:
+                story.append(Paragraph(f"{section_num}. Antecedentes", section_style))
+                for antecedente in siniestro.antecedentes:
+                    story.append(Paragraph(antecedente.descripcion, normal_style))
+                    story.append(Spacer(1, 10))
+                story.append(Spacer(1, 120))  # Salto de página
+                section_num += 1
 
-        # 2.4 Inspección del Lugar
-        story.append(Paragraph("2.4 Inspección del Lugar", section_style))
-        if siniestro.inspecciones:
-            for i, inspeccion in enumerate(siniestro.inspecciones, 1):
-                story.append(Paragraph(f"Inspección {i}:", ParagraphStyle("Subsection", parent=styles["Heading4"], fontSize=12, fontName="Helvetica-Bold")))
-                story.append(Paragraph(inspeccion.descripcion, normal_style))
-                story.append(Spacer(1, 10))
-        else:
-            story.append(Paragraph("No se registraron inspecciones.", normal_style))
-        story.append(Spacer(1, 15))
+            # 2.2 Entrevista al Asegurado
+            if siniestro.relatos_asegurado:
+                story.append(Paragraph(f"{section_num}. Entrevista al Asegurado", section_style))
+                for i, relato in enumerate(siniestro.relatos_asegurado, 1):
+                    story.append(Paragraph(f"Relato {i}:", ParagraphStyle("Subsection", parent=styles["Heading4"], fontSize=12, fontName="Helvetica-Bold")))
+                    story.append(Paragraph(relato.texto, normal_style))
+                    story.append(Spacer(1, 10))
+                story.append(Spacer(1, 120))  # Salto de página
+                section_num += 1
 
-        # 2.5 Testigos
-        story.append(Paragraph("2.5 Testigos", section_style))
-        if siniestro.testigos:
-            for i, testigo in enumerate(siniestro.testigos, 1):
-                story.append(Paragraph(f"Testigo {i}:", ParagraphStyle("Subsection", parent=styles["Heading4"], fontSize=12, fontName="Helvetica-Bold")))
-                story.append(Paragraph(testigo.texto, normal_style))
-                story.append(Spacer(1, 10))
-        else:
-            story.append(Paragraph("No se registraron testigos.", normal_style))
-        story.append(Spacer(1, 15))
+            # 2.3 Entrevista al Conductor
+            if siniestro.relatos_conductor:
+                story.append(Paragraph(f"{section_num}. Entrevista al Conductor", section_style))
+                for i, relato in enumerate(siniestro.relatos_conductor, 1):
+                    story.append(Paragraph(f"Relato {i}:", ParagraphStyle("Subsection", parent=styles["Heading4"], fontSize=12, fontName="Helvetica-Bold")))
+                    story.append(Paragraph(relato.texto, normal_style))
+                    story.append(Spacer(1, 10))
+                story.append(Spacer(1, 120))  # Salto de página
+                section_num += 1
 
-        # 2.6 Evidencias Complementarias
-        story.append(Paragraph("2.6 Evidencias Complementarias", section_style))
-        if siniestro.evidencias_complementarias:
-            story.append(Paragraph(siniestro.evidencias_complementarias, normal_style))
-        else:
-            story.append(Paragraph("No se registraron evidencias complementarias.", normal_style))
-        story.append(Spacer(1, 15))
+            # 2.4 Inspección del Lugar
+            if siniestro.inspecciones:
+                story.append(Paragraph(f"{section_num}. Inspección del Lugar", section_style))
+                for i, inspeccion in enumerate(siniestro.inspecciones, 1):
+                    story.append(Paragraph(f"Inspección {i}:", ParagraphStyle("Subsection", parent=styles["Heading4"], fontSize=12, fontName="Helvetica-Bold")))
+                    story.append(Paragraph(inspeccion.descripcion, normal_style))
+                    story.append(Spacer(1, 10))
+                story.append(Spacer(1, 120))  # Salto de página
+                section_num += 1
 
-        # 2.7 Otras Diligencias
-        story.append(Paragraph("2.7 Otras Diligencias", section_style))
-        if siniestro.otras_diligencias:
-            story.append(Paragraph(siniestro.otras_diligencias, normal_style))
-        else:
-            story.append(Paragraph("No se registraron otras diligencias.", normal_style))
-        story.append(Spacer(1, 15))
+            # 2.5 Testigos
+            if siniestro.testigos:
+                story.append(Paragraph(f"{section_num}. Testigos", section_style))
+                for i, testigo in enumerate(siniestro.testigos, 1):
+                    story.append(Paragraph(f"Testigo {i}:", ParagraphStyle("Subsection", parent=styles["Heading4"], fontSize=12, fontName="Helvetica-Bold")))
+                    story.append(Paragraph(testigo.texto, normal_style))
+                    story.append(Spacer(1, 10))
+                story.append(Spacer(1, 120))  # Salto de página
+                section_num += 1
 
-        # 2.8 Visita al Taller
-        story.append(Paragraph("2.8 Visita al Taller", section_style))
-        if siniestro.visita_taller and siniestro.visita_taller.descripcion:
-            story.append(Paragraph(siniestro.visita_taller.descripcion, normal_style))
-        else:
-            story.append(Paragraph("No se registró visita al taller.", normal_style))
-        story.append(Spacer(1, 15))
+            # 2.6 Evidencias Complementarias
+            if siniestro.evidencias_complementarias and siniestro.evidencias_complementarias.strip():
+                story.append(Paragraph(f"{section_num}. Evidencias Complementarias", section_style))
+                story.append(Paragraph(siniestro.evidencias_complementarias, normal_style))
+                story.append(Spacer(1, 120))  # Salto de página
+                section_num += 1
 
-        # 2.9 Observaciones
-        story.append(Paragraph("2.9 Observaciones", section_style))
-        if siniestro.observaciones:
-            import json
-            try:
-                observaciones_list = json.loads(siniestro.observaciones) if isinstance(siniestro.observaciones, str) else siniestro.observaciones
-                for i, obs in enumerate(observaciones_list, 1):
-                    story.append(Paragraph(f"{i}. {obs}", normal_style))
-                    story.append(Spacer(1, 5))
-            except:
-                story.append(Paragraph(siniestro.observaciones, normal_style))
-        else:
-            story.append(Paragraph("No se registraron observaciones.", normal_style))
-        story.append(Spacer(1, 15))
+            # 2.7 Otras Diligencias
+            if siniestro.otras_diligencias and siniestro.otras_diligencias.strip():
+                story.append(Paragraph(f"{section_num}. Otras Diligencias", section_style))
+                story.append(Paragraph(siniestro.otras_diligencias, normal_style))
+                story.append(Spacer(1, 120))  # Salto de página
+                section_num += 1
 
-        # 2.10 Recomendación sobre el Pago de la Cobertura
-        story.append(Paragraph("2.10 Recomendación sobre el Pago de la Cobertura", section_style))
-        if siniestro.recomendacion_pago_cobertura:
-            import json
-            try:
-                recomendaciones_list = json.loads(siniestro.recomendacion_pago_cobertura) if isinstance(siniestro.recomendacion_pago_cobertura, str) else siniestro.recomendacion_pago_cobertura
-                for i, rec in enumerate(recomendaciones_list, 1):
-                    story.append(Paragraph(f"{i}. {rec}", normal_style))
-                    story.append(Spacer(1, 5))
-            except:
-                story.append(Paragraph(siniestro.recomendacion_pago_cobertura, normal_style))
-        else:
-            story.append(Paragraph("No se registraron recomendaciones.", normal_style))
-        story.append(Spacer(1, 15))
+            # 2.8 Visita al Taller
+            if siniestro.visita_taller and siniestro.visita_taller.descripcion and siniestro.visita_taller.descripcion.strip():
+                story.append(Paragraph(f"{section_num}. Visita al Taller", section_style))
+                story.append(Paragraph(siniestro.visita_taller.descripcion, normal_style))
+                story.append(Spacer(1, 120))  # Salto de página
+                section_num += 1
 
-        # 2.11 Conclusiones
-        story.append(Paragraph("2.11 Conclusiones", section_style))
-        if siniestro.conclusiones:
-            import json
-            try:
-                conclusiones_list = json.loads(siniestro.conclusiones) if isinstance(siniestro.conclusiones, str) else siniestro.conclusiones
-                for i, conc in enumerate(conclusiones_list, 1):
-                    story.append(Paragraph(f"{i}. {conc}", normal_style))
-                    story.append(Spacer(1, 5))
-            except:
-                story.append(Paragraph(siniestro.conclusiones, normal_style))
-        else:
-            story.append(Paragraph("No se registraron conclusiones.", normal_style))
-        story.append(Spacer(1, 15))
+            # 2.9 Observaciones
+            if siniestro.observaciones and siniestro.observaciones.strip():
+                story.append(Paragraph(f"{section_num}. Observaciones", section_style))
+                import json
+                try:
+                    observaciones_list = json.loads(siniestro.observaciones) if isinstance(siniestro.observaciones, str) else siniestro.observaciones
+                    for i, obs in enumerate(observaciones_list, 1):
+                        story.append(Paragraph(f"{i}. {obs}", normal_style))
+                        story.append(Spacer(1, 5))
+                except:
+                    story.append(Paragraph(siniestro.observaciones, normal_style))
+                story.append(Spacer(1, 120))  # Salto de página
+                section_num += 1
 
-        # 2.12 Anexo
-        story.append(Paragraph("2.12 Anexo", section_style))
-        if siniestro.anexo:
+            # 2.10 Recomendación sobre el Pago de la Cobertura
+            if siniestro.recomendacion_pago_cobertura and siniestro.recomendacion_pago_cobertura.strip():
+                story.append(Paragraph(f"{section_num}. Recomendación sobre el Pago de la Cobertura", section_style))
+                import json
+                try:
+                    recomendaciones_list = json.loads(siniestro.recomendacion_pago_cobertura) if isinstance(siniestro.recomendacion_pago_cobertura, str) else siniestro.recomendacion_pago_cobertura
+                    for i, rec in enumerate(recomendaciones_list, 1):
+                        story.append(Paragraph(f"{i}. {rec}", normal_style))
+                        story.append(Spacer(1, 5))
+                except:
+                    story.append(Paragraph(siniestro.recomendacion_pago_cobertura, normal_style))
+                story.append(Spacer(1, 120))  # Salto de página
+                section_num += 1
+
+            # 2.11 Conclusiones
+            if siniestro.conclusiones and siniestro.conclusiones.strip():
+                story.append(Paragraph(f"{section_num}. Conclusiones", section_style))
+                import json
+                try:
+                    conclusiones_list = json.loads(siniestro.conclusiones) if isinstance(siniestro.conclusiones, str) else siniestro.conclusiones
+                    for i, conc in enumerate(conclusiones_list, 1):
+                        story.append(Paragraph(f"{i}. {conc}", normal_style))
+                        story.append(Spacer(1, 5))
+                except:
+                    story.append(Paragraph(siniestro.conclusiones, normal_style))
+                story.append(Spacer(1, 120))  # Salto de página
+                section_num += 1
+
+            # 2.12 Anexo
+            if siniestro.anexo and siniestro.anexo.strip():
+                story.append(Paragraph(f"{section_num}. Anexo", section_style))
+                import json
+                try:
+                    anexo_list = json.loads(siniestro.anexo) if isinstance(siniestro.anexo, str) else siniestro.anexo
+                    for i, anex in enumerate(anexo_list, 1):
+                        story.append(Paragraph(f"{i}. {anex}", normal_style))
+                        story.append(Spacer(1, 5))
+                except:
+                    story.append(Paragraph(siniestro.anexo, normal_style))
+                story.append(Spacer(1, 120))  # Salto de página
+                section_num += 1
+
+        # ==================== ANEXOS ====================
+        if siniestro.anexo and siniestro.anexo.strip():
+            logger.info("📎 Generando sección de anexos...")
+            anexos_title = Paragraph("ANEXOS", section_style)
+            story.append(anexos_title)
+            story.append(Spacer(1, 15))
+
             import json
             try:
                 anexo_list = json.loads(siniestro.anexo) if isinstance(siniestro.anexo, str) else siniestro.anexo
                 for i, anex in enumerate(anexo_list, 1):
-                    story.append(Paragraph(f"{i}. {anex}", normal_style))
-                    story.append(Spacer(1, 5))
+                    story.append(Paragraph(f"Anexo {i}:", ParagraphStyle("Subsection", parent=styles["Heading4"], fontSize=12, fontName="Helvetica-Bold")))
+                    story.append(Paragraph(anex, normal_style))
+                    story.append(Spacer(1, 20))
             except:
                 story.append(Paragraph(siniestro.anexo, normal_style))
-        else:
-            story.append(Paragraph("No se registraron anexos.", normal_style))
-        story.append(Spacer(1, 15))
 
-        # Pie de página con fecha de generación
-        story.append(Spacer(1, 30))
-        footer = Paragraph(
-            f"Informe generado el {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}",
-            ParagraphStyle("Footer", parent=styles["Normal"], fontSize=8, alignment=TA_CENTER, textColor=colors.grey)
+            story.append(Spacer(1, 120))  # Salto de página
+
+        # ==================== CIERRE ====================
+        logger.info("📝 Generando sección de cierre...")
+
+        cierre_title = Paragraph("CIERRE", section_style)
+        story.append(cierre_title)
+        story.append(Spacer(1, 20))
+
+        # Texto de despedida
+        despedida = Paragraph(
+            "Sin otro particular, me despido atentamente esperando que la presente investigación "
+            "haya sido de su completa satisfacción y utilidad. Quedo a sus órdenes para cualquier "
+            "consulta adicional que pueda surgir en relación con este caso.",
+            normal_style
         )
-        story.append(footer)
+        story.append(despedida)
+        story.append(Spacer(1, 40))
+
+        # Espacio para firma electrónica
+        firma_title = Paragraph("Firma Electrónica:", ParagraphStyle("Firma", parent=styles["Heading4"], fontSize=12, fontName="Helvetica-Bold"))
+        story.append(firma_title)
+        story.append(Spacer(1, 60))  # Espacio para firma
+
+        # Línea para firma
+        firma_line = Paragraph("_______________________________", ParagraphStyle("Linea", parent=styles["Normal"], fontSize=10, alignment=TA_CENTER))
+        story.append(firma_line)
+        story.append(Spacer(1, 10))
+
+        # Nombre del investigador
+        nombre_investigador = Paragraph("Susana Espinosa", ParagraphStyle("Nombre", parent=styles["Normal"], fontSize=10, alignment=TA_CENTER))
+        story.append(nombre_investigador)
+        story.append(Spacer(1, 5))
+
+        # Título
+        titulo_investigador = Paragraph("Investigador de Siniestros", ParagraphStyle("Titulo", parent=styles["Normal"], fontSize=9, alignment=TA_CENTER))
+        story.append(titulo_investigador)
+        story.append(Spacer(1, 30))
+
+        # Fecha del informe
+        fecha_cierre = Paragraph(
+            f"Quito, {datetime.now().strftime('%d de %B de %Y')}",
+            ParagraphStyle("FechaCierre", parent=styles["Normal"], fontSize=10, alignment=TA_CENTER)
+        )
+        story.append(fecha_cierre)
 
         # Generar PDF
         doc.build(story)
