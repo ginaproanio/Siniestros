@@ -597,15 +597,7 @@ const InvestigacionForm: React.FC = () => {
           ))}
         </div>
 
-        {/* SECCIONES DE INVESTIGACIÓN RECABADA */}
-        <div style={{ marginTop: "50px", padding: "30px", backgroundColor: "#e8f5e8", borderRadius: "15px", border: "4px solid #28a745", boxShadow: "0 6px 12px rgba(0,0,0,0.15)" }}>
-          <h2 style={{ color: "#0f172a", marginBottom: "20px", fontSize: "28px", fontWeight: "bold", textAlign: "center" }}>
-            🔍 SECCIONES DE INVESTIGACIÓN RECABADA
-          </h2>
-          <p style={{ color: "#666", fontSize: "18px", marginBottom: "30px", fontStyle: "italic", textAlign: "center" }}>
-            Complete todas las secciones siguientes para completar la investigación del siniestro
-          </p>
-        </div>
+
 
         {/* EVIDENCIAS COMPLEMENTARIAS */}
         <div className="section-container">

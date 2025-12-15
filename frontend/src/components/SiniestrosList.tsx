@@ -94,9 +94,18 @@ const SiniestrosList: React.FC = () => {
                     </button>
                     <button
                       onClick={() => window.location.href = `/siniestro/${siniestro.id}/investigacion`}
-                      style={{ backgroundColor: '#28a745' }}
+                      style={{ backgroundColor: '#28a745', marginRight: '5px' }}
                     >
                       Registrar Investigación
+                    </button>
+                    <button
+                      onClick={() => {
+                        // Open PDF generation in new tab
+                        window.open(`${BACKEND_URL}/api/v1/siniestros/${siniestro.id}/generar-pdf`, '_blank');
+                      }}
+                      style={{ backgroundColor: '#dc3545' }}
+                    >
+                      📄 Generar Informe
                     </button>
                   </td>
                 </tr>
