@@ -187,7 +187,7 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
             ParagraphStyle("Fecha", parent=styles["Normal"], fontSize=10, alignment=TA_CENTER)
         )
         story.append(fecha_gen)
-        story.append(Spacer(1, 60))  # Salto de página
+        story.append(Spacer(1, 40))  # Espacio antes del índice
 
         # ==================== ÍNDICE ====================
         logger.info("📋 Generando índice...")
