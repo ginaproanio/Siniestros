@@ -78,43 +78,10 @@ async def startup_event():
             logger.info(f"📊 Base de datos lista: {siniestros_count} siniestros registrados")
         logger.info("✅ Sistema operativo y listo para uso")
 
-        # AUTO-LOAD TEST DATA FOR RAILWAY DEPLOYMENT
-        # Only load test data if we're in Railway environment and no siniestros exist
+        # Store railway detection for later use
         railway_env = os.getenv("RAILWAY_ENVIRONMENT", "").lower()
-        if railway_env in ["production", "staging"] or "railway" in os.getenv("DATABASE_URL", "").lower():
-            try:
-                from sqlalchemy.orm import sessionmaker
-                SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-                db = SessionLocal()
-
-                siniestro_count = db.query(models.Siniestro).count()
-                if siniestro_count == 0:
-                    logger.info("🚀 AUTO-LOADING TEST DATA FOR RAILWAY DEPLOYMENT...")
-
-                    # Execute create_test_data.py script
-                    import subprocess
-                    import sys
-                    import os
-
-                    current_dir = os.path.dirname(os.path.dirname(__file__))
-                    logger.info(f"Running test data creation from: {current_dir}")
-
-                    result = subprocess.run([
-                        sys.executable, "create_test_data.py"
-                    ], capture_output=True, text=True, cwd=current_dir)
-
-                    if result.returncode == 0:
-                        logger.info("✅ Test data created successfully for Railway")
-                        logger.info("🎯 Railway deployment ready with test data!")
-                    else:
-                        logger.warning(f"⚠️ Failed to create test data: {result.stderr}")
-                else:
-                    logger.info(f"ℹ️ Database already has {siniestro_count} siniestros")
-
-                db.close()
-            except Exception as e:
-                logger.error(f"❌ Error auto-loading test data: {e}")
-                logger.info("⚠️ Continuing without test data")
+        is_railway = railway_env in ["production", "staging"] or "railway" in os.getenv("DATABASE_URL", "").lower()
+        logger.info(f"🚀 Railway deployment detected: {is_railway}")
 
         finally:
             db.close()
@@ -153,6 +120,49 @@ async def log_requests(request: Request, call_next):
 
 # Include routers
 app.include_router(siniestros.router, prefix="/api/v1/siniestros", tags=["siniestros"])
+
+# Auto-load test data endpoint - called after startup
+@app.on_event("startup")
+async def auto_load_test_data():
+    """Auto-load test data after application startup"""
+    import logging
+    logger = logging.getLogger(__name__)
+
+    try:
+        # Check if we're in Railway environment
+        railway_env = os.getenv("RAILWAY_ENVIRONMENT", "").lower()
+        is_railway = railway_env in ["production", "staging"] or "railway" in os.getenv("DATABASE_URL", "").lower()
+
+        if is_railway:
+            logger.info("🚀 RAILWAY DEPLOYMENT DETECTED - Auto-loading test data...")
+
+            # Wait a bit for database to be fully ready
+            import asyncio
+            await asyncio.sleep(2)
+
+            # Execute create_test_data.py script
+            import subprocess
+            import sys
+            import os
+
+            current_dir = os.path.dirname(os.path.dirname(__file__))
+            logger.info(f"Running test data creation from: {current_dir}")
+
+            result = subprocess.run([
+                sys.executable, "create_test_data.py"
+            ], capture_output=True, text=True, cwd=current_dir)
+
+            if result.returncode == 0:
+                logger.info("✅ Test data created successfully for Railway deployment")
+                logger.info("🎯 Railway deployment ready with test data!")
+            else:
+                logger.warning(f"⚠️ Failed to create test data: {result.stderr}")
+        else:
+            logger.info("🏠 Local development - skipping auto-load test data")
+
+    except Exception as e:
+        logger.error(f"❌ Error in auto-load test data: {e}")
+        logger.info("⚠️ Continuing without test data")
 
 @app.get("/")
 async def root():
