@@ -4,7 +4,7 @@ import './App.css';
 import SiniestroForm from './components/SiniestroForm';
 import SiniestrosList from './components/SiniestrosList';
 import SiniestroDetail from './components/SiniestroDetail';
-import SiniestroEdit from './components/SiniestroEdit';
+import InvestigacionForm from './components/InvestigacionForm';
 
 function App() {
   return (
@@ -22,6 +22,7 @@ function App() {
             <Route exact path="/" component={SiniestroForm} />
             <Route path="/siniestro/nuevo" component={SiniestroForm} />
             <Route path="/siniestro/:id/editar" component={SiniestroForm} />
+            <Route path="/siniestro/:id/investigacion" component={InvestigacionForm} />
             <Route path="/siniestros" component={SiniestrosList} />
             <Route path="/siniestro/:id" component={SiniestroDetail} />
           </Switch>
