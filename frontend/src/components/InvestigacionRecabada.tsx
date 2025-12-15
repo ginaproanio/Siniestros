@@ -226,13 +226,13 @@ const InvestigacionRecabada: React.FC<Props> = ({ siniestroId }) => {
                       const formDataUpload = new FormData();
                       formDataUpload.append("file", file);
 
-                      const response = await axios.post(
-                        "/api/v1/upload-imagen",
-                        formDataUpload,
-                        {
-                          headers: { "Content-Type": "multipart/form-data" },
-                        }
-                      );
+                    const response = await axios.post(
+                      "/api/v1/siniestros/upload-image",
+                      formDataUpload,
+                      {
+                        headers: { "Content-Type": "multipart/form-data" },
+                      }
+                    );
 
                       const imageUrl = response.data.url;
                       setFormData((prev) => ({
@@ -290,7 +290,7 @@ const InvestigacionRecabada: React.FC<Props> = ({ siniestroId }) => {
                     formDataUpload.append("file", file);
 
                     const response = await axios.post(
-                      "/api/v1/upload-imagen",
+                      "/api/v1/siniestros/upload-image",
                       formDataUpload,
                       {
                         headers: { "Content-Type": "multipart/form-data" },
@@ -352,7 +352,7 @@ const InvestigacionRecabada: React.FC<Props> = ({ siniestroId }) => {
                     formDataUpload.append("file", file);
 
                     const response = await axios.post(
-                      "/api/v1/upload-imagen",
+                      "/api/v1/siniestros/upload-image",
                       formDataUpload,
                       {
                         headers: { "Content-Type": "multipart/form-data" },
