@@ -96,8 +96,64 @@ async def update_siniestro(
         raise HTTPException(status_code=404, detail="Siniestro no encontrado")
 
     update_data = siniestro_update.model_dump(exclude_unset=True)
+
+    # Manejar campos especiales que no están en el modelo base
+    objeto_asegurado_data = update_data.pop('objeto_asegurado', None)
+    asegurado_data = update_data.pop('asegurado', None)
+    beneficiario_data = update_data.pop('beneficiario', None)
+    conductor_data = update_data.pop('conductor', None)
+
+    # Actualizar campos del siniestro principal
     for field, value in update_data.items():
         setattr(db_siniestro, field, value)
+
+    # Manejar objeto asegurado
+    if objeto_asegurado_data:
+        if db_siniestro.objeto_asegurado:
+            # Actualizar objeto existente
+            for field, value in objeto_asegurado_data.items():
+                setattr(db_siniestro.objeto_asegurado, field, value)
+        else:
+            # Crear nuevo objeto asegurado
+            objeto_asegurado_data['siniestro_id'] = siniestro_id
+            db_objeto = models.ObjetoAsegurado(**objeto_asegurado_data)
+            db.add(db_objeto)
+
+    # Manejar asegurado
+    if asegurado_data:
+        if db_siniestro.asegurado:
+            # Actualizar asegurado existente
+            for field, value in asegurado_data.items():
+                setattr(db_siniestro.asegurado, field, value)
+        else:
+            # Crear nuevo asegurado
+            asegurado_data['siniestro_id'] = siniestro_id
+            db_asegurado = models.Asegurado(**asegurado_data)
+            db.add(db_asegurado)
+
+    # Manejar beneficiario
+    if beneficiario_data:
+        if db_siniestro.beneficiario:
+            # Actualizar beneficiario existente
+            for field, value in beneficiario_data.items():
+                setattr(db_siniestro.beneficiario, field, value)
+        else:
+            # Crear nuevo beneficiario
+            beneficiario_data['siniestro_id'] = siniestro_id
+            db_beneficiario = models.Beneficiario(**beneficiario_data)
+            db.add(db_beneficiario)
+
+    # Manejar conductor
+    if conductor_data:
+        if db_siniestro.conductor:
+            # Actualizar conductor existente
+            for field, value in conductor_data.items():
+                setattr(db_siniestro.conductor, field, value)
+        else:
+            # Crear nuevo conductor
+            conductor_data['siniestro_id'] = siniestro_id
+            db_conductor = models.Conductor(**conductor_data)
+            db.add(db_conductor)
 
     db.commit()
     db.refresh(db_siniestro)

@@ -233,3 +233,9 @@ class SiniestroUpdate(BaseModel):
 
     # Misiva de investigación
     misiva_investigacion: Optional[str] = None
+
+    # Relaciones anidadas para actualización
+    objeto_asegurado: Optional[ObjetoAseguradoCreate] = None
+    asegurado: Optional[AseguradoCreate] = None
+    beneficiario: Optional[BeneficiarioCreate] = None
+    conductor: Optional[ConductorCreate] = None

@@ -188,6 +188,16 @@ const SiniestroEdit: React.FC = () => {
       <form onSubmit={handleSubmit}>
         <div className="form-row">
           <div className="form-group">
+            <label>RUC Compañía:</label>
+            <input
+              type="text"
+              name="ruc_compania"
+              value={formData.ruc_compania || ""}
+              onChange={handleInputChange}
+              placeholder="Ej: 1791240014001"
+            />
+          </div>
+          <div className="form-group">
             <label>Compañía de Seguros:</label>
             <input
               type="text"
@@ -197,6 +207,9 @@ const SiniestroEdit: React.FC = () => {
               required
             />
           </div>
+        </div>
+
+        <div className="form-row">
           <div className="form-group">
             <label>Número de Reclamo:</label>
             <input
@@ -205,6 +218,30 @@ const SiniestroEdit: React.FC = () => {
               value={formData.reclamo_num}
               onChange={handleInputChange}
               required
+            />
+          </div>
+          <div className="form-group">
+            <label>Tipo de Reclamo:</label>
+            <select
+              name="tipo_reclamo"
+              value={formData.tipo_reclamo || ""}
+              onChange={handleInputChange}
+            >
+              <option value="">Seleccionar...</option>
+              <option value="ROBO">Robo</option>
+              <option value="ACCIDENTE">Accidente</option>
+              <option value="INCENDIO">Incendio</option>
+              <option value="OTRO">Otro</option>
+            </select>
+          </div>
+          <div className="form-group">
+            <label>Póliza:</label>
+            <input
+              type="text"
+              name="poliza"
+              value={formData.poliza || ""}
+              onChange={handleInputChange}
+              placeholder="Ej: 3351"
             />
           </div>
         </div>
@@ -299,14 +336,148 @@ const SiniestroEdit: React.FC = () => {
           </div>
           <div className="form-group">
             <label className="checkbox-label">
+              Daños a Terceros
               <input
                 type="checkbox"
                 name="danos_terceros"
                 checked={formData.danos_terceros}
                 onChange={handleInputChange}
               />
-              Daños a Terceros
             </label>
+          </div>
+        </div>
+
+        {/* OBJETO ASEGURADO */}
+        <div style={{ marginBottom: '30px', padding: '20px', backgroundColor: '#fff8e1', borderRadius: '8px' }}>
+          <h3 style={{ color: '#0f172a', marginBottom: '15px' }}>🚗 Datos del Objeto Asegurado</h3>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label>Placa:</label>
+              <input
+                type="text"
+                value={formData.objeto_asegurado?.placa || ""}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setFormData((prev) => ({
+                    ...prev,
+                    objeto_asegurado: { ...prev.objeto_asegurado, placa: value },
+                  }));
+                }}
+                placeholder="Ej: PFB4337"
+              />
+            </div>
+            <div className="form-group">
+              <label>Marca:</label>
+              <input
+                type="text"
+                value={formData.objeto_asegurado?.marca || ""}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setFormData((prev) => ({
+                    ...prev,
+                    objeto_asegurado: { ...prev.objeto_asegurado, marca: value },
+                  }));
+                }}
+                placeholder="Ej: TOYOTA"
+              />
+            </div>
+            <div className="form-group">
+              <label>Modelo:</label>
+              <input
+                type="text"
+                value={formData.objeto_asegurado?.modelo || ""}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setFormData((prev) => ({
+                    ...prev,
+                    objeto_asegurado: { ...prev.objeto_asegurado, modelo: value },
+                  }));
+                }}
+                placeholder="Ej: Corolla Cross High AC 1.8 5P 4x2"
+              />
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label>Tipo:</label>
+              <input
+                type="text"
+                value={formData.objeto_asegurado?.tipo || ""}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setFormData((prev) => ({
+                    ...prev,
+                    objeto_asegurado: { ...prev.objeto_asegurado, tipo: value },
+                  }));
+                }}
+                placeholder="Ej: Jeep"
+              />
+            </div>
+            <div className="form-group">
+              <label>Color:</label>
+              <input
+                type="text"
+                value={formData.objeto_asegurado?.color || ""}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setFormData((prev) => ({
+                    ...prev,
+                    objeto_asegurado: { ...prev.objeto_asegurado, color: value },
+                  }));
+                }}
+                placeholder="Ej: Blanco"
+              />
+            </div>
+            <div className="form-group">
+              <label>Año:</label>
+              <input
+                type="number"
+                value={formData.objeto_asegurado?.ano || ""}
+                onChange={(e) => {
+                  const value = parseInt(e.target.value) || undefined;
+                  setFormData((prev) => ({
+                    ...prev,
+                    objeto_asegurado: { ...prev.objeto_asegurado, ano: value },
+                  }));
+                }}
+                placeholder="Ej: 2023"
+              />
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label>Serie Motor:</label>
+              <input
+                type="text"
+                value={formData.objeto_asegurado?.serie_motor || ""}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setFormData((prev) => ({
+                    ...prev,
+                    objeto_asegurado: { ...prev.objeto_asegurado, serie_motor: value },
+                  }));
+                }}
+                placeholder="Ej: 2ZR2X01895"
+              />
+            </div>
+            <div className="form-group">
+              <label>Chasis:</label>
+              <input
+                type="text"
+                value={formData.objeto_asegurado?.chasis || ""}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setFormData((prev) => ({
+                    ...prev,
+                    objeto_asegurado: { ...prev.objeto_asegurado, chasis: value },
+                  }));
+                }}
+                placeholder="Ej: 9BRKZAAGXR0669964"
+              />
+            </div>
           </div>
         </div>
 
