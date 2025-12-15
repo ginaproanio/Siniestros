@@ -1,5 +1,6 @@
 import axios from "axios";
 import React, { useState, useEffect, useCallback } from "react";
+import { useParams } from "react-router-dom";
 
 // Configurar base URL para el backend
 const BACKEND_URL =
@@ -22,11 +23,10 @@ interface FormData {
   anexo?: string[]; // Array of strings for numbered list
 }
 
-interface Props {
-  siniestroId: number;
-}
+const InvestigacionRecabada: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const siniestroId = parseInt(id || "0");
 
-const InvestigacionRecabada: React.FC<Props> = ({ siniestroId }) => {
   console.log("🔍 InvestigacionRecabada component rendered with siniestroId:", siniestroId);
 
   const [formData, setFormData] = useState<FormData>({});

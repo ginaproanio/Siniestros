@@ -1067,7 +1067,7 @@ const SiniestroEdit: React.FC = () => {
                 <br />
                 Timestamp: {new Date().toISOString()}
               </div>
-              <InvestigacionRecabada siniestroId={parseInt(id)} />
+              <InvestigacionRecabada />
             </div>
           ) : (
             <div style={{

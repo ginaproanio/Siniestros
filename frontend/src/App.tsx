@@ -5,6 +5,7 @@ import SiniestroForm from './components/SiniestroForm';
 import SiniestrosList from './components/SiniestrosList';
 import SiniestroDetail from './components/SiniestroDetail';
 import SiniestroEdit from './components/SiniestroEdit';
+import InvestigacionRecabada from './components/InvestigacionRecabada';
 
 function App() {
   return (
@@ -13,7 +14,7 @@ function App() {
         <header className="App-header">
           <h1>Sistema de Informes de Siniestros</h1>
           <nav>
-            <Link to="/">Nuevo Siniestro</Link> | <Link to="/siniestros">Ver Siniestros</Link>
+            <Link to="/">Nuevo Siniestro</Link> | <Link to="/siniestros">Ver Siniestros</Link> | <Link to="/investigacion">Investigación</Link>
           </nav>
           <p>Llena los campos obligatorios para generar el informe.</p>
         </header>
@@ -21,6 +22,7 @@ function App() {
           <Switch>
             <Route exact path="/" component={SiniestroForm} />
             <Route path="/siniestros" component={SiniestrosList} />
+            <Route path="/siniestro/:id/investigacion" component={InvestigacionRecabada} />
             <Route path="/siniestro/:id/editar" component={SiniestroEdit} />
             <Route path="/siniestro/:id" component={SiniestroDetail} />
           </Switch>
