@@ -309,17 +309,15 @@ async def generar_pdf(siniestro_id: int, db: Session = Depends(get_db)):
 
         from fastapi.responses import Response
 
-        # Generar nombre de archivo seguro con caracteres especiales
+        # Generar nombre de archivo seguro (solo número de reclamo)
         import unicodedata
         import re
 
-        # Crear nombre base del archivo
-        compania = siniestro.compania_seguros or "sin_compania"
+        # Crear nombre base del archivo (solo número de reclamo)
         reclamo = siniestro.reclamo_num or str(siniestro_id)
 
-        # Normalizar caracteres especiales (ñ, á, é, í, ó, ú)
-        filename_base = f"siniestro_{reclamo}_{compania}"
-        filename_base = unicodedata.normalize('NFKD', filename_base).encode('ASCII', 'ignore').decode('ASCII')
+        # Normalizar caracteres especiales para filename
+        filename_base = unicodedata.normalize('NFKD', reclamo).encode('ASCII', 'ignore').decode('ASCII')
 
         # Remover caracteres no seguros para filename
         filename_base = re.sub(r'[^\w\-_\.]', '_', filename_base)
@@ -401,21 +399,19 @@ async def generar_pdf_sin_firma(siniestro_id: int, db: Session = Depends(get_db)
 
         from fastapi.responses import Response
 
-        # Generar nombre de archivo seguro con caracteres especiales
+        # Generar nombre de archivo seguro (solo número de reclamo)
         import unicodedata
         import re
 
-        # Crear nombre base del archivo
-        compania = siniestro.compania_seguros or "sin_compania"
+        # Crear nombre base del archivo (solo número de reclamo)
         reclamo = siniestro.reclamo_num or str(siniestro_id)
 
-        # Normalizar caracteres especiales (ñ, á, é, í, ó, ú)
-        filename_base = f"siniestro_sin_firma_{reclamo}_{compania}"
-        filename_base = unicodedata.normalize('NFKD', filename_base).encode('ASCII', 'ignore').decode('ASCII')
+        # Normalizar caracteres especiales para filename
+        filename_base = unicodedata.normalize('NFKD', reclamo).encode('ASCII', 'ignore').decode('ASCII')
 
         # Remover caracteres no seguros para filename
         filename_base = re.sub(r'[^\w\-_\.]', '_', filename_base)
-        filename_safe = f"{filename_base}.pdf"
+        filename_safe = f"{filename_base}_sin_firma.pdf"
 
         return Response(
             content=pdf_data,
