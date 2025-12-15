@@ -1048,7 +1048,40 @@ const SiniestroEdit: React.FC = () => {
               <li>Anexo (lista numerada)</li>
             </ul>
           </div>
-          {id && <InvestigacionRecabada siniestroId={parseInt(id)} />}
+          {id ? (
+            <div>
+              <div style={{
+                backgroundColor: '#ff6b6b',
+                color: 'white',
+                padding: '20px',
+                margin: '20px 0',
+                borderRadius: '8px',
+                border: '3px solid #d63031',
+                fontSize: '18px',
+                fontWeight: 'bold',
+                textAlign: 'center'
+              }}>
+                🔴 DEBUG: COMPONENTE DEBE APARECER AQUÍ 🔴
+                <br />
+                ID del siniestro: {id}
+                <br />
+                Timestamp: {new Date().toISOString()}
+              </div>
+              <InvestigacionRecabada siniestroId={parseInt(id)} />
+            </div>
+          ) : (
+            <div style={{
+              backgroundColor: '#ffa726',
+              color: 'white',
+              padding: '15px',
+              margin: '15px 0',
+              borderRadius: '5px',
+              textAlign: 'center',
+              fontWeight: 'bold'
+            }}>
+              ⚠️ NO HAY ID - COMPONENTE NO SE RENDERIZA ⚠️
+            </div>
+          )}
         </div>
 
         <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
