@@ -36,12 +36,12 @@ def create_test_data():
 
         logger.info("🏗️ Creando siniestro de prueba...")
 
-        # Crear siniestro principal
+        # Crear siniestro principal con datos específicos del requerimiento
         siniestro = models.Siniestro(
-            compania_seguros="ZURICH SEGUROS ECUADOR S.A.",
+            compania_seguros="Zurich Seguros Ecuador S.A.",
             ruc_compania="1791240014001",
             tipo_reclamo="ROBO",
-            poliza="3351",
+            poliza="",
             reclamo_num="25-01-VH-7079448",
             fecha_siniestro=datetime.fromisoformat("2025-11-28T10:49:00"),
             fecha_reportado=datetime.fromisoformat("2025-11-30T10:49:00"),
@@ -55,10 +55,10 @@ def create_test_data():
             cobertura="Todo riesgo",
 
             # Nuevos campos de declaración
-            fecha_declaracion=datetime.fromisoformat("2025-11-28T10:49:00"),
+            fecha_declaracion=datetime.fromisoformat("2025-11-30T10:49:00"),
             persona_declara_tipo="asegurado",
             persona_declara_cedula="2100348008",
-            persona_declara_nombre="LANDAZURI MIRANDA PATRICIA VERONI",
+            persona_declara_nombre="LANDAZURI MIRANDA PATRICIA VERONICA",
             persona_declara_relacion="Propietario del vehículo",
 
             # Misiva de investigación
