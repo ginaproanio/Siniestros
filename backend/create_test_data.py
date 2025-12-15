@@ -5,6 +5,7 @@ Ejecutar desde el directorio backend: python create_test_data.py
 """
 import sys
 import os
+from datetime import datetime
 
 # Agregar el directorio actual al path para importar módulos
 sys.path.insert(0, os.path.dirname(__file__))
@@ -42,19 +43,19 @@ def create_test_data():
             tipo_reclamo="ROBO",
             poliza="3351",
             reclamo_num="25-01-VH-7079448",
-            fecha_siniestro="2025-11-28T10:49:00",
-            fecha_reportado="2025-11-30T10:49:00",
+            fecha_siniestro=datetime.fromisoformat("2025-11-28T10:49:00"),
+            fecha_reportado=datetime.fromisoformat("2025-11-30T10:49:00"),
             direccion_siniestro="Metroparqueos (Sucursal Eloy Alfaro). Pradera y Mariano Aguilera",
             ubicacion_geo_lat=-0.193108,
             ubicacion_geo_lng=-78.486227,
             danos_terceros=False,
             ejecutivo_cargo="",
-            fecha_designacion="2025-12-12",
+            fecha_designacion=datetime.fromisoformat("2025-12-12T00:00:00"),
             tipo_siniestro="Vehicular",
             cobertura="Todo riesgo",
 
             # Nuevos campos de declaración
-            fecha_declaracion="2025-11-28T10:49:00",
+            fecha_declaracion=datetime.fromisoformat("2025-11-28T10:49:00"),
             persona_declara_tipo="asegurado",
             persona_declara_cedula="2100348008",
             persona_declara_nombre="LANDAZURI MIRANDA PATRICIA VERONI",

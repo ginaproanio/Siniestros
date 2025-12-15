@@ -32,12 +32,21 @@ async def startup_event():
         # 1. DROP ALL EXISTING TABLES
         logger.info("🗑️ Eliminando todas las tablas existentes...")
         with engine.connect() as conn:
-            # Get all table names
-            result = conn.execute(sa.text("""
-                SELECT tablename FROM pg_tables
-                WHERE schemaname = 'public'
-            """))
-            tables = [row[0] for row in result]
+            # Get all table names - compatible with both PostgreSQL and SQLite
+            if "postgresql" in str(engine.url):
+                # PostgreSQL
+                result = conn.execute(sa.text("""
+                    SELECT tablename FROM pg_tables
+                    WHERE schemaname = 'public'
+                """))
+                tables = [row[0] for row in result]
+            else:
+                # SQLite
+                result = conn.execute(sa.text("""
+                    SELECT name FROM sqlite_master
+                    WHERE type='table' AND name NOT LIKE 'sqlite_%'
+                """))
+                tables = [row[0] for row in result]
 
             if tables:
                 # Drop tables with CASCADE to handle foreign keys

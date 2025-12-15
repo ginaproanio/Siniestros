@@ -22,8 +22,8 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 if DATABASE_URL:
     DATABASE_URL = normalize_database_url(DATABASE_URL)
 else:
-    # Fallback for local development
-    DATABASE_URL = "postgresql://user:password@localhost/siniestros_db"
+    # Fallback for local development - use SQLite
+    DATABASE_URL = "sqlite:///./siniestros.db"
 
 # Create SQLAlchemy engine
 engine = create_engine(DATABASE_URL)
