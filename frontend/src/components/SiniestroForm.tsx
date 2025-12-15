@@ -205,16 +205,6 @@ const SiniestroForm: React.FC = () => {
 
                   <div className="form-row">
                     <div className="form-group">
-                      <label>Compañía de Seguros:</label>
-                      <input
-                        type="text"
-                        name="compania_seguros"
-                        value={formData.compania_seguros}
-                        onChange={handleInputChange}
-                        required
-                      />
-                    </div>
-                    <div className="form-group">
                       <label>RUC Compañía:</label>
                       <input
                         type="text"
@@ -222,6 +212,16 @@ const SiniestroForm: React.FC = () => {
                         value={formData.ruc_compania || ""}
                         onChange={handleInputChange}
                         placeholder="Ej: 1791240014001"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Compañía de Seguros:</label>
+                      <input
+                        type="text"
+                        name="compania_seguros"
+                        value={formData.compania_seguros}
+                        onChange={handleInputChange}
+                        required
                       />
                     </div>
                   </div>
@@ -366,13 +366,13 @@ const SiniestroForm: React.FC = () => {
                     </div>
                     <div className="form-group">
                       <label className="checkbox-label">
+                        Daños a Terceros
                         <input
                           type="checkbox"
                           name="danos_terceros"
                           checked={formData.danos_terceros}
                           onChange={handleInputChange}
                         />
-                        Daños a Terceros
                       </label>
                     </div>
                   </div>
