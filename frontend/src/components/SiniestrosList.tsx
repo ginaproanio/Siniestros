@@ -86,14 +86,17 @@ const SiniestrosList: React.FC = () => {
                   <td>{new Date(siniestro.fecha_siniestro).toLocaleDateString()}</td>
                   <td>{siniestro.tipo_siniestro}</td>
                   <td>
-                    <button onClick={() => window.location.href = `/siniestro/${siniestro.id}`}>
-                      Ver Detalles
-                    </button>
                     <button
                       onClick={() => window.location.href = `/siniestro/${siniestro.id}/editar`}
-                      style={{ backgroundColor: '#ffc107', marginLeft: '5px' }}
+                      style={{ backgroundColor: '#ffc107' }}
                     >
                       Editar
+                    </button>
+                    <button
+                      onClick={() => window.location.href = `/siniestro/${siniestro.id}/investigacion`}
+                      style={{ backgroundColor: '#28a745', marginLeft: '5px' }}
+                    >
+                      Registrar Investigación
                     </button>
                   </td>
                 </tr>

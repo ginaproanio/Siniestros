@@ -5,6 +5,7 @@ import SiniestroForm from './components/SiniestroForm';
 import SiniestrosList from './components/SiniestrosList';
 import SiniestroDetail from './components/SiniestroDetail';
 import SiniestroEdit from './components/SiniestroEdit';
+import InvestigacionForm from './components/InvestigacionForm';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
             <Route exact path="/" component={SiniestroForm} />
             <Route path="/siniestros" component={SiniestrosList} />
             <Route path="/siniestro/:id/editar" component={SiniestroEdit} />
+            <Route path="/siniestro/:id/investigacion" component={InvestigacionForm} />
             <Route path="/siniestro/:id" component={SiniestroDetail} />
           </Switch>
         </main>
