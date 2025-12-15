@@ -510,14 +510,14 @@ button[type="button"]:nth-child(2):hover {
 }
 
 .tab-button {
-  background: none;
+  background-color: #e2e8f0; /* Gris claro para todas las pestañas */
+  color: var(--color-negro-corporativo);
   border: none;
+  border-bottom: 2px solid #e2e8f0;
   padding: var(--spacing-lg) var(--spacing-xl);
   cursor: pointer;
   font-size: 16px;
   font-weight: 500;
-  color: var(--color-gris-texto);
-  border-bottom: 3px solid transparent;
   transition: all 0.3s ease;
   white-space: nowrap;
   position: relative;
@@ -526,14 +526,7 @@ button[type="button"]:nth-child(2):hover {
 
 .tab-button:hover {
   color: var(--color-negro-corporativo);
-  background-color: rgba(15, 23, 42, 0.05);
-}
-
-/* Sistema simple: gris para inactivas, rojo para activa */
-.tab-button {
-  background-color: #e2e8f0; /* Gris claro para todas las pestañas */
-  color: var(--color-negro-corporativo);
-  border-bottom: 2px solid #e2e8f0;
+  background-color: #d1d5db; /* Gris más oscuro en hover */
 }
 
 .tab-button.active {
