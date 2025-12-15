@@ -159,27 +159,34 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
         title = Paragraph("INFORME DE INVESTIGACIÓN<br/>DE SINIESTRO", title_style)
         story.append(title)
 
-        # Información del siniestro en la carátula
+        # Información del siniestro en la carátula (solo campos solicitados)
         caratula_data = [
-            ["Compañía de Seguros:", siniestro.compania_seguros or "No especificada"],
-            ["Número de Reclamo:", siniestro.reclamo_num or "No especificado"],
-            ["Fecha del Siniestro:", siniestro.fecha_siniestro.strftime("%d/%m/%Y") if siniestro.fecha_siniestro else "No especificada"],
-            ["Tipo de Siniestro:", siniestro.tipo_siniestro or "No especificado"],
-            ["Dirección del Siniestro:", siniestro.direccion_siniestro or "No especificada"],
+            ["Compañía de Seguros:", siniestro.compania_seguros or ""],
+            ["Número de Reclamo:", siniestro.reclamo_num or ""],
+            ["Asegurado:", siniestro.asegurado.nombre if siniestro.asegurado and siniestro.asegurado.nombre else ""],
+            ["Nombre de Investigador:", "Susana Espinosa"],
         ]
 
-        caratula_table = Table(caratula_data, colWidths=[2.5 * inch, 4 * inch])
-        caratula_table.setStyle(
-            TableStyle([
-                ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
-                ("FONTSIZE", (0, 0), (-1, -1), 12),
-                ("ALIGN", (0, 0), (-1, -1), "LEFT"),
-                ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
-                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-            ])
-        )
-        story.append(caratula_table)
-        story.append(Spacer(1, 40))
+        # Solo mostrar filas que tengan información
+        caratula_data_filtered = [row for row in caratula_data if row[1].strip()]
+
+        if caratula_data_filtered:
+            caratula_table = Table(caratula_data_filtered, colWidths=[2.2 * inch, 4.3 * inch])
+            caratula_table.setStyle(
+                TableStyle([
+                    ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
+                    ("FONTSIZE", (0, 0), (-1, -1), 12),
+                    ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                    ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
+                    ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 6),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+                    ("TOPPADDING", (0, 0), (-1, -1), 4),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+                ])
+            )
+            story.append(caratula_table)
+            story.append(Spacer(1, 40))
 
         # Fecha de generación
         fecha_gen = Paragraph(
@@ -187,7 +194,7 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
             ParagraphStyle("Fecha", parent=styles["Normal"], fontSize=10, alignment=TA_CENTER)
         )
         story.append(fecha_gen)
-        story.append(Spacer(1, 40))  # Espacio antes del índice
+        story.append(Spacer(1, 60))  # Salto de página
 
         # ==================== ÍNDICE ====================
         logger.info("📋 Generando índice...")
@@ -217,7 +224,7 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
             story.append(Paragraph(item, normal_style))
             story.append(Spacer(1, 5))
 
-        story.append(Spacer(1, 40))  # Salto de página
+        story.append(Spacer(1, 60))  # Salto de página
 
         # ==================== REGISTRO DEL SINIESTRO ====================
         logger.info("📝 Generando registro del siniestro...")
@@ -226,49 +233,60 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
         story.append(registro_title)
         story.append(Spacer(1, 15))
 
-        # Datos básicos del siniestro
-        registro_data = [
-            ["Compañía de Seguros:", siniestro.compania_seguros or "No especificada"],
-            ["RUC Compañía:", siniestro.ruc_compania or "No especificado"],
-            ["Tipo de Reclamo:", siniestro.tipo_reclamo or "No especificado"],
-            ["Póliza:", siniestro.poliza or "No especificada"],
-            ["Número de Reclamo:", siniestro.reclamo_num or "No especificado"],
-            ["Fecha del Siniestro:", siniestro.fecha_siniestro.strftime("%d/%m/%Y") if siniestro.fecha_siniestro else "No especificada"],
-            ["Fecha Reportado:", siniestro.fecha_reportado.strftime("%d/%m/%Y") if siniestro.fecha_reportado else "No especificada"],
-            ["Dirección del Siniestro:", siniestro.direccion_siniestro or "No especificada"],
-            ["Ubicación Geo Lat:", str(siniestro.ubicacion_geo_lat) if siniestro.ubicacion_geo_lat else "No especificada"],
-            ["Ubicación Geo Lng:", str(siniestro.ubicacion_geo_lng) if siniestro.ubicacion_geo_lng else "No especificada"],
-            ["Daños a Terceros:", "Sí" if siniestro.danos_terceros else "No"],
-            ["Ejecutivo a Cargo:", siniestro.ejecutivo_cargo or "No especificado"],
-            ["Fecha de Designación:", siniestro.fecha_designacion.strftime("%d/%m/%Y") if siniestro.fecha_designacion else "No especificada"],
-            ["Tipo de Siniestro:", siniestro.tipo_siniestro or "No especificado"],
-            ["Cobertura:", siniestro.cobertura or "No especificada"],
+        # Datos básicos del siniestro (solo filas con información)
+        registro_data_raw = [
+            ["Compañía de Seguros:", siniestro.compania_seguros or ""],
+            ["RUC Compañía:", siniestro.ruc_compania or ""],
+            ["Tipo de Reclamo:", siniestro.tipo_reclamo or ""],
+            ["Póliza:", siniestro.poliza or ""],
+            ["Número de Reclamo:", siniestro.reclamo_num or ""],
+            ["Fecha del Siniestro:", siniestro.fecha_siniestro.strftime("%d/%m/%Y") if siniestro.fecha_siniestro else ""],
+            ["Fecha Reportado:", siniestro.fecha_reportado.strftime("%d/%m/%Y") if siniestro.fecha_reportado else ""],
+            ["Dirección del Siniestro:", siniestro.direccion_siniestro or ""],
+            ["Ubicación Geo Lat:", str(siniestro.ubicacion_geo_lat) if siniestro.ubicacion_geo_lat else ""],
+            ["Ubicación Geo Lng:", str(siniestro.ubicacion_geo_lng) if siniestro.ubicacion_geo_lng else ""],
+            ["Daños a Terceros:", "Sí" if siniestro.danos_terceros else ""],
+            ["Ejecutivo a Cargo:", siniestro.ejecutivo_cargo or ""],
+            ["Fecha de Designación:", siniestro.fecha_designacion.strftime("%d/%m/%Y") if siniestro.fecha_designacion else ""],
+            ["Tipo de Siniestro:", siniestro.tipo_siniestro or ""],
+            ["Cobertura:", siniestro.cobertura or ""],
         ]
 
-        registro_table = Table(registro_data, colWidths=[2.5 * inch, 4 * inch])
-        registro_table.setStyle(
-            TableStyle([
-                ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
-                ("FONTSIZE", (0, 0), (-1, -1), 10),
-                ("GRID", (0, 0), (-1, -1), 1, colors.black),
-                ("ALIGN", (0, 0), (0, -1), "LEFT"),
-                ("ALIGN", (1, 0), (1, -1), "LEFT"),
-                ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
-            ])
-        )
-        story.append(registro_table)
-        story.append(Spacer(1, 20))
+        # Filtrar solo filas que tengan información
+        registro_data = [row for row in registro_data_raw if row[1].strip()]
 
-        # Declaración del siniestro
-        if siniestro.fecha_declaracion or siniestro.persona_declara_tipo:
+        if registro_data:
+            registro_table = Table(registro_data, colWidths=[2.5 * inch, 4 * inch])
+            registro_table.setStyle(
+                TableStyle([
+                    ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
+                    ("FONTSIZE", (0, 0), (-1, -1), 10),
+                    ("GRID", (0, 0), (-1, -1), 1, colors.black),
+                    ("ALIGN", (0, 0), (0, -1), "LEFT"),
+                    ("ALIGN", (1, 0), (1, -1), "LEFT"),
+                    ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 6),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+                    ("TOPPADDING", (0, 0), (-1, -1), 4),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+                ])
+            )
+            story.append(registro_table)
+            story.append(Spacer(1, 20))
+
+        # Declaración del siniestro (solo si tiene información)
+        declaracion_data_raw = [
+            ["Fecha de Declaración:", siniestro.fecha_declaracion.strftime("%d/%m/%Y") if siniestro.fecha_declaracion else ""],
+            ["Persona que Declara (Tipo):", siniestro.persona_declara_tipo or ""],
+            ["Cédula/RUC:", siniestro.persona_declara_cedula or ""],
+            ["Nombre/Razón Social:", siniestro.persona_declara_nombre or ""],
+            ["Relación:", siniestro.persona_declara_relacion or ""],
+        ]
+
+        declaracion_data = [row for row in declaracion_data_raw if row[1].strip()]
+
+        if declaracion_data:
             story.append(Paragraph("Declaración del Siniestro:", section_style))
-            declaracion_data = [
-                ["Fecha de Declaración:", siniestro.fecha_declaracion.strftime("%d/%m/%Y") if siniestro.fecha_declaracion else "No especificada"],
-                ["Persona que Declara (Tipo):", siniestro.persona_declara_tipo or "No especificado"],
-                ["Cédula/RUC:", siniestro.persona_declara_cedula or "No especificada"],
-                ["Nombre/Razón Social:", siniestro.persona_declara_nombre or "No especificado"],
-                ["Relación:", siniestro.persona_declara_relacion or "No especificada"],
-            ]
             declaracion_table = Table(declaracion_data, colWidths=[2.5 * inch, 4 * inch])
             declaracion_table.setStyle(
                 TableStyle([
@@ -278,107 +296,143 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                     ("ALIGN", (0, 0), (0, -1), "LEFT"),
                     ("ALIGN", (1, 0), (1, -1), "LEFT"),
                     ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 6),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+                    ("TOPPADDING", (0, 0), (-1, -1), 4),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
                 ])
             )
             story.append(declaracion_table)
             story.append(Spacer(1, 15))
 
-        # Información de partes relacionadas
+        # Información de partes relacionadas (solo si tienen información)
         if siniestro.asegurado:
-            story.append(Paragraph("Información del Asegurado:", section_style))
-            asegurado_data = [
-                ["Tipo:", siniestro.asegurado.tipo or "No especificado"],
-                ["Cédula/RUC:", siniestro.asegurado.cedula or siniestro.asegurado.ruc or "No especificada"],
-                ["Nombre/Empresa:", siniestro.asegurado.nombre or siniestro.asegurado.empresa or "No especificado"],
-                ["Representante Legal:", siniestro.asegurado.representante_legal or "No aplica"],
-                ["Celular:", siniestro.asegurado.celular or siniestro.asegurado.telefono or "No especificado"],
-                ["Correo:", siniestro.asegurado.correo or "No especificado"],
-                ["Dirección:", siniestro.asegurado.direccion or "No especificada"],
-                ["Parentesco:", siniestro.asegurado.parentesco or "No aplica"],
+            asegurado_data_raw = [
+                ["Tipo:", siniestro.asegurado.tipo or ""],
+                ["Cédula/RUC:", siniestro.asegurado.cedula or siniestro.asegurado.ruc or ""],
+                ["Nombre/Empresa:", siniestro.asegurado.nombre or siniestro.asegurado.empresa or ""],
+                ["Representante Legal:", siniestro.asegurado.representante_legal or ""],
+                ["Celular:", siniestro.asegurado.celular or siniestro.asegurado.telefono or ""],
+                ["Correo:", siniestro.asegurado.correo or ""],
+                ["Dirección:", siniestro.asegurado.direccion or ""],
+                ["Parentesco:", siniestro.asegurado.parentesco or ""],
             ]
-            asegurado_table = Table(asegurado_data, colWidths=[2.5 * inch, 4 * inch])
-            asegurado_table.setStyle(
-                TableStyle([
-                    ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
-                    ("FONTSIZE", (0, 0), (-1, -1), 10),
-                    ("GRID", (0, 0), (-1, -1), 1, colors.black),
-                    ("ALIGN", (0, 0), (0, -1), "LEFT"),
-                    ("ALIGN", (1, 0), (1, -1), "LEFT"),
-                    ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
-                ])
-            )
-            story.append(asegurado_table)
-            story.append(Spacer(1, 15))
+
+            asegurado_data = [row for row in asegurado_data_raw if row[1].strip()]
+
+            if asegurado_data:
+                story.append(Paragraph("Información del Asegurado:", section_style))
+                asegurado_table = Table(asegurado_data, colWidths=[2.5 * inch, 4 * inch])
+                asegurado_table.setStyle(
+                    TableStyle([
+                        ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
+                        ("FONTSIZE", (0, 0), (-1, -1), 10),
+                        ("GRID", (0, 0), (-1, -1), 1, colors.black),
+                        ("ALIGN", (0, 0), (0, -1), "LEFT"),
+                        ("ALIGN", (1, 0), (1, -1), "LEFT"),
+                        ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
+                        ("LEFTPADDING", (0, 0), (-1, -1), 6),
+                        ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+                        ("TOPPADDING", (0, 0), (-1, -1), 4),
+                        ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+                    ])
+                )
+                story.append(asegurado_table)
+                story.append(Spacer(1, 15))
 
         if siniestro.beneficiario:
-            story.append(Paragraph("Información del Beneficiario:", section_style))
-            beneficiario_data = [
-                ["Razón Social:", siniestro.beneficiario.razon_social or "No especificada"],
-                ["Cédula/RUC:", siniestro.beneficiario.cedula_ruc or "No especificada"],
-                ["Domicilio:", siniestro.beneficiario.domicilio or "No especificado"],
+            beneficiario_data_raw = [
+                ["Razón Social:", siniestro.beneficiario.razon_social or ""],
+                ["Cédula/RUC:", siniestro.beneficiario.cedula_ruc or ""],
+                ["Domicilio:", siniestro.beneficiario.domicilio or ""],
             ]
-            beneficiario_table = Table(beneficiario_data, colWidths=[2.5 * inch, 4 * inch])
-            beneficiario_table.setStyle(
-                TableStyle([
-                    ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
-                    ("FONTSIZE", (0, 0), (-1, -1), 10),
-                    ("GRID", (0, 0), (-1, -1), 1, colors.black),
-                    ("ALIGN", (0, 0), (0, -1), "LEFT"),
-                    ("ALIGN", (1, 0), (1, -1), "LEFT"),
-                    ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
-                ])
-            )
-            story.append(beneficiario_table)
-            story.append(Spacer(1, 15))
+
+            beneficiario_data = [row for row in beneficiario_data_raw if row[1].strip()]
+
+            if beneficiario_data:
+                story.append(Paragraph("Información del Beneficiario:", section_style))
+                beneficiario_table = Table(beneficiario_data, colWidths=[2.5 * inch, 4 * inch])
+                beneficiario_table.setStyle(
+                    TableStyle([
+                        ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
+                        ("FONTSIZE", (0, 0), (-1, -1), 10),
+                        ("GRID", (0, 0), (-1, -1), 1, colors.black),
+                        ("ALIGN", (0, 0), (0, -1), "LEFT"),
+                        ("ALIGN", (1, 0), (1, -1), "LEFT"),
+                        ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
+                        ("LEFTPADDING", (0, 0), (-1, -1), 6),
+                        ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+                        ("TOPPADDING", (0, 0), (-1, -1), 4),
+                        ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+                    ])
+                )
+                story.append(beneficiario_table)
+                story.append(Spacer(1, 15))
 
         if siniestro.conductor:
-            story.append(Paragraph("Información del Conductor:", section_style))
-            conductor_data = [
-                ["Nombre:", siniestro.conductor.nombre or "No especificado"],
-                ["Cédula:", siniestro.conductor.cedula or "No especificada"],
-                ["Celular:", siniestro.conductor.celular or "No especificado"],
-                ["Dirección:", siniestro.conductor.direccion or "No especificada"],
-                ["Parentesco:", siniestro.conductor.parentesco or "No especificado"],
+            conductor_data_raw = [
+                ["Nombre:", siniestro.conductor.nombre or ""],
+                ["Cédula:", siniestro.conductor.cedula or ""],
+                ["Celular:", siniestro.conductor.celular or ""],
+                ["Dirección:", siniestro.conductor.direccion or ""],
+                ["Parentesco:", siniestro.conductor.parentesco or ""],
             ]
-            conductor_table = Table(conductor_data, colWidths=[2.5 * inch, 4 * inch])
-            conductor_table.setStyle(
-                TableStyle([
-                    ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
-                    ("FONTSIZE", (0, 0), (-1, -1), 10),
-                    ("GRID", (0, 0), (-1, -1), 1, colors.black),
-                    ("ALIGN", (0, 0), (0, -1), "LEFT"),
-                    ("ALIGN", (1, 0), (1, -1), "LEFT"),
-                    ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
-                ])
-            )
-            story.append(conductor_table)
-            story.append(Spacer(1, 15))
+
+            conductor_data = [row for row in conductor_data_raw if row[1].strip()]
+
+            if conductor_data:
+                story.append(Paragraph("Información del Conductor:", section_style))
+                conductor_table = Table(conductor_data, colWidths=[2.5 * inch, 4 * inch])
+                conductor_table.setStyle(
+                    TableStyle([
+                        ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
+                        ("FONTSIZE", (0, 0), (-1, -1), 10),
+                        ("GRID", (0, 0), (-1, -1), 1, colors.black),
+                        ("ALIGN", (0, 0), (0, -1), "LEFT"),
+                        ("ALIGN", (1, 0), (1, -1), "LEFT"),
+                        ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
+                        ("LEFTPADDING", (0, 0), (-1, -1), 6),
+                        ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+                        ("TOPPADDING", (0, 0), (-1, -1), 4),
+                        ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+                    ])
+                )
+                story.append(conductor_table)
+                story.append(Spacer(1, 15))
 
         if siniestro.objeto_asegurado:
-            story.append(Paragraph("Información del Objeto Asegurado:", section_style))
-            objeto_data = [
-                ["Placa:", siniestro.objeto_asegurado.placa or "No especificada"],
-                ["Marca:", siniestro.objeto_asegurado.marca or "No especificada"],
-                ["Modelo:", siniestro.objeto_asegurado.modelo or "No especificado"],
-                ["Tipo:", siniestro.objeto_asegurado.tipo or "No especificado"],
-                ["Color:", siniestro.objeto_asegurado.color or "No especificado"],
-                ["Año:", str(siniestro.objeto_asegurado.ano) if siniestro.objeto_asegurado.ano else "No especificado"],
-                ["Serie Motor:", siniestro.objeto_asegurado.serie_motor or "No especificada"],
-                ["Chasis:", siniestro.objeto_asegurado.chasis or "No especificado"],
+            objeto_data_raw = [
+                ["Placa:", siniestro.objeto_asegurado.placa or ""],
+                ["Marca:", siniestro.objeto_asegurado.marca or ""],
+                ["Modelo:", siniestro.objeto_asegurado.modelo or ""],
+                ["Tipo:", siniestro.objeto_asegurado.tipo or ""],
+                ["Color:", siniestro.objeto_asegurado.color or ""],
+                ["Año:", str(siniestro.objeto_asegurado.ano) if siniestro.objeto_asegurado.ano else ""],
+                ["Serie Motor:", siniestro.objeto_asegurado.serie_motor or ""],
+                ["Chasis:", siniestro.objeto_asegurado.chasis or ""],
             ]
-            objeto_table = Table(objeto_data, colWidths=[2.5 * inch, 4 * inch])
-            objeto_table.setStyle(
-                TableStyle([
-                    ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
-                    ("FONTSIZE", (0, 0), (-1, -1), 10),
-                    ("GRID", (0, 0), (-1, -1), 1, colors.black),
-                    ("ALIGN", (0, 0), (0, -1), "LEFT"),
-                    ("ALIGN", (1, 0), (1, -1), "LEFT"),
-                    ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
-                ])
-            )
-            story.append(objeto_table)
-            story.append(Spacer(1, 15))
+
+            objeto_data = [row for row in objeto_data_raw if row[1].strip()]
+
+            if objeto_data:
+                story.append(Paragraph("Información del Objeto Asegurado:", section_style))
+                objeto_table = Table(objeto_data, colWidths=[2.5 * inch, 4 * inch])
+                objeto_table.setStyle(
+                    TableStyle([
+                        ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
+                        ("FONTSIZE", (0, 0), (-1, -1), 10),
+                        ("GRID", (0, 0), (-1, -1), 1, colors.black),
+                        ("ALIGN", (0, 0), (0, -1), "LEFT"),
+                        ("ALIGN", (1, 0), (1, -1), "LEFT"),
+                        ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
+                        ("LEFTPADDING", (0, 0), (-1, -1), 6),
+                        ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+                        ("TOPPADDING", (0, 0), (-1, -1), 4),
+                        ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+                    ])
+                )
+                story.append(objeto_table)
+                story.append(Spacer(1, 15))
 
         story.append(Spacer(1, 40))  # Salto de página
 
