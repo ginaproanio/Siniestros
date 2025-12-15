@@ -140,16 +140,23 @@ const SiniestroForm: React.FC = () => {
 
         switch (status) {
           case 400:
-            errorMessage = `Datos inválidos: ${data.detail || "Verifica los campos requeridos"}`;
+            errorMessage = `Datos inválidos: ${
+              data.detail || "Verifica los campos requeridos"
+            }`;
             break;
           case 500:
-            errorMessage = `Error del servidor: ${data.detail || data.message || "Error interno"}`;
+            errorMessage = `Error del servidor: ${
+              data.detail || data.message || "Error interno"
+            }`;
             break;
           default:
-            errorMessage = `Error ${status}: ${data.detail || data.message || "Error desconocido"}`;
+            errorMessage = `Error ${status}: ${
+              data.detail || data.message || "Error desconocido"
+            }`;
         }
       } else if (error.request) {
-        errorMessage = "No se pudo conectar al servidor. Verifica tu conexión a internet.";
+        errorMessage =
+          "No se pudo conectar al servidor. Verifica tu conexión a internet.";
       } else {
         errorMessage = `Error de configuración: ${error.message}`;
       }
@@ -196,9 +203,12 @@ const SiniestroForm: React.FC = () => {
                   <div className="card-header">
                     <div className="card-icon">📋</div>
                     <div>
-                      <h3 className="card-title">Información Básica del Siniestro</h3>
+                      <h3 className="card-title">
+                        Información Básica del Siniestro
+                      </h3>
                       <p className="card-description">
-                        Datos principales del incidente reportado y configuración inicial
+                        Datos principales del incidente reportado y
+                        configuración inicial
                       </p>
                     </div>
                   </div>
@@ -376,8 +386,6 @@ const SiniestroForm: React.FC = () => {
                       </label>
                     </div>
                   </div>
-
-
                 </div>
               </div>
             )}
@@ -389,20 +397,28 @@ const SiniestroForm: React.FC = () => {
                   <div className="card-header">
                     <div className="card-icon">⚙️</div>
                     <div>
-                      <h3 className="card-title">Parametrización del Formulario</h3>
+                      <h3 className="card-title">
+                        Parametrización del Formulario
+                      </h3>
                       <p className="card-description">
-                        Configuración específica de la investigación y declaración formal
+                        Configuración específica de la investigación y
+                        declaración formal
                       </p>
                     </div>
                   </div>
 
                   {/* Misiva de Investigación */}
-                  <div className="card-section" style={{ marginBottom: "20px", backgroundColor: "#fff3cd" }}>
+                  <div
+                    className="card-section"
+                    style={{ marginBottom: "20px", backgroundColor: "#fff3cd" }}
+                  >
                     <h4 style={{ color: "#0f172a", marginBottom: "10px" }}>
                       📋 Misiva de Investigación
                     </h4>
                     <div className="form-group">
-                      <label>Instrucciones específicas de la aseguradora:</label>
+                      <label>
+                        Instrucciones específicas de la aseguradora:
+                      </label>
                       <textarea
                         name="misiva_investigacion"
                         value={formData.misiva_investigacion || ""}
@@ -412,12 +428,17 @@ const SiniestroForm: React.FC = () => {
                       />
                     </div>
                     <small style={{ color: "#6c757d", fontStyle: "italic" }}>
-                      * Este campo contiene las instrucciones particulares de la aseguradora para adaptar la investigación a sus requerimientos específicos.
+                      * Este campo contiene las instrucciones particulares de la
+                      aseguradora para adaptar la investigación a sus
+                      requerimientos específicos.
                     </small>
                   </div>
 
                   {/* Declaración del Siniestro */}
-                  <div className="card-section" style={{ backgroundColor: "#e8f4fd" }}>
+                  <div
+                    className="card-section"
+                    style={{ backgroundColor: "#e8f4fd" }}
+                  >
                     <h4 style={{ color: "#0f172a", marginBottom: "10px" }}>
                       📝 Declaración del Siniestro
                     </h4>
@@ -496,8 +517,6 @@ const SiniestroForm: React.FC = () => {
                       />
                     </div>
                   </div>
-
-
                 </div>
               </div>
             )}
@@ -511,18 +530,25 @@ const SiniestroForm: React.FC = () => {
                     <div>
                       <h3 className="card-title">Entidades Relacionadas</h3>
                       <p className="card-description">
-                        Información completa de las personas y objetos involucrados en el siniestro
+                        Información completa de las personas y objetos
+                        involucrados en el siniestro
                       </p>
                     </div>
                   </div>
 
                   {/* Asegurado */}
-                  <div className="card-section" style={{ marginBottom: "20px", backgroundColor: "#f0f9ff" }}>
+                  <div
+                    className="card-section"
+                    style={{ marginBottom: "20px", backgroundColor: "#f0f9ff" }}
+                  >
                     <h4 style={{ color: "#0f172a", marginBottom: "15px" }}>
                       👤 Datos del Asegurado
                     </h4>
 
-                    <div className="form-group" style={{ marginBottom: "15px" }}>
+                    <div
+                      className="form-group"
+                      style={{ marginBottom: "15px" }}
+                    >
                       <label>Tipo de Persona:</label>
                       <div className="person-type-selector">
                         <div className="person-type-option">
@@ -586,7 +612,10 @@ const SiniestroForm: React.FC = () => {
                                 const value = e.target.value;
                                 setFormData((prev) => ({
                                   ...prev,
-                                  asegurado: { ...prev.asegurado, cedula: value },
+                                  asegurado: {
+                                    ...prev.asegurado,
+                                    cedula: value,
+                                  },
                                 }));
                               }}
                               placeholder="Ej: 1234567890"
@@ -601,7 +630,10 @@ const SiniestroForm: React.FC = () => {
                                 const value = e.target.value;
                                 setFormData((prev) => ({
                                   ...prev,
-                                  asegurado: { ...prev.asegurado, nombre: value },
+                                  asegurado: {
+                                    ...prev.asegurado,
+                                    nombre: value,
+                                  },
                                 }));
                               }}
                               placeholder="Ej: Juan Pérez"
@@ -637,7 +669,10 @@ const SiniestroForm: React.FC = () => {
                                 const value = e.target.value;
                                 setFormData((prev) => ({
                                   ...prev,
-                                  asegurado: { ...prev.asegurado, correo: value },
+                                  asegurado: {
+                                    ...prev.asegurado,
+                                    correo: value,
+                                  },
                                 }));
                               }}
                               placeholder="Ej: juan.perez@email.com"
@@ -693,7 +728,10 @@ const SiniestroForm: React.FC = () => {
                                 const value = e.target.value;
                                 setFormData((prev) => ({
                                   ...prev,
-                                  asegurado: { ...prev.asegurado, razon_social: value },
+                                  asegurado: {
+                                    ...prev.asegurado,
+                                    razon_social: value,
+                                  },
                                 }));
                               }}
                               placeholder="Ej: Empresa S.A."
@@ -706,12 +744,17 @@ const SiniestroForm: React.FC = () => {
                             <label>Representante Legal:</label>
                             <input
                               type="text"
-                              value={formData.asegurado?.representante_legal || ""}
+                              value={
+                                formData.asegurado?.representante_legal || ""
+                              }
                               onChange={(e) => {
                                 const value = e.target.value;
                                 setFormData((prev) => ({
                                   ...prev,
-                                  asegurado: { ...prev.asegurado, representante_legal: value },
+                                  asegurado: {
+                                    ...prev.asegurado,
+                                    representante_legal: value,
+                                  },
                                 }));
                               }}
                               placeholder="Ej: Juan Pérez"
@@ -721,12 +764,17 @@ const SiniestroForm: React.FC = () => {
                             <label>Cédula Representante:</label>
                             <input
                               type="text"
-                              value={formData.asegurado?.cedula_representante || ""}
+                              value={
+                                formData.asegurado?.cedula_representante || ""
+                              }
                               onChange={(e) => {
                                 const value = e.target.value;
                                 setFormData((prev) => ({
                                   ...prev,
-                                  asegurado: { ...prev.asegurado, cedula_representante: value },
+                                  asegurado: {
+                                    ...prev.asegurado,
+                                    cedula_representante: value,
+                                  },
                                 }));
                               }}
                               placeholder="Ej: 1234567890"
@@ -762,7 +810,10 @@ const SiniestroForm: React.FC = () => {
                                 const value = e.target.value;
                                 setFormData((prev) => ({
                                   ...prev,
-                                  asegurado: { ...prev.asegurado, correo_empresa: value },
+                                  asegurado: {
+                                    ...prev.asegurado,
+                                    correo_empresa: value,
+                                  },
                                 }));
                               }}
                               placeholder="Ej: info@empresa.com"
@@ -790,12 +841,13 @@ const SiniestroForm: React.FC = () => {
                         </div>
                       </>
                     )}
-
-
                   </div>
 
                   {/* Objeto Asegurado */}
-                  <div className="card-section" style={{ marginBottom: "20px", backgroundColor: "#fff8e1" }}>
+                  <div
+                    className="card-section"
+                    style={{ marginBottom: "20px", backgroundColor: "#fff8e1" }}
+                  >
                     <h4 style={{ color: "#0f172a", marginBottom: "15px" }}>
                       🚗 Datos del Objeto Asegurado
                     </h4>
@@ -810,7 +862,10 @@ const SiniestroForm: React.FC = () => {
                             const value = e.target.value;
                             setFormData((prev) => ({
                               ...prev,
-                              objeto_asegurado: { ...prev.objeto_asegurado, placa: value },
+                              objeto_asegurado: {
+                                ...prev.objeto_asegurado,
+                                placa: value,
+                              },
                             }));
                           }}
                           placeholder="Ej: PFB4337"
@@ -826,7 +881,10 @@ const SiniestroForm: React.FC = () => {
                             const value = e.target.value;
                             setFormData((prev) => ({
                               ...prev,
-                              objeto_asegurado: { ...prev.objeto_asegurado, marca: value },
+                              objeto_asegurado: {
+                                ...prev.objeto_asegurado,
+                                marca: value,
+                              },
                             }));
                           }}
                           placeholder="Ej: TOYOTA"
@@ -841,7 +899,10 @@ const SiniestroForm: React.FC = () => {
                             const value = e.target.value;
                             setFormData((prev) => ({
                               ...prev,
-                              objeto_asegurado: { ...prev.objeto_asegurado, modelo: value },
+                              objeto_asegurado: {
+                                ...prev.objeto_asegurado,
+                                modelo: value,
+                              },
                             }));
                           }}
                           placeholder="Ej: Corolla Cross High AC 1.8 5P 4x2"
@@ -859,7 +920,10 @@ const SiniestroForm: React.FC = () => {
                             const value = e.target.value;
                             setFormData((prev) => ({
                               ...prev,
-                              objeto_asegurado: { ...prev.objeto_asegurado, tipo: value },
+                              objeto_asegurado: {
+                                ...prev.objeto_asegurado,
+                                tipo: value,
+                              },
                             }));
                           }}
                           placeholder="Ej: Jeep"
@@ -874,7 +938,10 @@ const SiniestroForm: React.FC = () => {
                             const value = e.target.value;
                             setFormData((prev) => ({
                               ...prev,
-                              objeto_asegurado: { ...prev.objeto_asegurado, color: value },
+                              objeto_asegurado: {
+                                ...prev.objeto_asegurado,
+                                color: value,
+                              },
                             }));
                           }}
                           placeholder="Ej: Blanco"
@@ -889,7 +956,10 @@ const SiniestroForm: React.FC = () => {
                             const value = parseInt(e.target.value) || undefined;
                             setFormData((prev) => ({
                               ...prev,
-                              objeto_asegurado: { ...prev.objeto_asegurado, ano: value },
+                              objeto_asegurado: {
+                                ...prev.objeto_asegurado,
+                                ano: value,
+                              },
                             }));
                           }}
                           placeholder="Ej: 2023"
@@ -907,7 +977,10 @@ const SiniestroForm: React.FC = () => {
                             const value = e.target.value;
                             setFormData((prev) => ({
                               ...prev,
-                              objeto_asegurado: { ...prev.objeto_asegurado, serie_motor: value },
+                              objeto_asegurado: {
+                                ...prev.objeto_asegurado,
+                                serie_motor: value,
+                              },
                             }));
                           }}
                           placeholder="Ej: 2ZR2X01895"
@@ -922,7 +995,10 @@ const SiniestroForm: React.FC = () => {
                             const value = e.target.value;
                             setFormData((prev) => ({
                               ...prev,
-                              objeto_asegurado: { ...prev.objeto_asegurado, chasis: value },
+                              objeto_asegurado: {
+                                ...prev.objeto_asegurado,
+                                chasis: value,
+                              },
                             }));
                           }}
                           placeholder="Ej: 9BRKZAAGXR0669964"
@@ -943,13 +1019,17 @@ const SiniestroForm: React.FC = () => {
                     <div>
                       <h3 className="card-title">Investigación y Evidencia</h3>
                       <p className="card-description">
-                        Recopilación sistemática de información, declaraciones y evidencia del incidente
+                        Recopilación sistemática de información, declaraciones y
+                        evidencia del incidente
                       </p>
                     </div>
                   </div>
 
                   {/* Antecedentes */}
-                  <div className="card-section" style={{ marginBottom: "20px", backgroundColor: "#f8f9fa" }}>
+                  <div
+                    className="card-section"
+                    style={{ marginBottom: "20px", backgroundColor: "#f8f9fa" }}
+                  >
                     <h4 style={{ color: "#0f172a", marginBottom: "15px" }}>
                       📋 Antecedentes
                     </h4>
@@ -975,12 +1055,510 @@ const SiniestroForm: React.FC = () => {
                     </div>
                   </div>
 
+                  {/* ENTREVISTA CON EL ASEGURADO */}
+                  <div
+                    style={{
+                      marginBottom: "30px",
+                      padding: "20px",
+                      backgroundColor: "#f8f9fa",
+                      borderRadius: "8px",
+                    }}
+                  >
+                    <h3 style={{ color: "#0f172a", marginBottom: "15px" }}>
+                      🎤 Entrevista con el Asegurado
+                    </h3>
+                    <div style={{ marginBottom: "15px" }}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const currentRelatos = formData.relatos_asegurado || [];
+                          const nextNumero = currentRelatos.length + 1;
+                          setFormData((prev) => ({
+                            ...prev,
+                            relatos_asegurado: [
+                              ...currentRelatos,
+                              {
+                                numero_relato: nextNumero,
+                                texto: "",
+                                imagen_url: "",
+                              },
+                            ],
+                          }));
+                        }}
+                        style={{
+                          backgroundColor: "#28a745",
+                          marginBottom: "10px",
+                        }}
+                      >
+                        ➕ Agregar Relato
+                      </button>
+                    </div>
+
+                    {formData.relatos_asegurado?.map((relato, index) => (
+                      <div
+                        key={index}
+                        style={{
+                          marginBottom: "20px",
+                          padding: "15px",
+                          backgroundColor: "#ffffff",
+                          borderRadius: "5px",
+                          border: "1px solid #e2e8f0",
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            marginBottom: "10px",
+                          }}
+                        >
+                          <h4
+                            style={{ color: "#0f172a", margin: 0 }}
+                          >
+                            Relato {relato.numero_relato}
+                          </h4>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setFormData((prev) => ({
+                                ...prev,
+                                relatos_asegurado:
+                                  prev.relatos_asegurado?.filter(
+                                    (_, i) => i !== index
+                                  ) || [],
+                              }));
+                            }}
+                            style={{
+                              backgroundColor: "#dc3545",
+                              color: "white",
+                              border: "none",
+                              borderRadius: "3px",
+                              padding: "5px 10px",
+                              cursor: "pointer",
+                            }}
+                          >
+                            ❌ Eliminar
+                          </button>
+                        </div>
+
+                        <div className="form-group">
+                          <label>Texto del relato:</label>
+                          <textarea
+                            value={relato.texto}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              setFormData((prev) => ({
+                                ...prev,
+                                relatos_asegurado:
+                                  prev.relatos_asegurado?.map((r, i) =>
+                                    i === index
+                                      ? { ...r, texto: value }
+                                      : r
+                                  ) || [],
+                              }));
+                            }}
+                            rows={3}
+                            placeholder="Escriba el relato del asegurado..."
+                          />
+                        </div>
+
+                        <div className="form-group">
+                          <label>Imagen:</label>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                try {
+                                  const formDataUpload = new FormData();
+                                  formDataUpload.append("file", file);
+
+                                  const response = await axios.post(
+                                    "/api/v1/upload-image",
+                                    formDataUpload,
+                                    {
+                                      headers: {
+                                        "Content-Type": "multipart/form-data",
+                                      },
+                                    }
+                                  );
+
+                                  const imageUrl = response.data.url;
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    relatos_asegurado:
+                                      prev.relatos_asegurado?.map((r, i) =>
+                                        i === index
+                                          ? { ...r, imagen_url: imageUrl }
+                                          : r
+                                      ) || [],
+                                  }));
+                                } catch (error) {
+                                  console.error("Error subiendo imagen:", error);
+                                  alert(
+                                    "Error al subir la imagen. Intente nuevamente."
+                                  );
+                                }
+                              }
+                            }}
+                          />
+                          {relato.imagen_url && (
+                            <div style={{ marginTop: "5px" }}>
+                              <img
+                                src={`${BACKEND_URL}${relato.imagen_url}`}
+                                alt={`Relato ${relato.numero_relato}`}
+                                style={{
+                                  maxWidth: "200px",
+                                  maxHeight: "150px",
+                                  border: "1px solid #ddd",
+                                }}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* INSPECCIÓN DEL LUGAR */}
+                  <div
+                    style={{
+                      marginBottom: "30px",
+                      padding: "20px",
+                      backgroundColor: "#f8f9fa",
+                      borderRadius: "8px",
+                    }}
+                  >
+                    <h3 style={{ color: "#0f172a", marginBottom: "15px" }}>
+                      🔍 Inspección del Lugar
+                    </h3>
+                    <div style={{ marginBottom: "15px" }}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const currentInspecciones = formData.inspecciones || [];
+                          const nextNumero = currentInspecciones.length + 1;
+                          setFormData((prev) => ({
+                            ...prev,
+                            inspecciones: [
+                              ...currentInspecciones,
+                              {
+                                numero_inspeccion: nextNumero,
+                                descripcion: "",
+                                imagen_url: "",
+                              },
+                            ],
+                          }));
+                        }}
+                        style={{
+                          backgroundColor: "#28a745",
+                          marginBottom: "10px",
+                        }}
+                      >
+                        ➕ Agregar Inspección
+                      </button>
+                    </div>
+
+                    {formData.inspecciones?.map((inspeccion, index) => (
+                      <div
+                        key={index}
+                        style={{
+                          marginBottom: "20px",
+                          padding: "15px",
+                          backgroundColor: "#ffffff",
+                          borderRadius: "5px",
+                          border: "1px solid #e2e8f0",
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            marginBottom: "10px",
+                          }}
+                        >
+                          <h4
+                            style={{ color: "#0f172a", margin: 0 }}
+                          >
+                            Inspección {inspeccion.numero_inspeccion}
+                          </h4>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setFormData((prev) => ({
+                                ...prev,
+                                inspecciones:
+                                  prev.inspecciones?.filter(
+                                    (_, i) => i !== index
+                                  ) || [],
+                              }));
+                            }}
+                            style={{
+                              backgroundColor: "#dc3545",
+                              color: "white",
+                              border: "none",
+                              borderRadius: "3px",
+                              padding: "5px 10px",
+                              cursor: "pointer",
+                            }}
+                          >
+                            ❌ Eliminar
+                          </button>
+                        </div>
+
+                        <div className="form-group">
+                          <label>Descripción de la inspección:</label>
+                          <textarea
+                            value={inspeccion.descripcion}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              setFormData((prev) => ({
+                                ...prev,
+                                inspecciones:
+                                  prev.inspecciones?.map((insp, i) =>
+                                    i === index
+                                      ? { ...insp, descripcion: value }
+                                      : insp
+                                  ) || [],
+                              }));
+                            }}
+                            rows={3}
+                            placeholder="Describa los hallazgos de la inspección..."
+                          />
+                        </div>
+
+                        <div className="form-group">
+                          <label>Imagen:</label>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                try {
+                                  const formDataUpload = new FormData();
+                                  formDataUpload.append("file", file);
+
+                                  const response = await axios.post(
+                                    "/api/v1/upload-image",
+                                    formDataUpload,
+                                    {
+                                      headers: {
+                                        "Content-Type": "multipart/form-data",
+                                      },
+                                    }
+                                  );
+
+                                  const imageUrl = response.data.url;
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    inspecciones:
+                                      prev.inspecciones?.map((insp, i) =>
+                                        i === index
+                                          ? { ...insp, imagen_url: imageUrl }
+                                          : insp
+                                      ) || [],
+                                  }));
+                                } catch (error) {
+                                  console.error("Error subiendo imagen:", error);
+                                  alert(
+                                    "Error al subir la imagen. Intente nuevamente."
+                                  );
+                                }
+                              }
+                            }}
+                          />
+                          {inspeccion.imagen_url && (
+                            <div style={{ marginTop: "5px" }}>
+                              <img
+                                src={`${BACKEND_URL}${inspeccion.imagen_url}`}
+                                alt={`Inspección ${inspeccion.numero_inspeccion}`}
+                                style={{
+                                  maxWidth: "200px",
+                                  maxHeight: "150px",
+                                  border: "1px solid #ddd",
+                                }}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* TESTIGOS */}
+                  <div
+                    style={{
+                      marginBottom: "30px",
+                      padding: "20px",
+                      backgroundColor: "#f8f9fa",
+                      borderRadius: "8px",
+                    }}
+                  >
+                    <h3 style={{ color: "#0f172a", marginBottom: "15px" }}>
+                      👥 Testigos
+                    </h3>
+                    <div style={{ marginBottom: "15px" }}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const currentTestigos = formData.testigos || [];
+                          const nextNumero = currentTestigos.length + 1;
+                          setFormData((prev) => ({
+                            ...prev,
+                            testigos: [
+                              ...currentTestigos,
+                              {
+                                numero_relato: nextNumero,
+                                texto: "",
+                                imagen_url: "",
+                              },
+                            ],
+                          }));
+                        }}
+                        style={{
+                          backgroundColor: "#28a745",
+                          marginBottom: "10px",
+                        }}
+                      >
+                        ➕ Agregar Testigo
+                      </button>
+                    </div>
+
+                    {formData.testigos?.map((testigo, index) => (
+                      <div
+                        key={index}
+                        style={{
+                          marginBottom: "20px",
+                          padding: "15px",
+                          backgroundColor: "#ffffff",
+                          borderRadius: "5px",
+                          border: "1px solid #e2e8f0",
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            marginBottom: "10px",
+                          }}
+                        >
+                          <h4
+                            style={{ color: "#0f172a", margin: 0 }}
+                          >
+                            Testigo {testigo.numero_relato}
+                          </h4>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setFormData((prev) => ({
+                                ...prev,
+                                testigos:
+                                  prev.testigos?.filter((_, i) => i !== index) ||
+                                  [],
+                              }));
+                            }}
+                            style={{
+                              backgroundColor: "#dc3545",
+                              color: "white",
+                              border: "none",
+                              borderRadius: "3px",
+                              padding: "5px 10px",
+                              cursor: "pointer",
+                            }}
+                          >
+                            ❌ Eliminar
+                          </button>
+                        </div>
+
+                        <div className="form-group">
+                          <label>Declaración del testigo:</label>
+                          <textarea
+                            value={testigo.texto}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              setFormData((prev) => ({
+                                ...prev,
+                                testigos: prev.testigos?.map((test, i) =>
+                                  i === index
+                                    ? { ...test, texto: value }
+                                    : test
+                                ) || [],
+                              }));
+                            }}
+                            rows={3}
+                            placeholder="Escriba la declaración del testigo..."
+                          />
+                        </div>
+
+                        <div className="form-group">
+                          <label>Imagen:</label>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                try {
+                                  const formDataUpload = new FormData();
+                                  formDataUpload.append("file", file);
+
+                                  const response = await axios.post(
+                                    "/api/v1/upload-image",
+                                    formDataUpload,
+                                    {
+                                      headers: {
+                                        "Content-Type": "multipart/form-data",
+                                      },
+                                    }
+                                  );
+
+                                  const imageUrl = response.data.url;
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    testigos: prev.testigos?.map((test, i) =>
+                                      i === index
+                                        ? { ...test, imagen_url: imageUrl }
+                                        : test
+                                    ) || [],
+                                  }));
+                                } catch (error) {
+                                  console.error("Error subiendo imagen:", error);
+                                  alert(
+                                    "Error al subir la imagen. Intente nuevamente."
+                                  );
+                                }
+                              }
+                            }}
+                          />
+                          {testigo.imagen_url && (
+                            <div style={{ marginTop: "5px" }}>
+                              <img
+                                src={`${BACKEND_URL}${testigo.imagen_url}`}
+                                alt={`Testigo ${testigo.numero_relato}`}
+                                style={{
+                                  maxWidth: "200px",
+                                  maxHeight: "150px",
+                                  border: "1px solid #ddd",
+                                }}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
                   {/* Submit Button */}
-                  <div className="tab-navigation" style={{ justifyContent: "center" }}>
-                    <button
-                      type="submit"
-                      className="btn-submit-tab"
-                    >
+                  <div
+                    className="tab-navigation"
+                    style={{ justifyContent: "center" }}
+                  >
+                    <button type="submit" className="btn-submit-tab">
                       {loading ? "Guardando..." : "Crear Siniestro"}
                     </button>
                   </div>
