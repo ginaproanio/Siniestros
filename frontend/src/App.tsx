@@ -14,7 +14,7 @@ function App() {
         <header className="App-header">
           <h1>Sistema de Informes de Siniestros</h1>
           <nav>
-            <Link to="/">Nuevo Siniestro</Link> | <Link to="/siniestros">Ver Siniestros</Link> | <Link to="/investigacion">Investigación</Link>
+            <Link to="/">Nuevo Siniestro</Link> | <Link to="/siniestros">Ver Siniestros</Link>
           </nav>
           <p>Llena los campos obligatorios para generar el informe.</p>
         </header>
