@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+frSIom pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import datetime
 
@@ -233,6 +233,18 @@ class SiniestroUpdate(BaseModel):
 
     # Misiva de investigación
     misiva_investigacion: Optional[str] = None
+
+    # Campos de investigación recabada
+    evidencias_complementarias: Optional[str] = None
+    evidencias_complementarias_imagen_url: Optional[str] = None
+    otras_diligencias: Optional[str] = None
+    otras_diligencias_imagen_url: Optional[str] = None
+    visita_taller_descripcion: Optional[str] = None
+    visita_taller_imagen_url: Optional[str] = None
+    observaciones: Optional[str] = None
+    recomendacion_pago_cobertura: Optional[str] = None
+    conclusiones: Optional[str] = None
+    anexo: Optional[str] = None
 
     # Relaciones anidadas para actualización
     objeto_asegurado: Optional[ObjetoAseguradoCreate] = None
