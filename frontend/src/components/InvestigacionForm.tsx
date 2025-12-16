@@ -41,14 +41,12 @@ const InvestigacionForm: React.FC = () => {
   const [message, setMessage] = useState("");
   const [siniestroInfo, setSiniestroInfo] = useState<any>(null);
 
-  // Definir pestañas
+  // Definir pestañas siguiendo el mismo patrón del Registro de Siniestros
   const tabs = [
     { id: 0, title: "Antecedentes", icon: "📋", required: true },
-    { id: 1, title: "Entrevistas", icon: "🎤", required: false },
-    { id: 2, title: "Inspección", icon: "🔍", required: false },
-    { id: 3, title: "Testigos", icon: "👥", required: false },
-    { id: 4, title: "Evidencias", icon: "📎", required: false },
-    { id: 5, title: "Conclusiones", icon: "📊", required: true },
+    { id: 1, title: "Investigación", icon: "🔍", required: false },
+    { id: 2, title: "Evidencias", icon: "📎", required: false },
+    { id: 3, title: "Conclusiones", icon: "📊", required: true },
   ];
 
   useEffect(() => {
@@ -188,7 +186,7 @@ const InvestigacionForm: React.FC = () => {
               <div className="tab-section active">
                 <div className="card-section antecedentes-section">
                   <div className="card-header">
-                    <div className="card-icon">📋</div>
+                    <div className="card-icon">�</div>
                     <div>
                       <h3 className="card-title">Antecedentes</h3>
                       <p className="card-description">
@@ -244,29 +242,28 @@ const InvestigacionForm: React.FC = () => {
               </div>
             )}
 
-            {/* TAB 1: ENTREVISTAS */}
+            {/* TAB 1: INVESTIGACIÓN */}
             {activeTab === 1 && (
               <div className="tab-section active">
-                <div className="card-section entrevistas-section">
+                <div className="card-section investigacion-section">
                   <div className="card-header">
-                    <div className="card-icon">🎤</div>
+                    <div className="card-icon">🔍</div>
                     <div>
-                      <h3 className="card-title">Entrevistas</h3>
+                      <h3 className="card-title">Investigación</h3>
                       <p className="card-description">
-                        Recopilación de testimonios del asegurado y conductor
-                        involucrado
+                        Recopilación de información y diligencias realizadas
                       </p>
                     </div>
                   </div>
 
-                  <div className="subsection">
-                    <h4>Entrevista al Asegurado</h4>
-                    <div style={{ marginBottom: "15px" }}>
+                  {/* Entrevistas */}
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Relatos del Asegurado:</label>
                       <button
                         type="button"
                         onClick={() => {
-                          const currentRelatos =
-                            formData.relatos_asegurado || [];
+                          const currentRelatos = formData.relatos_asegurado || [];
                           const nextNumero = currentRelatos.length + 1;
                           setFormData((prev) => ({
                             ...prev,
@@ -288,218 +285,108 @@ const InvestigacionForm: React.FC = () => {
                         ➕ Agregar Relato
                       </button>
                     </div>
+                  </div>
 
-                    {(formData.relatos_asegurado || []).map((relato, index) => (
-                      <div key={index} className="dynamic-item">
-                        <div className="dynamic-item-header">
-                          <h4 className="dynamic-item-title">
-                            Relato {relato.numero_relato}
-                          </h4>
-                          <button
-                            type="button"
-                            className="btn-delete"
-                            onClick={() => {
-                              setFormData((prev) => ({
-                                ...prev,
-                                relatos_asegurado:
-                                  prev.relatos_asegurado?.filter(
-                                    (_, i) => i !== index
-                                  ) || [],
-                              }));
-                            }}
-                          >
-                            ❌ Eliminar
-                          </button>
-                        </div>
-                        <div className="form-group">
-                          <textarea
-                            value={relato.texto}
-                            onChange={(e) => {
-                              const value = e.target.value;
-                              setFormData((prev) => ({
-                                ...prev,
-                                relatos_asegurado:
-                                  prev.relatos_asegurado?.map((r, i) =>
-                                    i === index ? { ...r, texto: value } : r
-                                  ) || [],
-                              }));
-                            }}
-                            rows={3}
-                            placeholder="Escriba el relato del asegurado..."
-                          />
-                        </div>
-                        <div className="form-group">
-                          <label>Imagen:</label>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={async (e) => {
-                              const file = e.target.files?.[0];
-                              if (file) {
-                                try {
-                                  const formDataUpload = new FormData();
-                                  formDataUpload.append("file", file);
-                                  const response = await axios.post(
-                                    "/api/v1/siniestros/upload-image",
-                                    formDataUpload,
-                                    {
-                                      headers: {
-                                        "Content-Type": "multipart/form-data",
-                                      },
-                                    }
-                                  );
-                                  const imageUrl = response.data.url_presigned;
-                                  setFormData((prev) => ({
-                                    ...prev,
-                                    relatos_asegurado:
-                                      prev.relatos_asegurado?.map((r, i) =>
-                                        i === index
-                                          ? { ...r, imagen_url: imageUrl }
-                                          : r
-                                      ) || [],
-                                  }));
-                                } catch (error) {
-                                  alert(
-                                    "Error al subir la imagen. Intente nuevamente."
-                                  );
-                                }
-                              }
-                            }}
-                          />
-                          {relato.imagen_url && (
-                            <img
-                              src={relato.imagen_url}
-                              alt={`Relato ${relato.numero_relato}`}
-                              style={{ maxWidth: "200px", marginTop: "5px" }}
-                            />
-                          )}
-                        </div>
+                  {(formData.relatos_asegurado || []).map((relato, index) => (
+                    <div key={index} className="dynamic-item">
+                      <div className="dynamic-item-header">
+                        <h4 className="dynamic-item-title">
+                          Relato {relato.numero_relato}
+                        </h4>
+                        <button
+                          type="button"
+                          className="btn-delete"
+                          onClick={() => {
+                            setFormData((prev) => ({
+                              ...prev,
+                              relatos_asegurado: prev.relatos_asegurado?.filter(
+                                (_, i) => i !== index
+                              ) || [],
+                            }));
+                          }}
+                        >
+                          ❌ Eliminar
+                        </button>
                       </div>
-                    ))}
-                  </div>
-
-                  <div className="tab-navigation">
-                    <button
-                      type="button"
-                      className="btn-prev"
-                      onClick={prevTab}
-                    >
-                      ← Anterior
-                    </button>
-                    <button
-                      type="button"
-                      className="btn-submit-tab"
-                      onClick={() =>
-                        guardarSeccion(
-                          "relatos_asegurado",
-                          formData.relatos_asegurado || []
-                        )
-                      }
-                      disabled={saving}
-                    >
-                      {saving ? "Guardando..." : "💾 Guardar Entrevistas"}
-                    </button>
-                    <button
-                      type="button"
-                      className="btn-next"
-                      onClick={nextTab}
-                    >
-                      Siguiente →
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* TAB 4: EVIDENCIAS */}
-            {activeTab === 4 && (
-              <div className="tab-section active">
-                <div className="card-section evidencias-section">
-                  <div className="card-header">
-                    <div className="card-icon">�</div>
-                    <div>
-                      <h3 className="card-title">Evidencias y Diligencias</h3>
-                      <p className="card-description">
-                        Documentación adicional y evidencias complementarias
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Evidencias Complementarias */}
-                  <div className="subsection">
-                    <h4>Evidencias Complementarias</h4>
-                    <div className="form-group">
-                      <label>Descripción:</label>
-                      <textarea
-                        value={
-                          formData.evidencias_complementarias_descripcion || ""
-                        }
-                        onChange={(e) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            evidencias_complementarias_descripcion:
-                              e.target.value,
-                          }))
-                        }
-                        rows={4}
-                        placeholder="Describe las evidencias complementarias..."
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label>Imagen de Evidencias Complementarias:</label>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={async (e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            try {
-                              const formDataUpload = new FormData();
-                              formDataUpload.append("file", file);
-                              const response = await axios.post(
-                                "/api/v1/siniestros/upload-image",
-                                formDataUpload,
-                                {
-                                  headers: {
-                                    "Content-Type": "multipart/form-data",
-                                  },
-                                }
-                              );
-                              const imageUrl = response.data.url_presigned;
-                              setFormData((prev) => ({
-                                ...prev,
-                                evidencias_complementarias_imagen_url: imageUrl,
-                              }));
-                            } catch (error) {
-                              alert(
-                                "Error al subir la imagen. Intente nuevamente."
-                              );
-                            }
-                          }
-                        }}
-                      />
-                      {formData.evidencias_complementarias_imagen_url && (
-                        <img
-                          src={formData.evidencias_complementarias_imagen_url}
-                          alt="Evidencias Complementarias"
-                          style={{ maxWidth: "200px", marginTop: "5px" }}
+                      <div className="form-group">
+                        <textarea
+                          value={relato.texto}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setFormData((prev) => ({
+                              ...prev,
+                              relatos_asegurado: prev.relatos_asegurado?.map((r, i) =>
+                                i === index ? { ...r, texto: value } : r
+                              ) || [],
+                            }));
+                          }}
+                          rows={3}
+                          placeholder="Escriba el relato del asegurado..."
                         />
-                      )}
+                      </div>
+                      <div className="form-group">
+                        <label>Imagen:</label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              try {
+                                const formDataUpload = new FormData();
+                                formDataUpload.append("file", file);
+                                const response = await axios.post(
+                                  "/api/v1/siniestros/upload-image",
+                                  formDataUpload,
+                                  {
+                                    headers: {
+                                      "Content-Type": "multipart/form-data",
+                                    },
+                                  }
+                                );
+                                const imageUrl = response.data.url_presigned;
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  relatos_asegurado: prev.relatos_asegurado?.map((r, i) =>
+                                    i === index ? { ...r, imagen_url: imageUrl } : r
+                                  ) || [],
+                                }));
+                              } catch (error) {
+                                alert("Error al subir la imagen. Intente nuevamente.");
+                              }
+                            }
+                          }}
+                        />
+                        {relato.imagen_url && (
+                          <img
+                            src={relato.imagen_url}
+                            alt={`Relato ${relato.numero_relato}`}
+                            style={{ maxWidth: "200px", marginTop: "5px" }}
+                          />
+                        )}
+                      </div>
                     </div>
-                  </div>
+                  ))}
 
-                  {/* Anexos con carga de documentos */}
-                  <div className="subsection">
-                    <h4>Anexos</h4>
-                    <div style={{ marginBottom: "15px" }}>
+                  {/* Inspecciones */}
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Inspecciones Realizadas:</label>
                       <button
                         type="button"
                         onClick={() => {
-                          const currentAnexo = formData.anexo || [];
+                          const currentInspecciones = formData.inspecciones || [];
+                          const nextNumero = currentInspecciones.length + 1;
                           setFormData((prev) => ({
                             ...prev,
-                            anexo: [...currentAnexo, ""],
+                            inspecciones: [
+                              ...currentInspecciones,
+                              {
+                                numero_inspeccion: nextNumero,
+                                descripcion: "",
+                                imagen_url: "",
+                              },
+                            ],
                           }));
                         }}
                         style={{
@@ -507,105 +394,414 @@ const InvestigacionForm: React.FC = () => {
                           marginBottom: "10px",
                         }}
                       >
-                        ➕ Agregar Anexo
+                        ➕ Agregar Inspección
                       </button>
                     </div>
-
-                    {(formData.anexo || []).map((anexoItem, index) => (
-                      <div key={index} className="dynamic-item">
-                        <div className="dynamic-item-header">
-                          <h4 className="dynamic-item-title">
-                            Anexo {index + 1}
-                          </h4>
-                          <button
-                            type="button"
-                            className="btn-delete"
-                            onClick={() => {
-                              const currentAnexo = formData.anexo || [];
-                              setFormData((prev) => ({
-                                ...prev,
-                                anexo: currentAnexo.filter(
-                                  (_, i) => i !== index
-                                ),
-                              }));
-                            }}
-                          >
-                            ❌ Eliminar
-                          </button>
-                        </div>
-                        <div className="form-group">
-                          <textarea
-                            value={anexoItem}
-                            onChange={(e) => {
-                              const value = e.target.value;
-                              const currentAnexo = formData.anexo || [];
-                              const newAnexo = [...currentAnexo];
-                              newAnexo[index] = value;
-                              setFormData((prev) => ({
-                                ...prev,
-                                anexo: newAnexo,
-                              }));
-                            }}
-                            rows={3}
-                            placeholder="Escribe el anexo..."
-                          />
-                        </div>
-                        <div className="form-group">
-                          <label>Documento adjunto:</label>
-                          <input
-                            type="file"
-                            accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.jpg,.jpeg,.png"
-                            onChange={async (e) => {
-                              const file = e.target.files?.[0];
-                              if (file) {
-                                try {
-                                  const formDataUpload = new FormData();
-                                  formDataUpload.append("file", file);
-                                  await axios.post(
-                                    "/api/v1/siniestros/upload-image",
-                                    formDataUpload,
-                                    {
-                                      headers: {
-                                        "Content-Type": "multipart/form-data",
-                                      },
-                                    }
-                                  );
-                                  // Documento subido exitosamente
-                                  const currentAnexo = formData.anexo || [];
-                                  const newAnexo = [...currentAnexo];
-                                  newAnexo[
-                                    index
-                                  ] = `${anexoItem}\n[Documento adjunto: ${file.name}]`;
-                                  setFormData((prev) => ({
-                                    ...prev,
-                                    anexo: newAnexo,
-                                  }));
-                                } catch (error) {
-                                  alert(
-                                    "Error al subir el documento. Intente nuevamente."
-                                  );
-                                }
-                              }
-                            }}
-                          />
-                        </div>
-                      </div>
-                    ))}
                   </div>
 
+                  {(formData.inspecciones || []).map((inspeccion, index) => (
+                    <div key={index} className="dynamic-item">
+                      <div className="dynamic-item-header">
+                        <h4 className="dynamic-item-title">
+                          Inspección {inspeccion.numero_inspeccion}
+                        </h4>
+                        <button
+                          type="button"
+                          className="btn-delete"
+                          onClick={() => {
+                            setFormData((prev) => ({
+                              ...prev,
+                              inspecciones: prev.inspecciones?.filter(
+                                (_, i) => i !== index
+                              ) || [],
+                            }));
+                          }}
+                        >
+                          ❌ Eliminar
+                        </button>
+                      </div>
+                      <div className="form-group">
+                        <textarea
+                          value={inspeccion.descripcion}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setFormData((prev) => ({
+                              ...prev,
+                              inspecciones: prev.inspecciones?.map((insp, i) =>
+                                i === index ? { ...insp, descripcion: value } : insp
+                              ) || [],
+                            }));
+                          }}
+                          rows={3}
+                          placeholder="Describa la inspección realizada..."
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Imagen:</label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              try {
+                                const formDataUpload = new FormData();
+                                formDataUpload.append("file", file);
+                                const response = await axios.post(
+                                  "/api/v1/siniestros/upload-image",
+                                  formDataUpload,
+                                  {
+                                    headers: {
+                                      "Content-Type": "multipart/form-data",
+                                    },
+                                  }
+                                );
+                                const imageUrl = response.data.url_presigned;
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  inspecciones: prev.inspecciones?.map((insp, i) =>
+                                    i === index ? { ...insp, imagen_url: imageUrl } : insp
+                                  ) || [],
+                                }));
+                              } catch (error) {
+                                alert("Error al subir la imagen. Intente nuevamente.");
+                              }
+                            }
+                          }}
+                        />
+                        {inspeccion.imagen_url && (
+                          <img
+                            src={inspeccion.imagen_url}
+                            alt={`Inspección ${inspeccion.numero_inspeccion}`}
+                            style={{ maxWidth: "200px", marginTop: "5px" }}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Testigos */}
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Testigos:</label>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const currentTestigos = formData.testigos || [];
+                          const nextNumero = currentTestigos.length + 1;
+                          setFormData((prev) => ({
+                            ...prev,
+                            testigos: [
+                              ...currentTestigos,
+                              {
+                                numero_relato: nextNumero,
+                                texto: "",
+                                imagen_url: "",
+                              },
+                            ],
+                          }));
+                        }}
+                        style={{
+                          backgroundColor: "#28a745",
+                          marginBottom: "10px",
+                        }}
+                      >
+                        ➕ Agregar Testigo
+                      </button>
+                    </div>
+                  </div>
+
+                  {(formData.testigos || []).map((testigo, index) => (
+                    <div key={index} className="dynamic-item">
+                      <div className="dynamic-item-header">
+                        <h4 className="dynamic-item-title">
+                          Testigo {testigo.numero_relato}
+                        </h4>
+                        <button
+                          type="button"
+                          className="btn-delete"
+                          onClick={() => {
+                            setFormData((prev) => ({
+                              ...prev,
+                              testigos: prev.testigos?.filter(
+                                (_, i) => i !== index
+                              ) || [],
+                            }));
+                          }}
+                        >
+                          ❌ Eliminar
+                        </button>
+                      </div>
+                      <div className="form-group">
+                        <textarea
+                          value={testigo.texto}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setFormData((prev) => ({
+                              ...prev,
+                              testigos: prev.testigos?.map((t, i) =>
+                                i === index ? { ...t, texto: value } : t
+                              ) || [],
+                            }));
+                          }}
+                          rows={3}
+                          placeholder="Escriba el testimonio del testigo..."
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Imagen:</label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              try {
+                                const formDataUpload = new FormData();
+                                formDataUpload.append("file", file);
+                                const response = await axios.post(
+                                  "/api/v1/siniestros/upload-image",
+                                  formDataUpload,
+                                  {
+                                    headers: {
+                                      "Content-Type": "multipart/form-data",
+                                    },
+                                  }
+                                );
+                                const imageUrl = response.data.url_presigned;
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  testigos: prev.testigos?.map((t, i) =>
+                                    i === index ? { ...t, imagen_url: imageUrl } : t
+                                  ) || [],
+                                }));
+                              } catch (error) {
+                                alert("Error al subir la imagen. Intente nuevamente.");
+                              }
+                            }
+                          }}
+                        />
+                        {testigo.imagen_url && (
+                          <img
+                            src={testigo.imagen_url}
+                            alt={`Testigo ${testigo.numero_relato}`}
+                            style={{ maxWidth: "200px", marginTop: "5px" }}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  ))}
+
                   <div className="tab-navigation">
-                    <button
-                      type="button"
-                      className="btn-prev"
-                      onClick={prevTab}
-                    >
+                    <button type="button" className="btn-prev" onClick={prevTab}>
                       ← Anterior
                     </button>
                     <button
                       type="button"
                       className="btn-submit-tab"
                       onClick={() => {
-                        guardarSeccion("evidencias_complementarias", {
+                        guardarSeccion("investigacion", {
+                          relatos_asegurado: formData.relatos_asegurado,
+                          inspecciones: formData.inspecciones,
+                          testigos: formData.testigos,
+                        });
+                      }}
+                      disabled={saving}
+                    >
+                      {saving ? "Guardando..." : "💾 Guardar Investigación"}
+                    </button>
+                    <button type="button" className="btn-next" onClick={nextTab}>
+                      Siguiente →
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 2: EVIDENCIAS */}
+            {activeTab === 2 && (
+              <div className="tab-section active">
+                <div className="card-section evidencias-section">
+                  <div className="card-header">
+                    <div className="card-icon">📎</div>
+                    <div>
+                      <h3 className="card-title">Evidencias</h3>
+                      <p className="card-description">
+                        Documentación adicional y evidencias complementarias
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Descripción de Evidencias Complementarias:</label>
+                    <textarea
+                      value={
+                        formData.evidencias_complementarias_descripcion || ""
+                      }
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          evidencias_complementarias_descripcion:
+                            e.target.value,
+                        }))
+                      }
+                      rows={4}
+                      placeholder="Describe las evidencias complementarias..."
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Imagen de Evidencias Complementarias:</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          try {
+                            const formDataUpload = new FormData();
+                            formDataUpload.append("file", file);
+                            const response = await axios.post(
+                              "/api/v1/siniestros/upload-image",
+                              formDataUpload,
+                              {
+                                headers: {
+                                  "Content-Type": "multipart/form-data",
+                                },
+                              }
+                            );
+                            const imageUrl = response.data.url_presigned;
+                            setFormData((prev) => ({
+                              ...prev,
+                              evidencias_complementarias_imagen_url: imageUrl,
+                            }));
+                          } catch (error) {
+                            alert(
+                              "Error al subir la imagen. Intente nuevamente."
+                            );
+                          }
+                        }
+                      }}
+                    />
+                    {formData.evidencias_complementarias_imagen_url && (
+                      <img
+                        src={formData.evidencias_complementarias_imagen_url}
+                        alt="Evidencias Complementarias"
+                        style={{ maxWidth: "200px", marginTop: "5px" }}
+                      />
+                    )}
+                  </div>
+
+                  <div className="form-group">
+                    <label>Anexos:</label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const currentAnexo = formData.anexo || [];
+                        setFormData((prev) => ({
+                          ...prev,
+                          anexo: [...currentAnexo, ""],
+                        }));
+                      }}
+                      style={{
+                        backgroundColor: "#28a745",
+                        marginBottom: "10px",
+                      }}
+                    >
+                      ➕ Agregar Anexo
+                    </button>
+                  </div>
+
+                  {(formData.anexo || []).map((anexoItem, index) => (
+                    <div key={index} className="dynamic-item">
+                      <div className="dynamic-item-header">
+                        <h4 className="dynamic-item-title">
+                          Anexo {index + 1}
+                        </h4>
+                        <button
+                          type="button"
+                          className="btn-delete"
+                          onClick={() => {
+                            const currentAnexo = formData.anexo || [];
+                            setFormData((prev) => ({
+                              ...prev,
+                              anexo: currentAnexo.filter(
+                                (_, i) => i !== index
+                              ),
+                            }));
+                          }}
+                        >
+                          ❌ Eliminar
+                        </button>
+                      </div>
+                      <div className="form-group">
+                        <textarea
+                          value={anexoItem}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            const currentAnexo = formData.anexo || [];
+                            const newAnexo = [...currentAnexo];
+                            newAnexo[index] = value;
+                            setFormData((prev) => ({
+                              ...prev,
+                              anexo: newAnexo,
+                            }));
+                          }}
+                          rows={3}
+                          placeholder="Escribe el anexo..."
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Documento adjunto:</label>
+                        <input
+                          type="file"
+                          accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.jpg,.jpeg,.png"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              try {
+                                const formDataUpload = new FormData();
+                                formDataUpload.append("file", file);
+                                await axios.post(
+                                  "/api/v1/siniestros/upload-image",
+                                  formDataUpload,
+                                  {
+                                    headers: {
+                                      "Content-Type": "multipart/form-data",
+                                    },
+                                  }
+                                );
+                                // Documento subido exitosamente
+                                const currentAnexo = formData.anexo || [];
+                                const newAnexo = [...currentAnexo];
+                                newAnexo[
+                                  index
+                                ] = `${anexoItem}\n[Documento adjunto: ${file.name}]`;
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  anexo: newAnexo,
+                                }));
+                              } catch (error) {
+                                alert(
+                                  "Error al subir el documento. Intente nuevamente."
+                                );
+                              }
+                            }
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+
+                  <div className="tab-navigation">
+                    <button type="button" className="btn-prev" onClick={prevTab}>
+                      ← Anterior
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-submit-tab"
+                      onClick={() => {
+                        guardarSeccion("evidencias", {
                           evidencias_complementarias_descripcion:
                             formData.evidencias_complementarias_descripcion,
                           evidencias_complementarias_imagen_url:
@@ -617,11 +813,7 @@ const InvestigacionForm: React.FC = () => {
                     >
                       {saving ? "Guardando..." : "💾 Guardar Evidencias"}
                     </button>
-                    <button
-                      type="button"
-                      className="btn-next"
-                      onClick={nextTab}
-                    >
+                    <button type="button" className="btn-next" onClick={nextTab}>
                       Siguiente →
                     </button>
                   </div>
@@ -629,8 +821,8 @@ const InvestigacionForm: React.FC = () => {
               </div>
             )}
 
-            {/* TAB 5: CONCLUSIONES */}
-            {activeTab === 5 && (
+            {/* TAB 3: CONCLUSIONES */}
+            {activeTab === 3 && (
               <div className="tab-section active">
                 <div className="card-section conclusiones-section">
                   <div className="card-header">
@@ -643,9 +835,8 @@ const InvestigacionForm: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Observaciones */}
-                  <div className="subsection">
-                    <h4>Observaciones</h4>
+                  <div className="form-group">
+                    <label>Observaciones:</label>
                     <button
                       type="button"
                       onClick={() => {
@@ -663,38 +854,37 @@ const InvestigacionForm: React.FC = () => {
                     >
                       ➕ Agregar Observación
                     </button>
-
-                    {(formData.observaciones || []).map(
-                      (observacion, index) => (
-                        <div key={index} className="dynamic-item">
-                          <div className="form-group">
-                            <textarea
-                              value={observacion}
-                              onChange={(e) => {
-                                const value = e.target.value;
-                                const currentObservaciones =
-                                  formData.observaciones || [];
-                                const newObservaciones = [
-                                  ...currentObservaciones,
-                                ];
-                                newObservaciones[index] = value;
-                                setFormData((prev) => ({
-                                  ...prev,
-                                  observaciones: newObservaciones,
-                                }));
-                              }}
-                              rows={3}
-                              placeholder="Escribe la observación..."
-                            />
-                          </div>
-                        </div>
-                      )
-                    )}
                   </div>
 
-                  {/* Conclusiones */}
-                  <div className="subsection">
-                    <h4>Conclusiones</h4>
+                  {(formData.observaciones || []).map(
+                    (observacion, index) => (
+                      <div key={index} className="dynamic-item">
+                        <div className="form-group">
+                          <textarea
+                            value={observacion}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              const currentObservaciones =
+                                formData.observaciones || [];
+                              const newObservaciones = [
+                                ...currentObservaciones,
+                              ];
+                              newObservaciones[index] = value;
+                              setFormData((prev) => ({
+                                ...prev,
+                                observaciones: newObservaciones,
+                              }));
+                            }}
+                            rows={3}
+                            placeholder="Escribe la observación..."
+                          />
+                        </div>
+                      </div>
+                    )
+                  )}
+
+                  <div className="form-group">
+                    <label>Conclusiones:</label>
                     <button
                       type="button"
                       onClick={() => {
@@ -711,37 +901,33 @@ const InvestigacionForm: React.FC = () => {
                     >
                       ➕ Agregar Conclusión
                     </button>
-
-                    {(formData.conclusiones || []).map((conclusion, index) => (
-                      <div key={index} className="dynamic-item">
-                        <div className="form-group">
-                          <textarea
-                            value={conclusion}
-                            onChange={(e) => {
-                              const value = e.target.value;
-                              const currentConclusiones =
-                                formData.conclusiones || [];
-                              const newConclusiones = [...currentConclusiones];
-                              newConclusiones[index] = value;
-                              setFormData((prev) => ({
-                                ...prev,
-                                conclusiones: newConclusiones,
-                              }));
-                            }}
-                            rows={3}
-                            placeholder="Escribe la conclusión..."
-                          />
-                        </div>
-                      </div>
-                    ))}
                   </div>
 
+                  {(formData.conclusiones || []).map((conclusion, index) => (
+                    <div key={index} className="dynamic-item">
+                      <div className="form-group">
+                        <textarea
+                          value={conclusion}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            const currentConclusiones =
+                              formData.conclusiones || [];
+                            const newConclusiones = [...currentConclusiones];
+                            newConclusiones[index] = value;
+                            setFormData((prev) => ({
+                              ...prev,
+                              conclusiones: newConclusiones,
+                            }));
+                          }}
+                          rows={3}
+                          placeholder="Escribe la conclusión..."
+                        />
+                      </div>
+                    </div>
+                  ))}
+
                   <div className="tab-navigation">
-                    <button
-                      type="button"
-                      className="btn-prev"
-                      onClick={prevTab}
-                    >
+                    <button type="button" className="btn-prev" onClick={prevTab}>
                       ← Anterior
                     </button>
                     <button
