@@ -1,4 +1,4 @@
 # Railway deployment trigger
 # This file forces Railway to redeploy when changed
-# Last update: 2025-12-15 09:46 UTC-5 - FINAL REDEPLOY - RelatosConductor + Entrevista FIXED
-# Added RelatoConductor model, table migration, and Entrevista al Conductor section
+# Last update: 2025-12-16 10:57 UTC-5 - FORCED REDEPLOY - InvestigacionForm OPTIMIZADO
+# Simplified tabs, removed icons, cleaned labels, multiple relatos functionality
