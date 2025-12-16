@@ -87,7 +87,7 @@ async def get_siniestro(siniestro_id: int, db: Session = Depends(get_db)):
 async def guardar_seccion(
     siniestro_id: int,
     seccion: str,  # 'asegurado', 'conductor', 'objeto_asegurado', 'antecedentes', etc.
-    datos: dict,  # Datos específicos de la sección
+    datos,  # Datos específicos de la sección - puede ser dict o list
     db: Session = Depends(get_db),
 ):
     """Guardar datos de una sección específica del siniestro"""
