@@ -253,13 +253,11 @@ const InvestigacionForm: React.FC = () => {
             {activeTab === 1 && (
               <div className="tab-section active">
                 <div className="card-section">
-                  <div className="card-header">
-                    <div className="card-icon">👤</div>
-                    <div>
-                      <h3 className="card-title">Entrevista al Asegurado</h3>
+                  <div className="card-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                      <div className="card-icon">👤</div>
+                      <h3 className="card-title" style={{ margin: 0, marginLeft: "8px" }}>Entrevista al Asegurado</h3>
                     </div>
-                  </div>
-                  <div className="form-group">
                     <button
                       type="button"
                       onClick={() => {
@@ -279,7 +277,13 @@ const InvestigacionForm: React.FC = () => {
                       }}
                       style={{
                         backgroundColor: "#28a745",
-                        marginBottom: "10px",
+                        color: "white",
+                        border: "none",
+                        padding: "8px 16px",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                        fontSize: "14px",
+                        fontWeight: "500",
                       }}
                     >
                       ➕ Agregar Relato
