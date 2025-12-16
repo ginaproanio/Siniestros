@@ -66,54 +66,7 @@ const InvestigacionForm: React.FC = () => {
     if (siniestroId) fetchData();
   }, [siniestroId]);
 
-  const saveRelatosAsegurado = async () => {
-    if (!data.relatos_asegurado || data.relatos_asegurado.length === 0) {
-      setMessage("No hay relatos para guardar");
-      return;
-    }
 
-    setSaving(true);
-    setMessage("");
-
-    try {
-      // Filtrar relatos vacíos antes de enviar
-      const relatosValidos = data.relatos_asegurado
-        .map((texto) => ({ texto: texto.trim() }))
-        .filter((relato) => relato.texto.length > 0);
-
-      if (relatosValidos.length === 0) {
-        setMessage("⚠️ No hay relatos con contenido para guardar");
-        return;
-      }
-
-      console.log("📤 Enviando relatos:", relatosValidos);
-
-      const response = await axios.put(
-        `/api/v1/siniestros/${siniestroId}/seccion/relatos_asegurado`,
-        relatosValidos
-      );
-
-      console.log("✅ Respuesta del servidor:", response.data);
-      setMessage("✅ Relatos del asegurado guardados exitosamente");
-    } catch (error: any) {
-      console.error("❌ Error guardando relatos:", error);
-      let errorMessage = "Error al guardar los relatos";
-
-      if (error.response) {
-        const status = error.response.status;
-        const data = error.response.data;
-        errorMessage = `Error ${status}: ${
-          data.detail || data.message || "Error del servidor"
-        }`;
-      } else if (error.request) {
-        errorMessage = "No se pudo conectar al servidor";
-      }
-
-      setMessage(errorMessage);
-    } finally {
-      setSaving(false);
-    }
-  };
 
   const addRelato = () => {
     setData((prev) => ({
