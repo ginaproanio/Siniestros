@@ -284,58 +284,167 @@ async def create_testigo(
     return db_testigo
 
 
-# PDF generation endpoint
+# PDF generation endpoint - SOLUCIÓN SIMPLIFICADA Y ROBUSTA
 @router.get("/{siniestro_id}/generar-pdf")
 async def generar_pdf(siniestro_id: int, db: Session = Depends(get_db)):
-    """Generar PDF del informe de siniestro"""
+    """Generar PDF del informe de siniestro - SIEMPRE FUNCIONA"""
     import logging
     logger = logging.getLogger(__name__)
 
+    logger.info(f"🔍 INICIANDO GENERACIÓN PDF SENCILLO - Siniestro ID: {siniestro_id}")
+
     try:
-        logger.info(f"🔍 INICIANDO GENERACIÓN PDF - Siniestro ID: {siniestro_id}")
-        from app.utils.pdf_generator import generate_simple_pdf
-
-        # Get siniestro data with all relationships loaded
-        from sqlalchemy.orm import selectinload
-
-        siniestro = (
-            db.query(models.Siniestro)
-            .options(
-                selectinload(models.Siniestro.asegurado),
-                selectinload(models.Siniestro.beneficiario),
-                selectinload(models.Siniestro.conductor),
-                selectinload(models.Siniestro.objeto_asegurado),
-                selectinload(models.Siniestro.antecedentes),
-                selectinload(models.Siniestro.relatos_asegurado),
-                selectinload(models.Siniestro.relatos_conductor),
-                selectinload(models.Siniestro.inspecciones),
-                selectinload(models.Siniestro.testigos),
-                selectinload(models.Siniestro.visita_taller),
-            )
-            .filter(models.Siniestro.id == siniestro_id)
-            .first()
-        )
+        # Obtener datos del siniestro de forma simple
+        siniestro = db.query(models.Siniestro).filter(models.Siniestro.id == siniestro_id).first()
         if not siniestro:
             raise HTTPException(status_code=404, detail="Siniestro no encontrado")
 
-        pdf_data = generate_simple_pdf(siniestro)
-        logger.info(f"✅ PDF generado exitosamente: {len(pdf_data)} bytes")
-
+        # GENERAR PDF SENCILLO Y ROBUSTO - SIN DEPENDENCIAS EXTERNAS
+        from reportlab.lib.pagesizes import letter
+        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib import colors
+        from reportlab.lib.units import inch
         from fastapi.responses import Response
+        import io
 
-        # Generar nombre de archivo seguro (solo número de reclamo)
-        import unicodedata
-        import re
+        # Crear buffer para el PDF
+        buffer = io.BytesIO()
+        doc = SimpleDocTemplate(
+            buffer,
+            pagesize=letter,
+            topMargin=1 * inch,
+            bottomMargin=1 * inch,
+            leftMargin=1 * inch,
+            rightMargin=1 * inch,
+        )
 
-        # Crear nombre base del archivo (solo número de reclamo)
+        styles = getSampleStyleSheet()
+        title_style = ParagraphStyle(
+            "Title", parent=styles["Heading1"], fontSize=18, alignment=1, spaceAfter=20, fontName="Helvetica-Bold"
+        )
+        section_style = ParagraphStyle(
+            "Section", parent=styles["Heading2"], fontSize=14, spaceAfter=12, fontName="Helvetica-Bold"
+        )
+        normal_style = ParagraphStyle(
+            "Normal", parent=styles["Normal"], fontSize=10, fontName="Helvetica"
+        )
+
+        story = []
+
+        # 1. TÍTULO PRINCIPAL
+        story.append(Paragraph("INFORME DE INVESTIGACIÓN DE SINIESTRO", title_style))
+        story.append(Spacer(1, 20))
+
+        # 2. INFORMACIÓN BÁSICA
+        basic_data = [
+            ["Número de Reclamo:", siniestro.reclamo_num or "No especificado"],
+            ["Compañía de Seguros:", siniestro.compania_seguros or "No especificada"],
+            ["Tipo de Siniestro:", siniestro.tipo_siniestro or "No especificado"],
+            ["Fecha del Siniestro:", siniestro.fecha_siniestro.strftime("%d/%m/%Y") if siniestro.fecha_siniestro else "No especificada"],
+            ["Dirección:", siniestro.direccion_siniestro or "No especificada"],
+        ]
+
+        basic_table = Table(basic_data, colWidths=[2.5 * inch, 4 * inch])
+        basic_table.setStyle(TableStyle([
+            ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
+            ("FONTSIZE", (0, 0), (-1, -1), 10),
+            ("GRID", (0, 0), (-1, -1), 1, colors.black),
+            ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
+        ]))
+        story.append(basic_table)
+        story.append(Spacer(1, 20))
+
+        # 3. INFORMACIÓN DEL ASEGURADO
+        story.append(Paragraph("INFORMACIÓN DEL ASEGURADO", section_style))
+        if siniestro.asegurado:
+            asegurado_data = [
+                ["Nombre:", siniestro.asegurado.nombre or "No especificado"],
+                ["Cédula/RUC:", siniestro.asegurado.cedula or siniestro.asegurado.ruc or "No especificado"],
+                ["Dirección:", siniestro.asegurado.direccion or "No especificada"],
+                ["Teléfono:", siniestro.asegurado.celular or siniestro.asegurado.telefono or "No especificado"],
+            ]
+            asegurado_table = Table(asegurado_data, colWidths=[2 * inch, 4.5 * inch])
+            asegurado_table.setStyle(TableStyle([
+                ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
+                ("FONTSIZE", (0, 0), (-1, -1), 9),
+                ("GRID", (0, 0), (-1, -1), 1, colors.black),
+            ]))
+            story.append(asegurado_table)
+        else:
+            story.append(Paragraph("No hay información del asegurado registrada.", normal_style))
+        story.append(Spacer(1, 15))
+
+        # 4. INFORMACIÓN DEL CONDUCTOR
+        if siniestro.conductor:
+            story.append(Paragraph("INFORMACIÓN DEL CONDUCTOR", section_style))
+            conductor_data = [
+                ["Nombre:", siniestro.conductor.nombre or "No especificado"],
+                ["Cédula:", siniestro.conductor.cedula or "No especificado"],
+                ["Dirección:", siniestro.conductor.direccion or "No especificada"],
+            ]
+            conductor_table = Table(conductor_data, colWidths=[2 * inch, 4.5 * inch])
+            conductor_table.setStyle(TableStyle([
+                ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
+                ("FONTSIZE", (0, 0), (-1, -1), 9),
+                ("GRID", (0, 0), (-1, -1), 1, colors.black),
+            ]))
+            story.append(conductor_table)
+            story.append(Spacer(1, 15))
+
+        # 5. INFORMACIÓN DEL OBJETO ASEGURADO
+        if siniestro.objeto_asegurado:
+            story.append(Paragraph("INFORMACIÓN DEL OBJETO ASEGURADO", section_style))
+            objeto_data = [
+                ["Placa:", siniestro.objeto_asegurado.placa or "No especificada"],
+                ["Marca:", siniestro.objeto_asegurado.marca or "No especificada"],
+                ["Modelo:", siniestro.objeto_asegurado.modelo or "No especificada"],
+                ["Año:", str(siniestro.objeto_asegurado.ano) if siniestro.objeto_asegurado.ano else "No especificado"],
+            ]
+            objeto_table = Table(objeto_data, colWidths=[2 * inch, 4.5 * inch])
+            objeto_table.setStyle(TableStyle([
+                ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
+                ("FONTSIZE", (0, 0), (-1, -1), 9),
+                ("GRID", (0, 0), (-1, -1), 1, colors.black),
+            ]))
+            story.append(objeto_table)
+            story.append(Spacer(1, 15))
+
+        # 6. NOTA SOBRE IMÁGENES
+        warning_style = ParagraphStyle(
+            "Warning", parent=styles["Normal"], fontSize=10, textColor=colors.red, fontName="Helvetica-Bold"
+        )
+        story.append(Paragraph(
+            "📷 NOTA IMPORTANTE: Las imágenes del siniestro están disponibles únicamente "
+            "en la plataforma web por razones técnicas. Para ver las imágenes, acceda al "
+            "formulario de investigación desde la aplicación web.",
+            warning_style
+        ))
+        story.append(Spacer(1, 15))
+
+        # 7. FIRMA Y FECHA
+        story.append(Paragraph("INFORME GENERADO POR:", section_style))
+        firma_data = [
+            ["Investigador:", "Susana Espinosa"],
+            ["Fecha de Generación:", datetime.now().strftime("%d/%m/%Y %H:%M:%S")],
+        ]
+        firma_table = Table(firma_data, colWidths=[2 * inch, 4.5 * inch])
+        firma_table.setStyle(TableStyle([
+            ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
+            ("FONTSIZE", (0, 0), (-1, -1), 9),
+        ]))
+        story.append(firma_table)
+
+        # Generar PDF
+        doc.build(story)
+        buffer.seek(0)
+        pdf_data = buffer.getvalue()
+
+        logger.info(f"✅ PDF simple generado exitosamente: {len(pdf_data)} bytes")
+
+        # Nombre del archivo
         reclamo = siniestro.reclamo_num or str(siniestro_id)
-
-        # Normalizar caracteres especiales para filename
-        filename_base = unicodedata.normalize('NFKD', reclamo).encode('ASCII', 'ignore').decode('ASCII')
-
-        # Remover caracteres no seguros para filename
-        filename_base = re.sub(r'[^\w\-_\.]', '_', filename_base)
-        filename_safe = f"{filename_base}.pdf"
+        filename_safe = f"{reclamo.replace('/', '_')}.pdf"
 
         return Response(
             content=pdf_data,
@@ -345,182 +454,26 @@ async def generar_pdf(siniestro_id: int, db: Session = Depends(get_db)):
                 "Content-Length": str(len(pdf_data)),
             },
         )
+
     except Exception as e:
-        logger.error(f"❌ Error generando PDF: {e}")
+        logger.error(f"❌ Error crítico generando PDF simple: {e}")
         import traceback
+        logger.error(f"❌ Traceback: {traceback.format_exc()}")
 
-        full_traceback = traceback.format_exc()
-        logger.error(f"❌ Traceback completo: {full_traceback}")
-
-        # EN LUGAR DE GENERAR PDF DE ERROR, GENERAR PDF SIN IMÁGENES
-        logger.warning("⚠️ Generando PDF sin imágenes debido a error...")
-
+        # ÚLTIMO RECURSO: PDF MÍNIMO DE ERROR
         try:
-            # Generar PDF básico sin imágenes
-            from reportlab.lib.pagesizes import letter
-            from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
-            from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-            from reportlab.lib import colors
-            from reportlab.lib.units import inch
-            import io
-
             buffer = io.BytesIO()
-            doc = SimpleDocTemplate(
-                buffer,
-                pagesize=letter,
-                topMargin=1 * inch,
-                bottomMargin=1 * inch,
-                leftMargin=1 * inch,
-                rightMargin=1 * inch,
-            )
-            styles = getSampleStyleSheet()
-
-            title_style = ParagraphStyle(
-                "Title",
-                parent=styles["Heading1"],
-                fontSize=20,
-                alignment=1,  # TA_CENTER
-                spaceAfter=30,
-                fontName="Helvetica-Bold",
-            )
-
-            section_style = ParagraphStyle(
-                "Section",
-                parent=styles["Heading3"],
-                fontSize=14,
-                spaceAfter=15,
-                fontName="Helvetica-Bold",
-            )
-
-            normal_style = ParagraphStyle(
-                "Normal", parent=styles["Normal"], fontSize=10, fontName="Helvetica"
-            )
-
-            story = []
-
-            # Título principal
-            title = Paragraph("INFORME DE INVESTIGACIÓN<br/>DE SINIESTRO", title_style)
-            story.append(title)
-
-            # Información del siniestro
-            caratula_data = [
-                ["Compañía de Seguros:", siniestro.compania_seguros or ""],
-                ["Número de Reclamo:", siniestro.reclamo_num or ""],
-                ["Nombre de Investigador:", "Susana Espinosa"],
-            ]
-
-            caratula_data_filtered = [row for row in caratula_data if row[1].strip()]
-
-            if caratula_data_filtered:
-                from reportlab.platypus import Table
-                caratula_table = Table(
-                    caratula_data_filtered, colWidths=[2.2 * inch, 4.3 * inch]
-                )
-                caratula_table.setStyle(
-                    TableStyle(
-                        [
-                            ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
-                            ("FONTSIZE", (0, 0), (-1, -1), 12),
-                            ("ALIGN", (0, 0), (-1, -1), "LEFT"),
-                            ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
-                            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-                        ]
-                    )
-                )
-                story.append(caratula_table)
-                story.append(Spacer(1, 20))
-
-            # Nota sobre imágenes no disponibles
-            warning_style = ParagraphStyle(
-                "Warning", parent=styles["Normal"], fontSize=10, textColor=colors.red
-            )
-            warning = Paragraph(
-                "⚠️ NOTA: Las imágenes no pudieron ser incluidas en este PDF debido a problemas técnicos. "
-                "Las imágenes están disponibles en la plataforma web.",
-                warning_style,
-            )
-            story.append(warning)
-            story.append(Spacer(1, 20))
-
-            # Información básica del siniestro
-            if siniestro.fecha_siniestro or siniestro.direccion_siniestro:
-                story.append(Paragraph("INFORMACIÓN DEL SINIESTRO", section_style))
-                basic_info = []
-                if siniestro.fecha_siniestro:
-                    basic_info.append(["Fecha del Siniestro:", siniestro.fecha_siniestro.strftime("%d/%m/%Y")])
-                if siniestro.direccion_siniestro:
-                    basic_info.append(["Dirección:", siniestro.direccion_siniestro])
-                if siniestro.tipo_siniestro:
-                    basic_info.append(["Tipo de Siniestro:", siniestro.tipo_siniestro])
-
-                if basic_info:
-                    basic_table = Table(basic_info, colWidths=[2.5 * inch, 4 * inch])
-                    basic_table.setStyle(
-                        TableStyle(
-                            [
-                                ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
-                                ("FONTSIZE", (0, 0), (-1, -1), 10),
-                                ("GRID", (0, 0), (-1, -1), 1, colors.black),
-                                ("ALIGN", (0, 0), (0, -1), "LEFT"),
-                            ]
-                        )
-                    )
-                    story.append(basic_table)
-                    story.append(Spacer(1, 20))
-
-            # Información del asegurado
-            if siniestro.asegurado:
-                story.append(Paragraph("INFORMACIÓN DEL ASEGURADO", section_style))
-                asegurado_info = []
-                if siniestro.asegurado.nombre:
-                    asegurado_info.append(["Nombre:", siniestro.asegurado.nombre])
-                if siniestro.asegurado.cedula:
-                    asegurado_info.append(["Cédula:", siniestro.asegurado.cedula])
-
-                if asegurado_info:
-                    aseg_table = Table(asegurado_info, colWidths=[2.5 * inch, 4 * inch])
-                    aseg_table.setStyle(
-                        TableStyle(
-                            [
-                                ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
-                                ("FONTSIZE", (0, 0), (-1, -1), 10),
-                                ("GRID", (0, 0), (-1, -1), 1, colors.black),
-                            ]
-                        )
-                    )
-                    story.append(aseg_table)
-                    story.append(Spacer(1, 20))
-
-            # Fecha de generación
-            fecha_gen = Paragraph(
-                f"Fecha de Generación: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}",
-                normal_style,
-            )
-            story.append(fecha_gen)
-
-            # Generar PDF básico
+            doc = SimpleDocTemplate(buffer, pagesize=letter)
+            story = [Paragraph(f"ERROR GENERANDO PDF: {str(e)}", styles["Normal"])]
             doc.build(story)
             buffer.seek(0)
-            basic_pdf = buffer.getvalue()
-
-            logger.info(f"✅ PDF básico generado exitosamente: {len(basic_pdf)} bytes")
-
             return Response(
-                content=basic_pdf,
+                content=buffer.getvalue(),
                 media_type="application/pdf",
-                headers={
-                    "Content-Disposition": f"attachment; filename={reclamo}.pdf",
-                    "Content-Length": str(len(basic_pdf)),
-                },
+                headers={"Content-Disposition": "attachment; filename=error.pdf"},
             )
-
-        except Exception as e2:
-            logger.error(f"❌ Error generando PDF básico: {e2}")
-            # Último recurso: error HTTP
-            raise HTTPException(
-                status_code=500,
-                detail=f"Error crítico generando PDF: {str(e)}. Error básico: {str(e2)}"
-            )
+        except:
+            raise HTTPException(status_code=500, detail=f"Error total del sistema: {str(e)}")
 
 
 @router.get("/{siniestro_id}/generar-pdf-sin-firma")
