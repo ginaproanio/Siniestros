@@ -1,6 +1,7 @@
 import io
 import logging
 import os
+import requests
 from datetime import datetime
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -14,12 +15,94 @@ from reportlab.platypus import (
     PageTemplate,
     Frame,
     NextPageTemplate,
+    Image,
 )
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 from reportlab.pdfgen import canvas
 from sqlalchemy.orm import Session
 from ..models import Siniestro
+
+try:
+    from PIL import Image as PILImage
+    PIL_AVAILABLE = True
+except ImportError:
+    PIL_AVAILABLE = False
+    logging.warning("PIL no disponible - imágenes en PDF pueden no funcionar correctamente")
+
+
+def download_image_from_url(image_url: str) -> bytes:
+    """Descargar imagen desde URL y retornar datos binarios"""
+    try:
+        logger.info(f"📥 Descargando imagen desde: {image_url[:100]}...")
+        response = requests.get(image_url, timeout=10)
+        response.raise_for_status()
+
+        image_data = response.content
+        logger.info(f"✅ Imagen descargada: {len(image_data)} bytes")
+
+        # Validar que sea una imagen
+        if not response.headers.get('content-type', '').startswith('image/'):
+            logger.warning(f"⚠️ Contenido no es imagen: {response.headers.get('content-type')}")
+            return None
+
+        return image_data
+
+    except Exception as e:
+        logger.error(f"❌ Error descargando imagen: {e}")
+        return None
+
+
+def create_pdf_image(image_data: bytes, max_width: float = 4*inch, max_height: float = 3*inch) -> Image:
+    """Crear objeto Image de ReportLab desde datos binarios"""
+    try:
+        if not image_data:
+            return None
+
+        # Crear buffer desde datos binarios
+        image_buffer = io.BytesIO(image_data)
+
+        # Si PIL está disponible, procesar la imagen
+        if PIL_AVAILABLE:
+            try:
+                pil_image = PILImage.open(image_buffer)
+
+                # Convertir a RGB si es necesario
+                if pil_image.mode not in ('RGB', 'L'):
+                    pil_image = pil_image.convert('RGB')
+
+                # Redimensionar manteniendo proporción
+                pil_image.thumbnail((max_width * 72, max_height * 72), PILImage.LANCZOS)  # 72 DPI
+
+                # Guardar como JPEG en buffer
+                output_buffer = io.BytesIO()
+                pil_image.save(output_buffer, format='JPEG', quality=85)
+                output_buffer.seek(0)
+
+                # Crear Image de ReportLab
+                pdf_image = Image(output_buffer)
+                pdf_image.hAlign = 'LEFT'
+
+                logger.info(f"✅ Imagen procesada: {pil_image.size}")
+                return pdf_image
+
+            except Exception as e:
+                logger.warning(f"⚠️ Error procesando con PIL: {e}")
+
+        # Fallback: intentar crear Image directamente desde buffer
+        image_buffer.seek(0)
+        try:
+            pdf_image = Image(image_buffer)
+            pdf_image.hAlign = 'LEFT'
+            logger.info("✅ Imagen creada sin procesamiento PIL")
+            return pdf_image
+        except Exception as e:
+            logger.error(f"❌ Error creando imagen PDF: {e}")
+            return None
+
+    except Exception as e:
+        logger.error(f"❌ Error creando imagen PDF: {e}")
+        return None
 
 
 def header_footer(canvas, doc):
@@ -695,11 +778,15 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                         )
                     )
                     story.append(Paragraph(relato.texto, normal_style))
-                    # Incluir referencia a imagen si existe
+                    # Incluir imagen si existe
                     if relato.imagen_url and relato.imagen_url.strip():
-                        story.append(Paragraph(f"[Imagen adjunta: {i}]", ParagraphStyle(
-                            "ImageRef", parent=styles["Normal"], fontSize=8, textColor=colors.blue, fontName="Helvetica-Oblique"
-                        )))
+                        image_data = download_image_from_url(relato.imagen_url)
+                        if image_data:
+                            pdf_image = create_pdf_image(image_data)
+                            if pdf_image:
+                                story.append(Spacer(1, 5))
+                                story.append(pdf_image)
+                                story.append(Spacer(1, 5))
                     story.append(Spacer(1, 10))
                 story.append(Spacer(1, 15))
                 section_num += 1
@@ -722,11 +809,15 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                         )
                     )
                     story.append(Paragraph(relato.texto, normal_style))
-                    # Incluir referencia a imagen si existe
+                    # Incluir imagen si existe
                     if relato.imagen_url and relato.imagen_url.strip():
-                        story.append(Paragraph(f"[Imagen adjunta: {i}]", ParagraphStyle(
-                            "ImageRef", parent=styles["Normal"], fontSize=8, textColor=colors.blue, fontName="Helvetica-Oblique"
-                        )))
+                        image_data = download_image_from_url(relato.imagen_url)
+                        if image_data:
+                            pdf_image = create_pdf_image(image_data)
+                            if pdf_image:
+                                story.append(Spacer(1, 5))
+                                story.append(pdf_image)
+                                story.append(Spacer(1, 5))
                     story.append(Spacer(1, 10))
                 story.append(Spacer(1, 15))
                 section_num += 1
@@ -749,11 +840,15 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                         )
                     )
                     story.append(Paragraph(inspeccion.descripcion, normal_style))
-                    # Incluir referencia a imagen si existe
+                    # Incluir imagen si existe
                     if inspeccion.imagen_url and inspeccion.imagen_url.strip():
-                        story.append(Paragraph(f"[Imagen adjunta: {i}]", ParagraphStyle(
-                            "ImageRef", parent=styles["Normal"], fontSize=8, textColor=colors.blue, fontName="Helvetica-Oblique"
-                        )))
+                        image_data = download_image_from_url(inspeccion.imagen_url)
+                        if image_data:
+                            pdf_image = create_pdf_image(image_data)
+                            if pdf_image:
+                                story.append(Spacer(1, 5))
+                                story.append(pdf_image)
+                                story.append(Spacer(1, 5))
                     story.append(Spacer(1, 10))
                 story.append(Spacer(1, 15))
                 section_num += 1
@@ -774,11 +869,15 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                         )
                     )
                     story.append(Paragraph(testigo.texto, normal_style))
-                    # Incluir referencia a imagen si existe
+                    # Incluir imagen si existe
                     if testigo.imagen_url and testigo.imagen_url.strip():
-                        story.append(Paragraph(f"[Imagen adjunta: {i}]", ParagraphStyle(
-                            "ImageRef", parent=styles["Normal"], fontSize=8, textColor=colors.blue, fontName="Helvetica-Oblique"
-                        )))
+                        image_data = download_image_from_url(testigo.imagen_url)
+                        if image_data:
+                            pdf_image = create_pdf_image(image_data)
+                            if pdf_image:
+                                story.append(Spacer(1, 5))
+                                story.append(pdf_image)
+                                story.append(Spacer(1, 5))
                     story.append(Spacer(1, 10))
                 story.append(Spacer(1, 15))
                 section_num += 1
