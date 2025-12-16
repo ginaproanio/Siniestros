@@ -146,11 +146,24 @@ const InvestigacionForm: React.FC = () => {
       if (error.response) {
         const status = error.response.status;
         const errorData = error.response.data;
-        errorMessage = `Error ${status}: ${
-          errorData.detail || errorData.message || "Error del servidor"
-        }`;
+        console.error("Error response data:", errorData);
+
+        // Extraer mensaje específico del error
+        if (errorData.detail) {
+          errorMessage = `Error ${status}: ${errorData.detail}`;
+        } else if (errorData.message) {
+          errorMessage = `Error ${status}: ${errorData.message}`;
+        } else if (typeof errorData === 'string') {
+          errorMessage = `Error ${status}: ${errorData}`;
+        } else if (Array.isArray(errorData)) {
+          errorMessage = `Error ${status}: ${errorData.join(', ')}`;
+        } else {
+          errorMessage = `Error ${status}: ${JSON.stringify(errorData)}`;
+        }
       } else if (error.request) {
         errorMessage = "No se pudo conectar al servidor";
+      } else {
+        errorMessage = `Error: ${error.message || 'Error desconocido'}`;
       }
 
       setMessage(errorMessage);
