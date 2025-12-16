@@ -174,28 +174,44 @@ const InvestigacionForm: React.FC = () => {
 
   const uploadImageForRelato = async (index: number, file: File) => {
     try {
-      const formData = new FormData();
-      formData.append('file', file);
+      // Crear URL local para preview inmediato
+      const localUrl = URL.createObjectURL(file);
 
-      const response = await axios.post('/api/v1/upload-image', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-
-      const imageUrl = response.data.url_presigned;
-
-      // Actualizar el relato con la nueva URL de imagen
+      // Actualizar el relato con la URL local inmediatamente para feedback visual
       setData((prev) => {
         const newRelatos = [...(prev.relatos_asegurado || [])];
-        newRelatos[index] = { ...newRelatos[index], imagen_url: imageUrl };
+        newRelatos[index] = { ...newRelatos[index], imagen_url: localUrl };
         return { ...prev, relatos_asegurado: newRelatos };
       });
 
-      setMessage("✅ Imagen subida correctamente");
+      // Intentar subir a S3 en segundo plano
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await axios.post('/api/v1/upload-image', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+
+        const s3Url = response.data.url_presigned;
+
+        // Actualizar con la URL de S3
+        setData((prev) => {
+          const newRelatos = [...(prev.relatos_asegurado || [])];
+          newRelatos[index] = { ...newRelatos[index], imagen_url: s3Url };
+          return { ...prev, relatos_asegurado: newRelatos };
+        });
+
+        setMessage("✅ Imagen subida correctamente a S3");
+      } catch (s3Error) {
+        console.warn("⚠️ S3 upload failed, keeping local URL:", s3Error);
+        setMessage("⚠️ Imagen cargada localmente (S3 no disponible)");
+      }
     } catch (error) {
-      console.error("Error subiendo imagen:", error);
-      setMessage("❌ Error al subir la imagen");
+      console.error("Error procesando imagen:", error);
+      setMessage("❌ Error al procesar la imagen");
     }
   };
 
