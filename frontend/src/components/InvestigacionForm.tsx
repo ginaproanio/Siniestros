@@ -160,12 +160,9 @@ const InvestigacionForm: React.FC = () => {
   };
 
   const handleTabChange = async (newTab: number) => {
-    if (activeTab !== newTab) {
-      // Guardar la pestaña actual antes de cambiar
-      await saveCurrentTab();
-      // Cambiar a la nueva pestaña
-      setActiveTab(newTab);
-    }
+    // Cambiar de pestaña libremente SIN guardar automáticamente
+    setActiveTab(newTab);
+    setMessage(""); // Limpiar mensajes al cambiar de pestaña
   };
 
   const updateAntecedentes = (value: string) => {
@@ -284,6 +281,27 @@ const InvestigacionForm: React.FC = () => {
                     }}
                   />
                 </div>
+
+                {/* BOTÓN GUARDAR ANTECEDENTES */}
+                <div className="tab-navigation" style={{ justifyContent: "center", marginTop: "20px" }}>
+                  <button
+                    type="button"
+                    className="btn-submit-tab"
+                    onClick={() => saveCurrentTab()}
+                    disabled={saving}
+                    style={{
+                      backgroundColor: "#007bff",
+                      color: "white",
+                      border: "none",
+                      padding: "12px 24px",
+                      borderRadius: "4px",
+                      fontSize: "16px",
+                      cursor: saving ? "not-allowed" : "pointer",
+                    }}
+                  >
+                    {saving ? "💾 Guardando..." : "💾 Guardar Antecedentes"}
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -388,6 +406,27 @@ const InvestigacionForm: React.FC = () => {
                     </div>
                   </div>
                 ))}
+
+                {/* BOTÓN GUARDAR RELATOS ASEGURADO */}
+                <div className="tab-navigation" style={{ justifyContent: "center", marginTop: "20px" }}>
+                  <button
+                    type="button"
+                    className="btn-submit-tab"
+                    onClick={() => saveCurrentTab()}
+                    disabled={saving}
+                    style={{
+                      backgroundColor: "#007bff",
+                      color: "white",
+                      border: "none",
+                      padding: "12px 24px",
+                      borderRadius: "4px",
+                      fontSize: "16px",
+                      cursor: saving ? "not-allowed" : "pointer",
+                    }}
+                  >
+                    {saving ? "💾 Guardando..." : "💾 Guardar Relatos"}
+                  </button>
+                </div>
               </div>
             </div>
           )}
