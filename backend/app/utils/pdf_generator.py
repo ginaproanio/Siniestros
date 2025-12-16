@@ -617,15 +617,23 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
         # Función auxiliar para verificar si un campo JSON tiene contenido real
         def has_real_content(json_field):
             """Verifica si un campo JSON tiene contenido real (no vacío)"""
+            logger.info(f"🔍 DEBUG: verificando campo: {repr(json_field)} (tipo: {type(json_field)})")
             if not json_field:
+                logger.info("❌ Campo vacío o None")
                 return False
             try:
                 parsed = json.loads(json_field) if isinstance(json_field, str) else json_field
+                logger.info(f"📋 Campo parseado: {repr(parsed)} (tipo: {type(parsed)})")
                 if isinstance(parsed, list):
                     # Filtrar elementos que no sean strings vacías
-                    return any(item.strip() for item in parsed if isinstance(item, str))
-                return bool(parsed)
-            except:
+                    has_content = any(item.strip() for item in parsed if isinstance(item, str))
+                    logger.info(f"📋 Lista con contenido real: {has_content} (elementos: {[repr(item) for item in parsed]})")
+                    return has_content
+                result = bool(parsed)
+                logger.info(f"📋 Resultado boolean: {result}")
+                return result
+            except Exception as e:
+                logger.error(f"❌ Error parseando JSON: {e}")
                 return bool(json_field and json_field.strip())
 
         has_any_investigation = (
