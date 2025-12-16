@@ -107,10 +107,15 @@ const InvestigacionForm: React.FC = () => {
       setSaving(true);
       setMessage("");
 
-      await axios.put(
+      console.log(`🚀 Enviando datos para sección ${seccion}:`, JSON.stringify(datos, null, 2));
+
+      const response = await axios.put(
         `/api/v1/siniestros/${siniestroId}/seccion/${seccion}`,
         datos
       );
+
+      console.log(`✅ Respuesta exitosa para sección ${seccion}:`, response.data);
+
       setMessage(`✅ Sección "${seccion}" guardada exitosamente`);
 
       if (!completedTabs.includes(activeTab)) {
@@ -119,8 +124,13 @@ const InvestigacionForm: React.FC = () => {
 
       return true;
     } catch (error: any) {
-      console.error(`Error guardando sección ${seccion}:`, error);
-      setMessage(`❌ Error al guardar sección "${seccion}"`);
+      console.error(`❌ Error guardando sección ${seccion}:`, error);
+      console.error(`❌ Error response data:`, error.response?.data);
+      console.error(`❌ Error response status:`, error.response?.status);
+      console.error(`❌ Error message:`, error.message);
+
+      const errorMessage = error.response?.data?.detail || error.message || "Error desconocido";
+      setMessage(`❌ Error al guardar sección "${seccion}": ${errorMessage}`);
       return false;
     } finally {
       setSaving(false);
