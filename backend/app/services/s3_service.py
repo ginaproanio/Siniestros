@@ -58,20 +58,26 @@ async def validate_file(file: UploadFile) -> bytes:
     return content
 
 
-async def upload_file_to_s3(file: UploadFile, content: bytes = None) -> str:
+async def upload_file_to_s3(file: UploadFile, content: bytes = None) -> dict:
     """
-    Sube archivo a S3 y retorna URL presigned
+    Sube archivo a S3, genera URL presigned Y convierte a base64 para PDFs
 
     Args:
         file: Archivo UploadFile de FastAPI
         content: Contenido del archivo (opcional, si ya fue leído)
 
     Returns:
-        str: URL presigned válida por 7 días
+        dict: {
+            "url_presigned": str,  # URL para visualización en web
+            "base64_data": str,    # Datos base64 para incluir en PDFs
+            "content_type": str    # Tipo MIME
+        }
 
     Raises:
         HTTPException: Si hay errores de validación o subida
     """
+    import base64
+
     try:
         # Validar archivo y obtener contenido si no se proporcionó
         if content is None:
@@ -101,7 +107,15 @@ async def upload_file_to_s3(file: UploadFile, content: bytes = None) -> str:
             ExpiresIn=604800  # 7 días
         )
 
-        return presigned_url
+        # Convertir a base64 para PDFs
+        base64_data = base64.b64encode(content).decode('utf-8')
+        logger.info(f"Imagen convertida a base64: {len(base64_data)} caracteres")
+
+        return {
+            "url_presigned": presigned_url,
+            "base64_data": base64_data,
+            "content_type": file.content_type
+        }
 
     except NoCredentialsError:
         logger.error("Credenciales AWS no encontradas")

@@ -199,11 +199,31 @@ async def update_siniestro(
         db.query(models.RelatoAsegurado).filter(models.RelatoAsegurado.siniestro_id == siniestro_id).delete()
         # Crear nuevos relatos
         for relato in relatos_asegurado_data:
+            # Si hay imagen_url pero no imagen_base64, intentar obtenerla del S3 service
+            imagen_url = relato.get('imagen_url')
+            imagen_base64 = relato.get('imagen_base64')
+            imagen_content_type = relato.get('imagen_content_type')
+
+            # Si tenemos URL pero no base64, intentar procesar la imagen
+            if imagen_url and not imagen_base64:
+                try:
+                    from app.services.s3_service import download_image_from_url
+                    image_data = download_image_from_url(imagen_url)
+                    if image_data:
+                        import base64
+                        imagen_base64 = base64.b64encode(image_data).decode('utf-8')
+                        imagen_content_type = 'image/jpeg'  # Default
+                        logger.info("✅ Convertida imagen URL a base64 para relato asegurado")
+                except Exception as e:
+                    logger.warning(f"⚠️ No se pudo convertir imagen para relato asegurado: {e}")
+
             db_relato = models.RelatoAsegurado(
                 siniestro_id=siniestro_id,
                 numero_relato=relato.get('numero_relato', 1),
                 texto=relato.get('texto', ''),
-                imagen_url=relato.get('imagen_url')
+                imagen_url=imagen_url,
+                imagen_base64=imagen_base64,
+                imagen_content_type=imagen_content_type
             )
             db.add(db_relato)
 
@@ -374,6 +394,128 @@ async def generar_pdf(siniestro_id: int, db: Session = Depends(get_db)):
         else:
             story.append(Paragraph("No hay información del asegurado registrada.", normal_style))
         story.append(Spacer(1, 15))
+
+        # 3.1 IMÁGENES DE LA INVESTIGACIÓN
+        # Obtener todas las imágenes relacionadas con el siniestro
+        from sqlalchemy.orm import joinedload
+
+        siniestro_completo = db.query(models.Siniestro).options(
+            joinedload(models.Siniestro.relatos_asegurado),
+            joinedload(models.Siniestro.relatos_conductor),
+            joinedload(models.Siniestro.inspecciones),
+            joinedload(models.Siniestro.testigos)
+        ).filter(models.Siniestro.id == siniestro_id).first()
+
+        imagenes_encontradas = []
+
+        # Buscar imágenes en relatos del asegurado
+        if siniestro_completo.relatos_asegurado:
+            for relato in siniestro_completo.relatos_asegurado:
+                if relato.imagen_base64 and relato.imagen_content_type:
+                    imagenes_encontradas.append({
+                        'titulo': f'Relato del Asegurado #{relato.numero_relato}',
+                        'base64': relato.imagen_base64,
+                        'content_type': relato.imagen_content_type
+                    })
+
+        # Buscar imágenes en relatos del conductor
+        if siniestro_completo.relatos_conductor:
+            for relato in siniestro_completo.relatos_conductor:
+                if relato.imagen_base64 and relato.imagen_content_type:
+                    imagenes_encontradas.append({
+                        'titulo': f'Relato del Conductor #{relato.numero_relato}',
+                        'base64': relato.imagen_base64,
+                        'content_type': relato.imagen_content_type
+                    })
+
+        # Buscar imágenes en inspecciones
+        if siniestro_completo.inspecciones:
+            for inspeccion in siniestro_completo.inspecciones:
+                if inspeccion.imagen_base64 and inspeccion.imagen_content_type:
+                    imagenes_encontradas.append({
+                        'titulo': f'Inspección #{inspeccion.numero_inspeccion}',
+                        'base64': inspeccion.imagen_base64,
+                        'content_type': inspeccion.imagen_content_type
+                    })
+
+        # Buscar imágenes en testigos
+        if siniestro_completo.testigos:
+            for testigo in siniestro_completo.testigos:
+                if testigo.imagen_base64 and testigo.imagen_content_type:
+                    imagenes_encontradas.append({
+                        'titulo': f'Testigo #{testigo.numero_relato}',
+                        'base64': testigo.imagen_base64,
+                        'content_type': testigo.imagen_content_type
+                    })
+
+        # Si hay imágenes, incluir sección de imágenes
+        if imagenes_encontradas:
+            story.append(Paragraph("📷 EVIDENCIAS FOTOGRÁFICAS", section_style))
+            story.append(Paragraph(
+                "Las siguientes imágenes corresponden a la evidencia recopilada durante la investigación:",
+                normal_style
+            ))
+            story.append(Spacer(1, 10))
+
+            for i, imagen in enumerate(imagenes_encontradas, 1):
+                # Título de la imagen
+                story.append(Paragraph(f"{i}. {imagen['titulo']}", ParagraphStyle(
+                    "ImageTitle", parent=styles["Heading4"], fontSize=11, fontName="Helvetica-Bold"
+                )))
+
+                # Incluir la imagen real en el PDF
+                try:
+                    import base64
+                    from reportlab.platypus import Image
+                    from io import BytesIO
+
+                    # Decodificar base64 a bytes
+                    image_data = base64.b64decode(imagen['base64'])
+
+                    # Crear buffer de memoria
+                    image_buffer = BytesIO(image_data)
+
+                    # Procesar con PIL si está disponible
+                    try:
+                        from PIL import Image as PILImage
+                        pil_image = PILImage.open(image_buffer)
+
+                        # Convertir a RGB si es necesario
+                        if pil_image.mode not in ('RGB', 'L'):
+                            pil_image = pil_image.convert('RGB')
+
+                        # Redimensionar manteniendo proporción (máximo 4x3 pulgadas a 72 DPI)
+                        pil_image.thumbnail((4 * 72, 3 * 72), PILImage.LANCZOS)
+
+                        # Guardar como JPEG optimizado
+                        output_buffer = BytesIO()
+                        pil_image.save(output_buffer, format='JPEG', quality=85)
+                        output_buffer.seek(0)
+
+                        # Crear imagen de ReportLab
+                        pdf_image = Image(output_buffer)
+                        pdf_image.hAlign = 'LEFT'
+
+                        story.append(pdf_image)
+
+                    except ImportError:
+                        # Fallback sin PIL
+                        image_buffer.seek(0)
+                        pdf_image = Image(image_buffer)
+                        pdf_image.hAlign = 'LEFT'
+                        story.append(pdf_image)
+
+                    logger.info(f"✅ Imagen {i} incluida en PDF: {imagen['titulo']}")
+
+                except Exception as img_error:
+                    logger.warning(f"⚠️ Error procesando imagen {i}: {img_error}")
+                    story.append(Paragraph(f"[Error al cargar imagen: {str(img_error)}]", ParagraphStyle(
+                        "ImageError", parent=styles["Normal"], fontSize=8, textColor=colors.red
+                    )))
+
+                story.append(Spacer(1, 15))
+
+            story.append(Spacer(1, 20))
 
         # 4. INFORMACIÓN DEL CONDUCTOR
         if siniestro.conductor:
@@ -548,11 +690,12 @@ async def generar_pdf_sin_firma(siniestro_id: int, db: Session = Depends(get_db)
 
 @router.post("/upload-image")
 async def upload_image(file: UploadFile = File(...)):
-    """Subir imagen a AWS S3 y devolver URL presigned"""
+    """Subir imagen a AWS S3 y devolver URL presigned + base64 para PDFs"""
     from app.services.s3_service import upload_file_to_s3
 
-    presigned_url = await upload_file_to_s3(file)
-    return {"url_presigned": presigned_url}
+    result = await upload_file_to_s3(file)
+    # Solo devolver la URL presigned al frontend, el base64 se guarda en BD
+    return {"url_presigned": result["url_presigned"]}
 
 
 @router.get("/diagnostico-pdf")

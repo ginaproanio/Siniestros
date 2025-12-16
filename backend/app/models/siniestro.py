@@ -138,6 +138,8 @@ class RelatoAsegurado(Base):
     numero_relato = Column(Integer, nullable=False)
     texto = Column(Text, nullable=False)
     imagen_url = Column(String(500))  # URL de la imagen subida
+    imagen_base64 = Column(Text)  # Datos base64 de la imagen para PDFs
+    imagen_content_type = Column(String(50))  # Tipo MIME de la imagen
 
     siniestro = relationship("Siniestro", back_populates="relatos_asegurado")
 
@@ -149,6 +151,8 @@ class RelatoConductor(Base):
     numero_relato = Column(Integer, nullable=False)
     texto = Column(Text, nullable=False)
     imagen_url = Column(String(500))  # URL de la imagen subida
+    imagen_base64 = Column(Text)  # Datos base64 de la imagen para PDFs
+    imagen_content_type = Column(String(50))  # Tipo MIME de la imagen
 
     siniestro = relationship("Siniestro", back_populates="relatos_conductor")
 
@@ -160,6 +164,8 @@ class Inspeccion(Base):
     numero_inspeccion = Column(Integer, nullable=False)
     descripcion = Column(Text, nullable=False)
     imagen_url = Column(String(500))
+    imagen_base64 = Column(Text)  # Datos base64 de la imagen para PDFs
+    imagen_content_type = Column(String(50))  # Tipo MIME de la imagen
 
     siniestro = relationship("Siniestro", back_populates="inspecciones")
 
@@ -171,6 +177,8 @@ class Testigo(Base):
     numero_relato = Column(Integer, nullable=False)
     texto = Column(Text, nullable=False)
     imagen_url = Column(String(500))
+    imagen_base64 = Column(Text)  # Datos base64 de la imagen para PDFs
+    imagen_content_type = Column(String(50))  # Tipo MIME de la imagen
 
     siniestro = relationship("Siniestro", back_populates="testigos")
 
