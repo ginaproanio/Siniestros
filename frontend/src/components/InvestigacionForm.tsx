@@ -41,20 +41,24 @@ const InvestigacionForm: React.FC = () => {
   const [message, setMessage] = useState("");
   const [siniestroInfo, setSiniestroInfo] = useState<any>(null);
 
-  // Definir pestañas siguiendo la secuencia exacta del proceso de investigación
+  // Definir pestañas siguiendo la secuencia exacta del proceso de investigación - sin íconos para evitar ancho
   const tabs = [
-    { id: 0, title: "Antecedentes", icon: "📋", field: "antecedentes" },
-    { id: 1, title: "Entrevista Asegurado", icon: "🎤", field: "relatos_asegurado" },
-    { id: 2, title: "Entrevista Conductor", icon: "👨‍🚗", field: "relatos_conductor" },
-    { id: 3, title: "Inspección Lugar", icon: "🔍", field: "inspecciones" },
-    { id: 4, title: "Testigos", icon: "👥", field: "testigos" },
-    { id: 5, title: "Evidencias Complementarias", icon: "📎", field: "evidencias_complementarias" },
-    { id: 6, title: "Otras Diligencias", icon: "📋", field: "otras_diligencias" },
-    { id: 7, title: "Visita Taller", icon: "🏭", field: "visita_taller" },
-    { id: 8, title: "Observaciones", icon: "💭", field: "observaciones" },
-    { id: 9, title: "Recomendación Pago", icon: "💰", field: "recomendacion_pago" },
-    { id: 10, title: "Conclusiones", icon: "📊", field: "conclusiones" },
-    { id: 11, title: "Anexo", icon: "📄", field: "anexo" },
+    { id: 0, title: "Antecedentes", field: "antecedentes" },
+    { id: 1, title: "Entrevista Asegurado", field: "relatos_asegurado" },
+    { id: 2, title: "Entrevista Conductor", field: "relatos_conductor" },
+    { id: 3, title: "Inspección Lugar", field: "inspecciones" },
+    { id: 4, title: "Testigos", field: "testigos" },
+    {
+      id: 5,
+      title: "Evidencias Complementarias",
+      field: "evidencias_complementarias",
+    },
+    { id: 6, title: "Otras Diligencias", field: "otras_diligencias" },
+    { id: 7, title: "Visita Taller", field: "visita_taller" },
+    { id: 8, title: "Observaciones", field: "observaciones" },
+    { id: 9, title: "Recomendación Pago", field: "recomendacion_pago" },
+    { id: 10, title: "Conclusiones", field: "conclusiones" },
+    { id: 11, title: "Anexo", field: "anexo" },
   ];
 
   useEffect(() => {
@@ -179,7 +183,7 @@ const InvestigacionForm: React.FC = () => {
                 className={buttonClass}
                 onClick={() => goToTab(tab.id)}
               >
-                {tab.icon} {tab.title}
+                {tab.title}
                 {isCompleted && <span className="tab-check">✓</span>}
               </button>
             );
@@ -193,14 +197,7 @@ const InvestigacionForm: React.FC = () => {
             {activeTab === 0 && (
               <div className="tab-section active">
                 <div className="card-section">
-                  <div className="card-header">
-                    <div className="card-icon">📋</div>
-                    <div>
-                      <h3 className="card-title">Antecedentes</h3>
-                    </div>
-                  </div>
-                  <div className="form-group">
-                    <label>Descripción:</label>
+                  <div className="form-group" style={{ marginTop: "20px" }}>
                     <textarea
                       value={
                         (formData.antecedentes &&
@@ -214,8 +211,16 @@ const InvestigacionForm: React.FC = () => {
                           antecedentes: [{ descripcion: value }],
                         }));
                       }}
-                      rows={6}
-                      placeholder="Describa el aviso de siniestro..."
+                      rows={8}
+                      placeholder="Escriba aquí los antecedentes del caso..."
+                      style={{
+                        width: "100%",
+                        padding: "15px",
+                        border: "1px solid #dee2e6",
+                        borderRadius: "5px",
+                        fontSize: "16px",
+                        lineHeight: "1.5",
+                      }}
                     />
                   </div>
                   <div className="tab-navigation">
@@ -223,13 +228,20 @@ const InvestigacionForm: React.FC = () => {
                       type="button"
                       className="btn-submit-tab"
                       onClick={() =>
-                        guardarSeccion("antecedentes", formData.antecedentes || [])
+                        guardarSeccion(
+                          "antecedentes",
+                          formData.antecedentes || []
+                        )
                       }
                       disabled={saving}
                     >
                       {saving ? "Guardando..." : "💾 Guardar"}
                     </button>
-                    <button type="button" className="btn-next" onClick={nextTab}>
+                    <button
+                      type="button"
+                      className="btn-next"
+                      onClick={nextTab}
+                    >
                       Siguiente →
                     </button>
                   </div>
@@ -244,16 +256,23 @@ const InvestigacionForm: React.FC = () => {
                   {/* Campo directo para escribir el relato del asegurado */}
                   <div className="form-group" style={{ marginTop: "20px" }}>
                     <textarea
-                      value={(formData.relatos_asegurado && formData.relatos_asegurado[0]?.texto) || ""}
+                      value={
+                        (formData.relatos_asegurado &&
+                          formData.relatos_asegurado[0]?.texto) ||
+                        ""
+                      }
                       onChange={(e) => {
                         const value = e.target.value;
                         setFormData((prev) => ({
                           ...prev,
-                          relatos_asegurado: [{
-                            numero_relato: 1,
-                            texto: value,
-                            imagen_url: prev.relatos_asegurado?.[0]?.imagen_url || "",
-                          }],
+                          relatos_asegurado: [
+                            {
+                              numero_relato: 1,
+                              texto: value,
+                              imagen_url:
+                                prev.relatos_asegurado?.[0]?.imagen_url || "",
+                            },
+                          ],
                         }));
                       }}
                       rows={8}
@@ -293,42 +312,63 @@ const InvestigacionForm: React.FC = () => {
                             const imageUrl = response.data.url_presigned;
                             setFormData((prev) => ({
                               ...prev,
-                              relatos_asegurado: [{
-                                numero_relato: 1,
-                                texto: prev.relatos_asegurado?.[0]?.texto || "",
-                                imagen_url: imageUrl,
-                              }],
+                              relatos_asegurado: [
+                                {
+                                  numero_relato: 1,
+                                  texto:
+                                    prev.relatos_asegurado?.[0]?.texto || "",
+                                  imagen_url: imageUrl,
+                                },
+                              ],
                             }));
                           } catch (error) {
-                            alert("Error al subir la imagen. Intente nuevamente.");
+                            alert(
+                              "Error al subir la imagen. Intente nuevamente."
+                            );
                           }
                         }
                       }}
                     />
-                    {(formData.relatos_asegurado && formData.relatos_asegurado[0]?.imagen_url) && (
-                      <img
-                        src={formData.relatos_asegurado[0].imagen_url}
-                        alt="Imagen del relato del asegurado"
-                        style={{ maxWidth: "300px", marginTop: "10px", borderRadius: "5px" }}
-                      />
-                    )}
+                    {formData.relatos_asegurado &&
+                      formData.relatos_asegurado[0]?.imagen_url && (
+                        <img
+                          src={formData.relatos_asegurado[0].imagen_url}
+                          alt="Imagen del relato del asegurado"
+                          style={{
+                            maxWidth: "300px",
+                            marginTop: "10px",
+                            borderRadius: "5px",
+                          }}
+                        />
+                      )}
                   </div>
 
                   <div className="tab-navigation">
-                    <button type="button" className="btn-prev" onClick={prevTab}>
+                    <button
+                      type="button"
+                      className="btn-prev"
+                      onClick={prevTab}
+                    >
                       ← Anterior
                     </button>
                     <button
                       type="button"
                       className="btn-submit-tab"
                       onClick={() =>
-                        guardarSeccion("relatos_asegurado", formData.relatos_asegurado || [])
+                        guardarSeccion(
+                          "relatos_asegurado",
+                          formData.relatos_asegurado || []
+                        )
                       }
                       disabled={saving}
                     >
                       {saving ? "Guardando..." : "💾 Guardar"}
                     </button>
-                    <button type="button" className="btn-next" onClick={nextTab}>
+                    <button
+                      type="button"
+                      className="btn-next"
+                      onClick={nextTab}
+                    >
                       Siguiente →
                     </button>
                   </div>
@@ -384,9 +424,10 @@ const InvestigacionForm: React.FC = () => {
                           onClick={() => {
                             setFormData((prev) => ({
                               ...prev,
-                              relatos_conductor: prev.relatos_conductor?.filter(
-                                (_, i) => i !== index
-                              ) || [],
+                              relatos_conductor:
+                                prev.relatos_conductor?.filter(
+                                  (_, i) => i !== index
+                                ) || [],
                             }));
                           }}
                         >
@@ -400,9 +441,10 @@ const InvestigacionForm: React.FC = () => {
                             const value = e.target.value;
                             setFormData((prev) => ({
                               ...prev,
-                              relatos_conductor: prev.relatos_conductor?.map((r, i) =>
-                                i === index ? { ...r, texto: value } : r
-                              ) || [],
+                              relatos_conductor:
+                                prev.relatos_conductor?.map((r, i) =>
+                                  i === index ? { ...r, texto: value } : r
+                                ) || [],
                             }));
                           }}
                           rows={3}
@@ -432,12 +474,17 @@ const InvestigacionForm: React.FC = () => {
                                 const imageUrl = response.data.url_presigned;
                                 setFormData((prev) => ({
                                   ...prev,
-                                  relatos_conductor: prev.relatos_conductor?.map((r, i) =>
-                                    i === index ? { ...r, imagen_url: imageUrl } : r
-                                  ) || [],
+                                  relatos_conductor:
+                                    prev.relatos_conductor?.map((r, i) =>
+                                      i === index
+                                        ? { ...r, imagen_url: imageUrl }
+                                        : r
+                                    ) || [],
                                 }));
                               } catch (error) {
-                                alert("Error al subir la imagen. Intente nuevamente.");
+                                alert(
+                                  "Error al subir la imagen. Intente nuevamente."
+                                );
                               }
                             }
                           }}
@@ -453,20 +500,31 @@ const InvestigacionForm: React.FC = () => {
                     </div>
                   ))}
                   <div className="tab-navigation">
-                    <button type="button" className="btn-prev" onClick={prevTab}>
+                    <button
+                      type="button"
+                      className="btn-prev"
+                      onClick={prevTab}
+                    >
                       ← Anterior
                     </button>
                     <button
                       type="button"
                       className="btn-submit-tab"
                       onClick={() =>
-                        guardarSeccion("relatos_conductor", formData.relatos_conductor || [])
+                        guardarSeccion(
+                          "relatos_conductor",
+                          formData.relatos_conductor || []
+                        )
                       }
                       disabled={saving}
                     >
                       {saving ? "Guardando..." : "💾 Guardar"}
                     </button>
-                    <button type="button" className="btn-next" onClick={nextTab}>
+                    <button
+                      type="button"
+                      className="btn-next"
+                      onClick={nextTab}
+                    >
                       Siguiente →
                     </button>
                   </div>
@@ -522,9 +580,10 @@ const InvestigacionForm: React.FC = () => {
                           onClick={() => {
                             setFormData((prev) => ({
                               ...prev,
-                              inspecciones: prev.inspecciones?.filter(
-                                (_, i) => i !== index
-                              ) || [],
+                              inspecciones:
+                                prev.inspecciones?.filter(
+                                  (_, i) => i !== index
+                                ) || [],
                             }));
                           }}
                         >
@@ -538,9 +597,12 @@ const InvestigacionForm: React.FC = () => {
                             const value = e.target.value;
                             setFormData((prev) => ({
                               ...prev,
-                              inspecciones: prev.inspecciones?.map((insp, i) =>
-                                i === index ? { ...insp, descripcion: value } : insp
-                              ) || [],
+                              inspecciones:
+                                prev.inspecciones?.map((insp, i) =>
+                                  i === index
+                                    ? { ...insp, descripcion: value }
+                                    : insp
+                                ) || [],
                             }));
                           }}
                           rows={3}
@@ -570,12 +632,17 @@ const InvestigacionForm: React.FC = () => {
                                 const imageUrl = response.data.url_presigned;
                                 setFormData((prev) => ({
                                   ...prev,
-                                  inspecciones: prev.inspecciones?.map((insp, i) =>
-                                    i === index ? { ...insp, imagen_url: imageUrl } : insp
-                                  ) || [],
+                                  inspecciones:
+                                    prev.inspecciones?.map((insp, i) =>
+                                      i === index
+                                        ? { ...insp, imagen_url: imageUrl }
+                                        : insp
+                                    ) || [],
                                 }));
                               } catch (error) {
-                                alert("Error al subir la imagen. Intente nuevamente.");
+                                alert(
+                                  "Error al subir la imagen. Intente nuevamente."
+                                );
                               }
                             }
                           }}
@@ -591,20 +658,31 @@ const InvestigacionForm: React.FC = () => {
                     </div>
                   ))}
                   <div className="tab-navigation">
-                    <button type="button" className="btn-prev" onClick={prevTab}>
+                    <button
+                      type="button"
+                      className="btn-prev"
+                      onClick={prevTab}
+                    >
                       ← Anterior
                     </button>
                     <button
                       type="button"
                       className="btn-submit-tab"
                       onClick={() =>
-                        guardarSeccion("inspecciones", formData.inspecciones || [])
+                        guardarSeccion(
+                          "inspecciones",
+                          formData.inspecciones || []
+                        )
                       }
                       disabled={saving}
                     >
                       {saving ? "Guardando..." : "💾 Guardar"}
                     </button>
-                    <button type="button" className="btn-next" onClick={nextTab}>
+                    <button
+                      type="button"
+                      className="btn-next"
+                      onClick={nextTab}
+                    >
                       Siguiente →
                     </button>
                   </div>
@@ -660,9 +738,9 @@ const InvestigacionForm: React.FC = () => {
                           onClick={() => {
                             setFormData((prev) => ({
                               ...prev,
-                              testigos: prev.testigos?.filter(
-                                (_, i) => i !== index
-                              ) || [],
+                              testigos:
+                                prev.testigos?.filter((_, i) => i !== index) ||
+                                [],
                             }));
                           }}
                         >
@@ -676,9 +754,10 @@ const InvestigacionForm: React.FC = () => {
                             const value = e.target.value;
                             setFormData((prev) => ({
                               ...prev,
-                              testigos: prev.testigos?.map((t, i) =>
-                                i === index ? { ...t, texto: value } : t
-                              ) || [],
+                              testigos:
+                                prev.testigos?.map((t, i) =>
+                                  i === index ? { ...t, texto: value } : t
+                                ) || [],
                             }));
                           }}
                           rows={3}
@@ -708,12 +787,17 @@ const InvestigacionForm: React.FC = () => {
                                 const imageUrl = response.data.url_presigned;
                                 setFormData((prev) => ({
                                   ...prev,
-                                  testigos: prev.testigos?.map((t, i) =>
-                                    i === index ? { ...t, imagen_url: imageUrl } : t
-                                  ) || [],
+                                  testigos:
+                                    prev.testigos?.map((t, i) =>
+                                      i === index
+                                        ? { ...t, imagen_url: imageUrl }
+                                        : t
+                                    ) || [],
                                 }));
                               } catch (error) {
-                                alert("Error al subir la imagen. Intente nuevamente.");
+                                alert(
+                                  "Error al subir la imagen. Intente nuevamente."
+                                );
                               }
                             }
                           }}
@@ -729,7 +813,11 @@ const InvestigacionForm: React.FC = () => {
                     </div>
                   ))}
                   <div className="tab-navigation">
-                    <button type="button" className="btn-prev" onClick={prevTab}>
+                    <button
+                      type="button"
+                      className="btn-prev"
+                      onClick={prevTab}
+                    >
                       ← Anterior
                     </button>
                     <button
@@ -742,7 +830,11 @@ const InvestigacionForm: React.FC = () => {
                     >
                       {saving ? "Guardando..." : "💾 Guardar"}
                     </button>
-                    <button type="button" className="btn-next" onClick={nextTab}>
+                    <button
+                      type="button"
+                      className="btn-next"
+                      onClick={nextTab}
+                    >
                       Siguiente →
                     </button>
                   </div>
@@ -819,7 +911,11 @@ const InvestigacionForm: React.FC = () => {
                     )}
                   </div>
                   <div className="tab-navigation">
-                    <button type="button" className="btn-prev" onClick={prevTab}>
+                    <button
+                      type="button"
+                      className="btn-prev"
+                      onClick={prevTab}
+                    >
                       ← Anterior
                     </button>
                     <button
@@ -827,15 +923,21 @@ const InvestigacionForm: React.FC = () => {
                       className="btn-submit-tab"
                       onClick={() =>
                         guardarSeccion("evidencias_complementarias", {
-                          descripcion: formData.evidencias_complementarias_descripcion,
-                          imagen_url: formData.evidencias_complementarias_imagen_url,
+                          descripcion:
+                            formData.evidencias_complementarias_descripcion,
+                          imagen_url:
+                            formData.evidencias_complementarias_imagen_url,
                         })
                       }
                       disabled={saving}
                     >
                       {saving ? "Guardando..." : "💾 Guardar"}
                     </button>
-                    <button type="button" className="btn-next" onClick={nextTab}>
+                    <button
+                      type="button"
+                      className="btn-next"
+                      onClick={nextTab}
+                    >
                       Siguiente →
                     </button>
                   </div>
@@ -856,9 +958,7 @@ const InvestigacionForm: React.FC = () => {
                   <div className="form-group">
                     <label>Descripción:</label>
                     <textarea
-                      value={
-                        formData.otras_diligencias_descripcion || ""
-                      }
+                      value={formData.otras_diligencias_descripcion || ""}
                       onChange={(e) =>
                         setFormData((prev) => ({
                           ...prev,
@@ -886,52 +986,62 @@ const InvestigacionForm: React.FC = () => {
                               {
                                 headers: {
                                   "Content-Type": "multipart/form-data",
-                                  },
-                                }
-                              );
-                              const imageUrl = response.data.url_presigned;
-                              setFormData((prev) => ({
-                                ...prev,
-                                otras_diligencias_imagen_url: imageUrl,
-                              }));
-                            } catch (error) {
-                              alert("Error al subir la imagen. Intente nuevamente.");
-                            }
+                                },
+                              }
+                            );
+                            const imageUrl = response.data.url_presigned;
+                            setFormData((prev) => ({
+                              ...prev,
+                              otras_diligencias_imagen_url: imageUrl,
+                            }));
+                          } catch (error) {
+                            alert(
+                              "Error al subir la imagen. Intente nuevamente."
+                            );
                           }
-                        }}
-                      />
-                      {formData.otras_diligencias_imagen_url && (
-                        <img
-                          src={formData.otras_diligencias_imagen_url}
-                          alt="Otras Diligencias"
-                          style={{ maxWidth: "200px", marginTop: "5px" }}
-                        />
-                      )}
-                    </div>
-                    <div className="tab-navigation">
-                      <button type="button" className="btn-prev" onClick={prevTab}>
-                        ← Anterior
-                      </button>
-                      <button
-                        type="button"
-                        className="btn-submit-tab"
-                        onClick={() =>
-                          guardarSeccion("otras_diligencias", {
-                            descripcion: formData.otras_diligencias_descripcion,
-                            imagen_url: formData.otras_diligencias_imagen_url,
-                          })
                         }
-                        disabled={saving}
-                      >
-                        {saving ? "Guardando..." : "💾 Guardar"}
-                      </button>
-                      <button type="button" className="btn-next" onClick={nextTab}>
-                        Siguiente →
-                      </button>
-                    </div>
+                      }}
+                    />
+                    {formData.otras_diligencias_imagen_url && (
+                      <img
+                        src={formData.otras_diligencias_imagen_url}
+                        alt="Otras Diligencias"
+                        style={{ maxWidth: "200px", marginTop: "5px" }}
+                      />
+                    )}
+                  </div>
+                  <div className="tab-navigation">
+                    <button
+                      type="button"
+                      className="btn-prev"
+                      onClick={prevTab}
+                    >
+                      ← Anterior
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-submit-tab"
+                      onClick={() =>
+                        guardarSeccion("otras_diligencias", {
+                          descripcion: formData.otras_diligencias_descripcion,
+                          imagen_url: formData.otras_diligencias_imagen_url,
+                        })
+                      }
+                      disabled={saving}
+                    >
+                      {saving ? "Guardando..." : "💾 Guardar"}
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-next"
+                      onClick={nextTab}
+                    >
+                      Siguiente →
+                    </button>
                   </div>
                 </div>
-              )}
+              </div>
+            )}
 
             {/* TAB 7: VISITA TALLER */}
             {activeTab === 7 && (
@@ -983,7 +1093,9 @@ const InvestigacionForm: React.FC = () => {
                               visita_taller_imagen_url: imageUrl,
                             }));
                           } catch (error) {
-                            alert("Error al subir la imagen. Intente nuevamente.");
+                            alert(
+                              "Error al subir la imagen. Intente nuevamente."
+                            );
                           }
                         }
                       }}
@@ -997,7 +1109,11 @@ const InvestigacionForm: React.FC = () => {
                     )}
                   </div>
                   <div className="tab-navigation">
-                    <button type="button" className="btn-prev" onClick={prevTab}>
+                    <button
+                      type="button"
+                      className="btn-prev"
+                      onClick={prevTab}
+                    >
                       ← Anterior
                     </button>
                     <button
@@ -1013,7 +1129,11 @@ const InvestigacionForm: React.FC = () => {
                     >
                       {saving ? "Guardando..." : "💾 Guardar"}
                     </button>
-                    <button type="button" className="btn-next" onClick={nextTab}>
+                    <button
+                      type="button"
+                      className="btn-next"
+                      onClick={nextTab}
+                    >
                       Siguiente →
                     </button>
                   </div>
@@ -1035,7 +1155,8 @@ const InvestigacionForm: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => {
-                        const currentObservaciones = formData.observaciones || [];
+                        const currentObservaciones =
+                          formData.observaciones || [];
                         setFormData((prev) => ({
                           ...prev,
                           observaciones: [...currentObservaciones, ""],
@@ -1056,7 +1177,8 @@ const InvestigacionForm: React.FC = () => {
                           value={observacion}
                           onChange={(e) => {
                             const value = e.target.value;
-                            const currentObservaciones = formData.observaciones || [];
+                            const currentObservaciones =
+                              formData.observaciones || [];
                             const newObservaciones = [...currentObservaciones];
                             newObservaciones[index] = value;
                             setFormData((prev) => ({
@@ -1071,20 +1193,31 @@ const InvestigacionForm: React.FC = () => {
                     </div>
                   ))}
                   <div className="tab-navigation">
-                    <button type="button" className="btn-prev" onClick={prevTab}>
+                    <button
+                      type="button"
+                      className="btn-prev"
+                      onClick={prevTab}
+                    >
                       ← Anterior
                     </button>
                     <button
                       type="button"
                       className="btn-submit-tab"
                       onClick={() =>
-                        guardarSeccion("observaciones", formData.observaciones || [])
+                        guardarSeccion(
+                          "observaciones",
+                          formData.observaciones || []
+                        )
                       }
                       disabled={saving}
                     >
                       {saving ? "Guardando..." : "💾 Guardar"}
                     </button>
-                    <button type="button" className="btn-next" onClick={nextTab}>
+                    <button
+                      type="button"
+                      className="btn-next"
+                      onClick={nextTab}
+                    >
                       Siguiente →
                     </button>
                   </div>
@@ -1099,17 +1232,23 @@ const InvestigacionForm: React.FC = () => {
                   <div className="card-header">
                     <div className="card-icon">💰</div>
                     <div>
-                      <h3 className="card-title">Recomendación sobre el Pago</h3>
+                      <h3 className="card-title">
+                        Recomendación sobre el Pago
+                      </h3>
                     </div>
                   </div>
                   <div className="form-group">
                     <button
                       type="button"
                       onClick={() => {
-                        const currentRecomendaciones = formData.recomendacion_pago_cobertura || [];
+                        const currentRecomendaciones =
+                          formData.recomendacion_pago_cobertura || [];
                         setFormData((prev) => ({
                           ...prev,
-                          recomendacion_pago_cobertura: [...currentRecomendaciones, ""],
+                          recomendacion_pago_cobertura: [
+                            ...currentRecomendaciones,
+                            "",
+                          ],
                         }));
                       }}
                       style={{
@@ -1120,42 +1259,59 @@ const InvestigacionForm: React.FC = () => {
                       ➕ Agregar Recomendación
                     </button>
                   </div>
-                  {(formData.recomendacion_pago_cobertura || []).map((recomendacion, index) => (
-                    <div key={index} className="dynamic-item">
-                      <div className="form-group">
-                        <textarea
-                          value={recomendacion}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            const currentRecomendaciones = formData.recomendacion_pago_cobertura || [];
-                            const newRecomendaciones = [...currentRecomendaciones];
-                            newRecomendaciones[index] = value;
-                            setFormData((prev) => ({
-                              ...prev,
-                              recomendacion_pago_cobertura: newRecomendaciones,
-                            }));
-                          }}
-                          rows={3}
-                          placeholder="Escribe la recomendación sobre el pago..."
-                        />
+                  {(formData.recomendacion_pago_cobertura || []).map(
+                    (recomendacion, index) => (
+                      <div key={index} className="dynamic-item">
+                        <div className="form-group">
+                          <textarea
+                            value={recomendacion}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              const currentRecomendaciones =
+                                formData.recomendacion_pago_cobertura || [];
+                              const newRecomendaciones = [
+                                ...currentRecomendaciones,
+                              ];
+                              newRecomendaciones[index] = value;
+                              setFormData((prev) => ({
+                                ...prev,
+                                recomendacion_pago_cobertura:
+                                  newRecomendaciones,
+                              }));
+                            }}
+                            rows={3}
+                            placeholder="Escribe la recomendación sobre el pago..."
+                          />
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  )}
                   <div className="tab-navigation">
-                    <button type="button" className="btn-prev" onClick={prevTab}>
+                    <button
+                      type="button"
+                      className="btn-prev"
+                      onClick={prevTab}
+                    >
                       ← Anterior
                     </button>
                     <button
                       type="button"
                       className="btn-submit-tab"
                       onClick={() =>
-                        guardarSeccion("recomendacion_pago_cobertura", formData.recomendacion_pago_cobertura || [])
+                        guardarSeccion(
+                          "recomendacion_pago_cobertura",
+                          formData.recomendacion_pago_cobertura || []
+                        )
                       }
                       disabled={saving}
                     >
                       {saving ? "Guardando..." : "💾 Guardar"}
                     </button>
-                    <button type="button" className="btn-next" onClick={nextTab}>
+                    <button
+                      type="button"
+                      className="btn-next"
+                      onClick={nextTab}
+                    >
                       Siguiente →
                     </button>
                   </div>
@@ -1198,7 +1354,8 @@ const InvestigacionForm: React.FC = () => {
                           value={conclusion}
                           onChange={(e) => {
                             const value = e.target.value;
-                            const currentConclusiones = formData.conclusiones || [];
+                            const currentConclusiones =
+                              formData.conclusiones || [];
                             const newConclusiones = [...currentConclusiones];
                             newConclusiones[index] = value;
                             setFormData((prev) => ({
@@ -1213,20 +1370,31 @@ const InvestigacionForm: React.FC = () => {
                     </div>
                   ))}
                   <div className="tab-navigation">
-                    <button type="button" className="btn-prev" onClick={prevTab}>
+                    <button
+                      type="button"
+                      className="btn-prev"
+                      onClick={prevTab}
+                    >
                       ← Anterior
                     </button>
                     <button
                       type="button"
                       className="btn-submit-tab"
                       onClick={() =>
-                        guardarSeccion("conclusiones", formData.conclusiones || [])
+                        guardarSeccion(
+                          "conclusiones",
+                          formData.conclusiones || []
+                        )
                       }
                       disabled={saving}
                     >
                       {saving ? "Guardando..." : "💾 Guardar"}
                     </button>
-                    <button type="button" className="btn-next" onClick={nextTab}>
+                    <button
+                      type="button"
+                      className="btn-next"
+                      onClick={nextTab}
+                    >
                       Siguiente →
                     </button>
                   </div>
@@ -1275,9 +1443,7 @@ const InvestigacionForm: React.FC = () => {
                             const currentAnexo = formData.anexo || [];
                             setFormData((prev) => ({
                               ...prev,
-                              anexo: currentAnexo.filter(
-                                (_, i) => i !== index
-                              ),
+                              anexo: currentAnexo.filter((_, i) => i !== index),
                             }));
                           }}
                         >
@@ -1343,7 +1509,11 @@ const InvestigacionForm: React.FC = () => {
                     </div>
                   ))}
                   <div className="tab-navigation">
-                    <button type="button" className="btn-prev" onClick={prevTab}>
+                    <button
+                      type="button"
+                      className="btn-prev"
+                      onClick={prevTab}
+                    >
                       ← Anterior
                     </button>
                     <button
