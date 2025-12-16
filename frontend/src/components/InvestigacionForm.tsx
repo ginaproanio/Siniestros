@@ -41,12 +41,20 @@ const InvestigacionForm: React.FC = () => {
   const [message, setMessage] = useState("");
   const [siniestroInfo, setSiniestroInfo] = useState<any>(null);
 
-  // Definir pestañas siguiendo el mismo patrón del Registro de Siniestros
+  // Definir pestañas siguiendo la secuencia exacta del proceso de investigación
   const tabs = [
-    { id: 0, title: "Antecedentes", icon: "📋", required: true },
-    { id: 1, title: "Investigación", icon: "🔍", required: false },
-    { id: 2, title: "Evidencias", icon: "📎", required: false },
-    { id: 3, title: "Conclusiones", icon: "📊", required: true },
+    { id: 0, title: "Antecedentes", icon: "📋", field: "antecedentes" },
+    { id: 1, title: "Entrevista Asegurado", icon: "🎤", field: "relatos_asegurado" },
+    { id: 2, title: "Entrevista Conductor", icon: "👨‍🚗", field: "relatos_conductor" },
+    { id: 3, title: "Inspección Lugar", icon: "🔍", field: "inspecciones" },
+    { id: 4, title: "Testigos", icon: "👥", field: "testigos" },
+    { id: 5, title: "Evidencias Complementarias", icon: "📎", field: "evidencias_complementarias" },
+    { id: 6, title: "Otras Diligencias", icon: "📋", field: "otras_diligencias" },
+    { id: 7, title: "Visita Taller", icon: "🏭", field: "visita_taller" },
+    { id: 8, title: "Observaciones", icon: "💭", field: "observaciones" },
+    { id: 9, title: "Recomendación Pago", icon: "💰", field: "recomendacion_pago" },
+    { id: 10, title: "Conclusiones", icon: "📊", field: "conclusiones" },
+    { id: 11, title: "Anexo", icon: "📄", field: "anexo" },
   ];
 
   useEffect(() => {
@@ -184,20 +192,15 @@ const InvestigacionForm: React.FC = () => {
             {/* TAB 0: ANTECEDENTES */}
             {activeTab === 0 && (
               <div className="tab-section active">
-                <div className="card-section antecedentes-section">
+                <div className="card-section">
                   <div className="card-header">
-                    <div className="card-icon">�</div>
+                    <div className="card-icon">📋</div>
                     <div>
                       <h3 className="card-title">Antecedentes</h3>
-                      <p className="card-description">
-                        Información básica del aviso de siniestro y alcance de
-                        la investigación
-                      </p>
                     </div>
                   </div>
-
                   <div className="form-group">
-                    <label>Descripción de los antecedentes:</label>
+                    <label>Descripción:</label>
                     <textarea
                       value={
                         (formData.antecedentes &&
@@ -212,29 +215,21 @@ const InvestigacionForm: React.FC = () => {
                         }));
                       }}
                       rows={6}
-                      placeholder="Describa el aviso de siniestro, alcances de la investigación..."
+                      placeholder="Describa el aviso de siniestro..."
                     />
                   </div>
-
                   <div className="tab-navigation">
                     <button
                       type="button"
                       className="btn-submit-tab"
                       onClick={() =>
-                        guardarSeccion(
-                          "antecedentes",
-                          formData.antecedentes || []
-                        )
+                        guardarSeccion("antecedentes", formData.antecedentes || [])
                       }
                       disabled={saving}
                     >
-                      {saving ? "Guardando..." : "💾 Guardar Antecedentes"}
+                      {saving ? "Guardando..." : "💾 Guardar"}
                     </button>
-                    <button
-                      type="button"
-                      className="btn-next"
-                      onClick={nextTab}
-                    >
+                    <button type="button" className="btn-next" onClick={nextTab}>
                       Siguiente →
                     </button>
                   </div>
@@ -242,51 +237,42 @@ const InvestigacionForm: React.FC = () => {
               </div>
             )}
 
-            {/* TAB 1: INVESTIGACIÓN */}
+            {/* TAB 1: ENTREVISTA ASEGURADO */}
             {activeTab === 1 && (
               <div className="tab-section active">
-                <div className="card-section investigacion-section">
+                <div className="card-section">
                   <div className="card-header">
-                    <div className="card-icon">🔍</div>
+                    <div className="card-icon">🎤</div>
                     <div>
-                      <h3 className="card-title">Investigación</h3>
-                      <p className="card-description">
-                        Recopilación de información y diligencias realizadas
-                      </p>
+                      <h3 className="card-title">Entrevista al Asegurado</h3>
                     </div>
                   </div>
-
-                  {/* Entrevistas */}
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Relatos del Asegurado:</label>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const currentRelatos = formData.relatos_asegurado || [];
-                          const nextNumero = currentRelatos.length + 1;
-                          setFormData((prev) => ({
-                            ...prev,
-                            relatos_asegurado: [
-                              ...currentRelatos,
-                              {
-                                numero_relato: nextNumero,
-                                texto: "",
-                                imagen_url: "",
-                              },
-                            ],
-                          }));
-                        }}
-                        style={{
-                          backgroundColor: "#28a745",
-                          marginBottom: "10px",
-                        }}
-                      >
-                        ➕ Agregar Relato
-                      </button>
-                    </div>
+                  <div className="form-group">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const currentRelatos = formData.relatos_asegurado || [];
+                        const nextNumero = currentRelatos.length + 1;
+                        setFormData((prev) => ({
+                          ...prev,
+                          relatos_asegurado: [
+                            ...currentRelatos,
+                            {
+                              numero_relato: nextNumero,
+                              texto: "",
+                              imagen_url: "",
+                            },
+                          ],
+                        }));
+                      }}
+                      style={{
+                        backgroundColor: "#28a745",
+                        marginBottom: "10px",
+                      }}
+                    >
+                      ➕ Agregar Relato
+                    </button>
                   </div>
-
                   {(formData.relatos_asegurado || []).map((relato, index) => (
                     <div key={index} className="dynamic-item">
                       <div className="dynamic-item-header">
@@ -367,38 +353,202 @@ const InvestigacionForm: React.FC = () => {
                       </div>
                     </div>
                   ))}
+                  <div className="tab-navigation">
+                    <button type="button" className="btn-prev" onClick={prevTab}>
+                      ← Anterior
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-submit-tab"
+                      onClick={() =>
+                        guardarSeccion("relatos_asegurado", formData.relatos_asegurado || [])
+                      }
+                      disabled={saving}
+                    >
+                      {saving ? "Guardando..." : "💾 Guardar"}
+                    </button>
+                    <button type="button" className="btn-next" onClick={nextTab}>
+                      Siguiente →
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
-                  {/* Inspecciones */}
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Inspecciones Realizadas:</label>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const currentInspecciones = formData.inspecciones || [];
-                          const nextNumero = currentInspecciones.length + 1;
-                          setFormData((prev) => ({
-                            ...prev,
-                            inspecciones: [
-                              ...currentInspecciones,
-                              {
-                                numero_inspeccion: nextNumero,
-                                descripcion: "",
-                                imagen_url: "",
-                              },
-                            ],
-                          }));
-                        }}
-                        style={{
-                          backgroundColor: "#28a745",
-                          marginBottom: "10px",
-                        }}
-                      >
-                        ➕ Agregar Inspección
-                      </button>
+            {/* TAB 2: ENTREVISTA CONDUCTOR */}
+            {activeTab === 2 && (
+              <div className="tab-section active">
+                <div className="card-section">
+                  <div className="card-header">
+                    <div className="card-icon">👨‍🚗</div>
+                    <div>
+                      <h3 className="card-title">Entrevista al Conductor</h3>
                     </div>
                   </div>
+                  <div className="form-group">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const currentRelatos = formData.relatos_conductor || [];
+                        const nextNumero = currentRelatos.length + 1;
+                        setFormData((prev) => ({
+                          ...prev,
+                          relatos_conductor: [
+                            ...currentRelatos,
+                            {
+                              numero_relato: nextNumero,
+                              texto: "",
+                              imagen_url: "",
+                            },
+                          ],
+                        }));
+                      }}
+                      style={{
+                        backgroundColor: "#28a745",
+                        marginBottom: "10px",
+                      }}
+                    >
+                      ➕ Agregar Relato
+                    </button>
+                  </div>
+                  {(formData.relatos_conductor || []).map((relato, index) => (
+                    <div key={index} className="dynamic-item">
+                      <div className="dynamic-item-header">
+                        <h4 className="dynamic-item-title">
+                          Relato {relato.numero_relato}
+                        </h4>
+                        <button
+                          type="button"
+                          className="btn-delete"
+                          onClick={() => {
+                            setFormData((prev) => ({
+                              ...prev,
+                              relatos_conductor: prev.relatos_conductor?.filter(
+                                (_, i) => i !== index
+                              ) || [],
+                            }));
+                          }}
+                        >
+                          ❌ Eliminar
+                        </button>
+                      </div>
+                      <div className="form-group">
+                        <textarea
+                          value={relato.texto}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setFormData((prev) => ({
+                              ...prev,
+                              relatos_conductor: prev.relatos_conductor?.map((r, i) =>
+                                i === index ? { ...r, texto: value } : r
+                              ) || [],
+                            }));
+                          }}
+                          rows={3}
+                          placeholder="Escriba el relato del conductor..."
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Imagen:</label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              try {
+                                const formDataUpload = new FormData();
+                                formDataUpload.append("file", file);
+                                const response = await axios.post(
+                                  "/api/v1/siniestros/upload-image",
+                                  formDataUpload,
+                                  {
+                                    headers: {
+                                      "Content-Type": "multipart/form-data",
+                                    },
+                                  }
+                                );
+                                const imageUrl = response.data.url_presigned;
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  relatos_conductor: prev.relatos_conductor?.map((r, i) =>
+                                    i === index ? { ...r, imagen_url: imageUrl } : r
+                                  ) || [],
+                                }));
+                              } catch (error) {
+                                alert("Error al subir la imagen. Intente nuevamente.");
+                              }
+                            }
+                          }}
+                        />
+                        {relato.imagen_url && (
+                          <img
+                            src={relato.imagen_url}
+                            alt={`Relato ${relato.numero_relato}`}
+                            style={{ maxWidth: "200px", marginTop: "5px" }}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                  <div className="tab-navigation">
+                    <button type="button" className="btn-prev" onClick={prevTab}>
+                      ← Anterior
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-submit-tab"
+                      onClick={() =>
+                        guardarSeccion("relatos_conductor", formData.relatos_conductor || [])
+                      }
+                      disabled={saving}
+                    >
+                      {saving ? "Guardando..." : "💾 Guardar"}
+                    </button>
+                    <button type="button" className="btn-next" onClick={nextTab}>
+                      Siguiente →
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
+            {/* TAB 3: INSPECCIÓN LUGAR */}
+            {activeTab === 3 && (
+              <div className="tab-section active">
+                <div className="card-section">
+                  <div className="card-header">
+                    <div className="card-icon">🔍</div>
+                    <div>
+                      <h3 className="card-title">Inspección del Lugar</h3>
+                    </div>
+                  </div>
+                  <div className="form-group">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const currentInspecciones = formData.inspecciones || [];
+                        const nextNumero = currentInspecciones.length + 1;
+                        setFormData((prev) => ({
+                          ...prev,
+                          inspecciones: [
+                            ...currentInspecciones,
+                            {
+                              numero_inspeccion: nextNumero,
+                              descripcion: "",
+                              imagen_url: "",
+                            },
+                          ],
+                        }));
+                      }}
+                      style={{
+                        backgroundColor: "#28a745",
+                        marginBottom: "10px",
+                      }}
+                    >
+                      ➕ Agregar Inspección
+                    </button>
+                  </div>
                   {(formData.inspecciones || []).map((inspeccion, index) => (
                     <div key={index} className="dynamic-item">
                       <div className="dynamic-item-header">
@@ -479,38 +629,64 @@ const InvestigacionForm: React.FC = () => {
                       </div>
                     </div>
                   ))}
+                  <div className="tab-navigation">
+                    <button type="button" className="btn-prev" onClick={prevTab}>
+                      ← Anterior
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-submit-tab"
+                      onClick={() =>
+                        guardarSeccion("inspecciones", formData.inspecciones || [])
+                      }
+                      disabled={saving}
+                    >
+                      {saving ? "Guardando..." : "💾 Guardar"}
+                    </button>
+                    <button type="button" className="btn-next" onClick={nextTab}>
+                      Siguiente →
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
-                  {/* Testigos */}
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Testigos:</label>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const currentTestigos = formData.testigos || [];
-                          const nextNumero = currentTestigos.length + 1;
-                          setFormData((prev) => ({
-                            ...prev,
-                            testigos: [
-                              ...currentTestigos,
-                              {
-                                numero_relato: nextNumero,
-                                texto: "",
-                                imagen_url: "",
-                              },
-                            ],
-                          }));
-                        }}
-                        style={{
-                          backgroundColor: "#28a745",
-                          marginBottom: "10px",
-                        }}
-                      >
-                        ➕ Agregar Testigo
-                      </button>
+            {/* TAB 4: TESTIGOS */}
+            {activeTab === 4 && (
+              <div className="tab-section active">
+                <div className="card-section">
+                  <div className="card-header">
+                    <div className="card-icon">👥</div>
+                    <div>
+                      <h3 className="card-title">Testigos</h3>
                     </div>
                   </div>
-
+                  <div className="form-group">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const currentTestigos = formData.testigos || [];
+                        const nextNumero = currentTestigos.length + 1;
+                        setFormData((prev) => ({
+                          ...prev,
+                          testigos: [
+                            ...currentTestigos,
+                            {
+                              numero_relato: nextNumero,
+                              texto: "",
+                              imagen_url: "",
+                            },
+                          ],
+                        }));
+                      }}
+                      style={{
+                        backgroundColor: "#28a745",
+                        marginBottom: "10px",
+                      }}
+                    >
+                      ➕ Agregar Testigo
+                    </button>
+                  </div>
                   {(formData.testigos || []).map((testigo, index) => (
                     <div key={index} className="dynamic-item">
                       <div className="dynamic-item-header">
@@ -591,7 +767,6 @@ const InvestigacionForm: React.FC = () => {
                       </div>
                     </div>
                   ))}
-
                   <div className="tab-navigation">
                     <button type="button" className="btn-prev" onClick={prevTab}>
                       ← Anterior
@@ -599,16 +774,12 @@ const InvestigacionForm: React.FC = () => {
                     <button
                       type="button"
                       className="btn-submit-tab"
-                      onClick={() => {
-                        guardarSeccion("investigacion", {
-                          relatos_asegurado: formData.relatos_asegurado,
-                          inspecciones: formData.inspecciones,
-                          testigos: formData.testigos,
-                        });
-                      }}
+                      onClick={() =>
+                        guardarSeccion("testigos", formData.testigos || [])
+                      }
                       disabled={saving}
                     >
-                      {saving ? "Guardando..." : "💾 Guardar Investigación"}
+                      {saving ? "Guardando..." : "💾 Guardar"}
                     </button>
                     <button type="button" className="btn-next" onClick={nextTab}>
                       Siguiente →
@@ -618,22 +789,18 @@ const InvestigacionForm: React.FC = () => {
               </div>
             )}
 
-            {/* TAB 2: EVIDENCIAS */}
-            {activeTab === 2 && (
+            {/* TAB 5: EVIDENCIAS COMPLEMENTARIAS */}
+            {activeTab === 5 && (
               <div className="tab-section active">
-                <div className="card-section evidencias-section">
+                <div className="card-section">
                   <div className="card-header">
                     <div className="card-icon">📎</div>
                     <div>
-                      <h3 className="card-title">Evidencias</h3>
-                      <p className="card-description">
-                        Documentación adicional y evidencias complementarias
-                      </p>
+                      <h3 className="card-title">Evidencias Complementarias</h3>
                     </div>
                   </div>
-
                   <div className="form-group">
-                    <label>Descripción de Evidencias Complementarias:</label>
+                    <label>Descripción:</label>
                     <textarea
                       value={
                         formData.evidencias_complementarias_descripcion || ""
@@ -649,9 +816,8 @@ const InvestigacionForm: React.FC = () => {
                       placeholder="Describe las evidencias complementarias..."
                     />
                   </div>
-
                   <div className="form-group">
-                    <label>Imagen de Evidencias Complementarias:</label>
+                    <label>Imagen:</label>
                     <input
                       type="file"
                       accept="image/*"
@@ -691,9 +857,433 @@ const InvestigacionForm: React.FC = () => {
                       />
                     )}
                   </div>
+                  <div className="tab-navigation">
+                    <button type="button" className="btn-prev" onClick={prevTab}>
+                      ← Anterior
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-submit-tab"
+                      onClick={() =>
+                        guardarSeccion("evidencias_complementarias", {
+                          descripcion: formData.evidencias_complementarias_descripcion,
+                          imagen_url: formData.evidencias_complementarias_imagen_url,
+                        })
+                      }
+                      disabled={saving}
+                    >
+                      {saving ? "Guardando..." : "💾 Guardar"}
+                    </button>
+                    <button type="button" className="btn-next" onClick={nextTab}>
+                      Siguiente →
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
+            {/* TAB 6: OTRAS DILIGENCIAS */}
+            {activeTab === 6 && (
+              <div className="tab-section active">
+                <div className="card-section">
+                  <div className="card-header">
+                    <div className="card-icon">📋</div>
+                    <div>
+                      <h3 className="card-title">Otras Diligencias</h3>
+                    </div>
+                  </div>
                   <div className="form-group">
-                    <label>Anexos:</label>
+                    <label>Descripción:</label>
+                    <textarea
+                      value={
+                        formData.otras_diligencias_descripcion || ""
+                      }
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          otras_diligencias_descripcion: e.target.value,
+                        }))
+                      }
+                      rows={4}
+                      placeholder="Describe otras diligencias realizadas..."
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Imagen:</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          try {
+                            const formDataUpload = new FormData();
+                            formDataUpload.append("file", file);
+                            const response = await axios.post(
+                              "/api/v1/siniestros/upload-image",
+                              formDataUpload,
+                              {
+                                headers: {
+                                  "Content-Type": "multipart/form-data",
+                                  },
+                                }
+                              );
+                              const imageUrl = response.data.url_presigned;
+                              setFormData((prev) => ({
+                                ...prev,
+                                otras_diligencias_imagen_url: imageUrl,
+                              }));
+                            } catch (error) {
+                              alert("Error al subir la imagen. Intente nuevamente.");
+                            }
+                          }
+                        }}
+                      />
+                      {formData.otras_diligencias_imagen_url && (
+                        <img
+                          src={formData.otras_diligencias_imagen_url}
+                          alt="Otras Diligencias"
+                          style={{ maxWidth: "200px", marginTop: "5px" }}
+                        />
+                      )}
+                    </div>
+                    <div className="tab-navigation">
+                      <button type="button" className="btn-prev" onClick={prevTab}>
+                        ← Anterior
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-submit-tab"
+                        onClick={() =>
+                          guardarSeccion("otras_diligencias", {
+                            descripcion: formData.otras_diligencias_descripcion,
+                            imagen_url: formData.otras_diligencias_imagen_url,
+                          })
+                        }
+                        disabled={saving}
+                      >
+                        {saving ? "Guardando..." : "💾 Guardar"}
+                      </button>
+                      <button type="button" className="btn-next" onClick={nextTab}>
+                        Siguiente →
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+            {/* TAB 7: VISITA TALLER */}
+            {activeTab === 7 && (
+              <div className="tab-section active">
+                <div className="card-section">
+                  <div className="card-header">
+                    <div className="card-icon">🏭</div>
+                    <div>
+                      <h3 className="card-title">Visita al Taller</h3>
+                    </div>
+                  </div>
+                  <div className="form-group">
+                    <label>Descripción:</label>
+                    <textarea
+                      value={formData.visita_taller_descripcion || ""}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          visita_taller_descripcion: e.target.value,
+                        }))
+                      }
+                      rows={4}
+                      placeholder="Describe la visita al taller..."
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Imagen:</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          try {
+                            const formDataUpload = new FormData();
+                            formDataUpload.append("file", file);
+                            const response = await axios.post(
+                              "/api/v1/siniestros/upload-image",
+                              formDataUpload,
+                              {
+                                headers: {
+                                  "Content-Type": "multipart/form-data",
+                                },
+                              }
+                            );
+                            const imageUrl = response.data.url_presigned;
+                            setFormData((prev) => ({
+                              ...prev,
+                              visita_taller_imagen_url: imageUrl,
+                            }));
+                          } catch (error) {
+                            alert("Error al subir la imagen. Intente nuevamente.");
+                          }
+                        }
+                      }}
+                    />
+                    {formData.visita_taller_imagen_url && (
+                      <img
+                        src={formData.visita_taller_imagen_url}
+                        alt="Visita al Taller"
+                        style={{ maxWidth: "200px", marginTop: "5px" }}
+                      />
+                    )}
+                  </div>
+                  <div className="tab-navigation">
+                    <button type="button" className="btn-prev" onClick={prevTab}>
+                      ← Anterior
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-submit-tab"
+                      onClick={() =>
+                        guardarSeccion("visita_taller", {
+                          descripcion: formData.visita_taller_descripcion,
+                          imagen_url: formData.visita_taller_imagen_url,
+                        })
+                      }
+                      disabled={saving}
+                    >
+                      {saving ? "Guardando..." : "💾 Guardar"}
+                    </button>
+                    <button type="button" className="btn-next" onClick={nextTab}>
+                      Siguiente →
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 8: OBSERVACIONES */}
+            {activeTab === 8 && (
+              <div className="tab-section active">
+                <div className="card-section">
+                  <div className="card-header">
+                    <div className="card-icon">💭</div>
+                    <div>
+                      <h3 className="card-title">Observaciones</h3>
+                    </div>
+                  </div>
+                  <div className="form-group">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const currentObservaciones = formData.observaciones || [];
+                        setFormData((prev) => ({
+                          ...prev,
+                          observaciones: [...currentObservaciones, ""],
+                        }));
+                      }}
+                      style={{
+                        backgroundColor: "#28a745",
+                        marginBottom: "10px",
+                      }}
+                    >
+                      ➕ Agregar Observación
+                    </button>
+                  </div>
+                  {(formData.observaciones || []).map((observacion, index) => (
+                    <div key={index} className="dynamic-item">
+                      <div className="form-group">
+                        <textarea
+                          value={observacion}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            const currentObservaciones = formData.observaciones || [];
+                            const newObservaciones = [...currentObservaciones];
+                            newObservaciones[index] = value;
+                            setFormData((prev) => ({
+                              ...prev,
+                              observaciones: newObservaciones,
+                            }));
+                          }}
+                          rows={3}
+                          placeholder="Escribe la observación..."
+                        />
+                      </div>
+                    </div>
+                  ))}
+                  <div className="tab-navigation">
+                    <button type="button" className="btn-prev" onClick={prevTab}>
+                      ← Anterior
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-submit-tab"
+                      onClick={() =>
+                        guardarSeccion("observaciones", formData.observaciones || [])
+                      }
+                      disabled={saving}
+                    >
+                      {saving ? "Guardando..." : "💾 Guardar"}
+                    </button>
+                    <button type="button" className="btn-next" onClick={nextTab}>
+                      Siguiente →
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 9: RECOMENDACIÓN PAGO */}
+            {activeTab === 9 && (
+              <div className="tab-section active">
+                <div className="card-section">
+                  <div className="card-header">
+                    <div className="card-icon">💰</div>
+                    <div>
+                      <h3 className="card-title">Recomendación sobre el Pago</h3>
+                    </div>
+                  </div>
+                  <div className="form-group">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const currentRecomendaciones = formData.recomendacion_pago_cobertura || [];
+                        setFormData((prev) => ({
+                          ...prev,
+                          recomendacion_pago_cobertura: [...currentRecomendaciones, ""],
+                        }));
+                      }}
+                      style={{
+                        backgroundColor: "#28a745",
+                        marginBottom: "10px",
+                      }}
+                    >
+                      ➕ Agregar Recomendación
+                    </button>
+                  </div>
+                  {(formData.recomendacion_pago_cobertura || []).map((recomendacion, index) => (
+                    <div key={index} className="dynamic-item">
+                      <div className="form-group">
+                        <textarea
+                          value={recomendacion}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            const currentRecomendaciones = formData.recomendacion_pago_cobertura || [];
+                            const newRecomendaciones = [...currentRecomendaciones];
+                            newRecomendaciones[index] = value;
+                            setFormData((prev) => ({
+                              ...prev,
+                              recomendacion_pago_cobertura: newRecomendaciones,
+                            }));
+                          }}
+                          rows={3}
+                          placeholder="Escribe la recomendación sobre el pago..."
+                        />
+                      </div>
+                    </div>
+                  ))}
+                  <div className="tab-navigation">
+                    <button type="button" className="btn-prev" onClick={prevTab}>
+                      ← Anterior
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-submit-tab"
+                      onClick={() =>
+                        guardarSeccion("recomendacion_pago_cobertura", formData.recomendacion_pago_cobertura || [])
+                      }
+                      disabled={saving}
+                    >
+                      {saving ? "Guardando..." : "💾 Guardar"}
+                    </button>
+                    <button type="button" className="btn-next" onClick={nextTab}>
+                      Siguiente →
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 10: CONCLUSIONES */}
+            {activeTab === 10 && (
+              <div className="tab-section active">
+                <div className="card-section">
+                  <div className="card-header">
+                    <div className="card-icon">📊</div>
+                    <div>
+                      <h3 className="card-title">Conclusiones</h3>
+                    </div>
+                  </div>
+                  <div className="form-group">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const currentConclusiones = formData.conclusiones || [];
+                        setFormData((prev) => ({
+                          ...prev,
+                          conclusiones: [...currentConclusiones, ""],
+                        }));
+                      }}
+                      style={{
+                        backgroundColor: "#28a745",
+                        marginBottom: "10px",
+                      }}
+                    >
+                      ➕ Agregar Conclusión
+                    </button>
+                  </div>
+                  {(formData.conclusiones || []).map((conclusion, index) => (
+                    <div key={index} className="dynamic-item">
+                      <div className="form-group">
+                        <textarea
+                          value={conclusion}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            const currentConclusiones = formData.conclusiones || [];
+                            const newConclusiones = [...currentConclusiones];
+                            newConclusiones[index] = value;
+                            setFormData((prev) => ({
+                              ...prev,
+                              conclusiones: newConclusiones,
+                            }));
+                          }}
+                          rows={3}
+                          placeholder="Escribe la conclusión..."
+                        />
+                      </div>
+                    </div>
+                  ))}
+                  <div className="tab-navigation">
+                    <button type="button" className="btn-prev" onClick={prevTab}>
+                      ← Anterior
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-submit-tab"
+                      onClick={() =>
+                        guardarSeccion("conclusiones", formData.conclusiones || [])
+                      }
+                      disabled={saving}
+                    >
+                      {saving ? "Guardando..." : "💾 Guardar"}
+                    </button>
+                    <button type="button" className="btn-next" onClick={nextTab}>
+                      Siguiente →
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 11: ANEXO */}
+            {activeTab === 11 && (
+              <div className="tab-section active">
+                <div className="card-section">
+                  <div className="card-header">
+                    <div className="card-icon">📄</div>
+                    <div>
+                      <h3 className="card-title">Anexo</h3>
+                    </div>
+                  </div>
+                  <div className="form-group">
                     <button
                       type="button"
                       onClick={() => {
@@ -711,7 +1301,6 @@ const InvestigacionForm: React.FC = () => {
                       ➕ Agregar Anexo
                     </button>
                   </div>
-
                   {(formData.anexo || []).map((anexoItem, index) => (
                     <div key={index} className="dynamic-item">
                       <div className="dynamic-item-header">
@@ -792,140 +1381,6 @@ const InvestigacionForm: React.FC = () => {
                       </div>
                     </div>
                   ))}
-
-                  <div className="tab-navigation">
-                    <button type="button" className="btn-prev" onClick={prevTab}>
-                      ← Anterior
-                    </button>
-                    <button
-                      type="button"
-                      className="btn-submit-tab"
-                      onClick={() => {
-                        guardarSeccion("evidencias", {
-                          evidencias_complementarias_descripcion:
-                            formData.evidencias_complementarias_descripcion,
-                          evidencias_complementarias_imagen_url:
-                            formData.evidencias_complementarias_imagen_url,
-                          anexo: formData.anexo,
-                        });
-                      }}
-                      disabled={saving}
-                    >
-                      {saving ? "Guardando..." : "💾 Guardar Evidencias"}
-                    </button>
-                    <button type="button" className="btn-next" onClick={nextTab}>
-                      Siguiente →
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* TAB 3: CONCLUSIONES */}
-            {activeTab === 3 && (
-              <div className="tab-section active">
-                <div className="card-section conclusiones-section">
-                  <div className="card-header">
-                    <div className="card-icon">📊</div>
-                    <div>
-                      <h3 className="card-title">Conclusiones</h3>
-                      <p className="card-description">
-                        Resumen final de la investigación y recomendaciones
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="form-group">
-                    <label>Observaciones:</label>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const currentObservaciones =
-                          formData.observaciones || [];
-                        setFormData((prev) => ({
-                          ...prev,
-                          observaciones: [...currentObservaciones, ""],
-                        }));
-                      }}
-                      style={{
-                        backgroundColor: "#28a745",
-                        marginBottom: "10px",
-                      }}
-                    >
-                      ➕ Agregar Observación
-                    </button>
-                  </div>
-
-                  {(formData.observaciones || []).map(
-                    (observacion, index) => (
-                      <div key={index} className="dynamic-item">
-                        <div className="form-group">
-                          <textarea
-                            value={observacion}
-                            onChange={(e) => {
-                              const value = e.target.value;
-                              const currentObservaciones =
-                                formData.observaciones || [];
-                              const newObservaciones = [
-                                ...currentObservaciones,
-                              ];
-                              newObservaciones[index] = value;
-                              setFormData((prev) => ({
-                                ...prev,
-                                observaciones: newObservaciones,
-                              }));
-                            }}
-                            rows={3}
-                            placeholder="Escribe la observación..."
-                          />
-                        </div>
-                      </div>
-                    )
-                  )}
-
-                  <div className="form-group">
-                    <label>Conclusiones:</label>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const currentConclusiones = formData.conclusiones || [];
-                        setFormData((prev) => ({
-                          ...prev,
-                          conclusiones: [...currentConclusiones, ""],
-                        }));
-                      }}
-                      style={{
-                        backgroundColor: "#28a745",
-                        marginBottom: "10px",
-                      }}
-                    >
-                      ➕ Agregar Conclusión
-                    </button>
-                  </div>
-
-                  {(formData.conclusiones || []).map((conclusion, index) => (
-                    <div key={index} className="dynamic-item">
-                      <div className="form-group">
-                        <textarea
-                          value={conclusion}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            const currentConclusiones =
-                              formData.conclusiones || [];
-                            const newConclusiones = [...currentConclusiones];
-                            newConclusiones[index] = value;
-                            setFormData((prev) => ({
-                              ...prev,
-                              conclusiones: newConclusiones,
-                            }));
-                          }}
-                          rows={3}
-                          placeholder="Escribe la conclusión..."
-                        />
-                      </div>
-                    </div>
-                  ))}
-
                   <div className="tab-navigation">
                     <button type="button" className="btn-prev" onClick={prevTab}>
                       ← Anterior
@@ -934,14 +1389,11 @@ const InvestigacionForm: React.FC = () => {
                       type="button"
                       className="btn-submit-tab"
                       onClick={() =>
-                        guardarSeccion("conclusiones", {
-                          observaciones: formData.observaciones,
-                          conclusiones: formData.conclusiones,
-                        })
+                        guardarSeccion("anexo", formData.anexo || [])
                       }
                       disabled={saving}
                     >
-                      {saving ? "Guardando..." : "💾 Guardar Conclusiones"}
+                      {saving ? "Guardando..." : "💾 Guardar"}
                     </button>
                   </div>
                 </div>
