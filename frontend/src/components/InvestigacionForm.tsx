@@ -27,7 +27,6 @@ const InvestigacionForm: React.FC = () => {
   const [activeTab, setActiveTab] = useState(0);
   const [data, setData] = useState<InvestigationData>({});
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [siniestroInfo, setSiniestroInfo] = useState<any>(null);
 
@@ -192,8 +191,8 @@ const InvestigacionForm: React.FC = () => {
                     />
                   </div>
                   <div className="tab-navigation">
-                    <button type="button" className="btn-submit-tab" onClick={() => saveCurrentTab()} disabled={saving}>
-                      {saving ? "Guardando..." : "💾 Guardar"}
+                    <button type="button" className="btn-submit-tab" onClick={() => saveCurrentTab()}>
+                      💾 Guardar
                     </button>
                     <button type="button" className="btn-next" onClick={nextTab}>Siguiente →</button>
                   </div>
@@ -232,8 +231,8 @@ const InvestigacionForm: React.FC = () => {
                   ))}
                   <div className="tab-navigation">
                     <button type="button" className="btn-prev" onClick={prevTab}>← Anterior</button>
-                    <button type="button" className="btn-submit-tab" onClick={() => saveCurrentTab()} disabled={saving}>
-                      {saving ? "Guardando..." : "💾 Guardar"}
+                    <button type="button" className="btn-submit-tab" onClick={() => saveCurrentTab()}>
+                      💾 Guardar
                     </button>
                     <button type="button" className="btn-next" onClick={nextTab}>Siguiente →</button>
                   </div>
@@ -272,8 +271,8 @@ const InvestigacionForm: React.FC = () => {
                   ))}
                   <div className="tab-navigation">
                     <button type="button" className="btn-prev" onClick={prevTab}>← Anterior</button>
-                    <button type="button" className="btn-submit-tab" onClick={() => saveCurrentTab()} disabled={saving}>
-                      {saving ? "Guardando..." : "💾 Guardar"}
+                    <button type="button" className="btn-submit-tab" onClick={() => saveCurrentTab()}>
+                      💾 Guardar
                     </button>
                     <button type="button" className="btn-next" onClick={nextTab}>Siguiente →</button>
                   </div>
@@ -312,8 +311,8 @@ const InvestigacionForm: React.FC = () => {
                   ))}
                   <div className="tab-navigation">
                     <button type="button" className="btn-prev" onClick={prevTab}>← Anterior</button>
-                    <button type="button" className="btn-submit-tab" onClick={() => saveCurrentTab()} disabled={saving}>
-                      {saving ? "Guardando..." : "💾 Guardar"}
+                    <button type="button" className="btn-submit-tab" onClick={() => saveCurrentTab()}>
+                      💾 Guardar
                     </button>
                     <button type="button" className="btn-next" onClick={nextTab}>Siguiente →</button>
                   </div>
@@ -352,8 +351,8 @@ const InvestigacionForm: React.FC = () => {
                   ))}
                   <div className="tab-navigation">
                     <button type="button" className="btn-prev" onClick={prevTab}>← Anterior</button>
-                    <button type="button" className="btn-submit-tab" onClick={() => saveCurrentTab()} disabled={saving}>
-                      {saving ? "Guardando..." : "💾 Guardar"}
+                    <button type="button" className="btn-submit-tab" onClick={() => saveCurrentTab()}>
+                      💾 Guardar
                     </button>
                     <button type="button" className="btn-next" onClick={nextTab}>Siguiente →</button>
                   </div>
@@ -392,8 +391,8 @@ const InvestigacionForm: React.FC = () => {
                   ))}
                   <div className="tab-navigation">
                     <button type="button" className="btn-prev" onClick={prevTab}>← Anterior</button>
-                    <button type="button" className="btn-submit-tab" onClick={() => saveCurrentTab()} disabled={saving}>
-                      {saving ? "Guardando..." : "💾 Guardar"}
+                    <button type="button" className="btn-submit-tab" onClick={() => saveCurrentTab()}>
+                      💾 Guardar
                     </button>
                     <button type="button" className="btn-next" onClick={nextTab}>Siguiente →</button>
                   </div>
