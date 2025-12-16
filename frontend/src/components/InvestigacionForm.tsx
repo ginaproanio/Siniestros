@@ -128,6 +128,20 @@ const InvestigacionForm: React.FC = () => {
       console.error(`❌ Error response data:`, error.response?.data);
       console.error(`❌ Error response status:`, error.response?.status);
       console.error(`❌ Error message:`, error.message);
+      console.error(`❌ Error response headers:`, error.response?.headers);
+
+      // Mostrar detalles específicos de validación de Pydantic
+      if (error.response?.data) {
+        console.error(`❌ Detalles completos del error:`, JSON.stringify(error.response.data, null, 2));
+
+        // Si hay errores de validación específicos
+        if (error.response.data.detail && Array.isArray(error.response.data.detail)) {
+          console.error(`❌ Errores de validación específicos:`);
+          error.response.data.detail.forEach((err: any, index: number) => {
+            console.error(`   ${index + 1}. Campo: ${err.loc?.join('.')}, Error: ${err.msg}, Tipo: ${err.type}`);
+          });
+        }
+      }
 
       const errorMessage = error.response?.data?.detail || error.message || "Error desconocido";
       setMessage(`❌ Error al guardar sección "${seccion}": ${errorMessage}`);
