@@ -561,7 +561,7 @@ const InvestigacionForm: React.FC = () => {
                                 try {
                                   const formDataUpload = new FormData();
                                   formDataUpload.append("file", file);
-                                  const response = await axios.post(
+                                  await axios.post(
                                     "/api/v1/siniestros/upload-image",
                                     formDataUpload,
                                     {
