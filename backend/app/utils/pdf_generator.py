@@ -904,8 +904,11 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
             story.append(Spacer(1, 120))  # Salto de página completo
 
         # ==================== ANEXOS ====================
-        if siniestro.anexo and siniestro.anexo.strip():
+        if has_real_content(siniestro.anexo):
             logger.info("📎 Generando sección de anexos...")
+            # Salto de página explícito antes de Anexos
+            story.append(PageBreak())
+
             anexos_title = Paragraph("ANEXOS", section_style)
             story.append(anexos_title)
             story.append(Spacer(1, 15))
@@ -919,21 +922,23 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                     else siniestro.anexo
                 )
                 for i, anex in enumerate(anexo_list, 1):
-                    story.append(
-                        Paragraph(
-                            f"Anexo {i}:",
-                            ParagraphStyle(
-                                "Subsection",
-                                parent=styles["Heading4"],
-                                fontSize=12,
-                                fontName="Helvetica-Bold",
+                    if isinstance(anex, str) and anex.strip():  # Solo mostrar items no vacíos
+                        story.append(
+                            Paragraph(
+                                f"Anexo {i}:",
+                                ParagraphStyle(
+                                    "Subsection",
+                                    parent=styles["Heading4"],
+                                    fontSize=12,
+                                    fontName="Helvetica-Bold",
+                                ),
                             ),
                         )
-                    )
-                    story.append(Paragraph(anex, normal_style))
-                    story.append(Spacer(1, 20))
+                        story.append(Paragraph(anex, normal_style))
+                        story.append(Spacer(1, 20))
             except:
-                story.append(Paragraph(siniestro.anexo, normal_style))
+                if siniestro.anexo and siniestro.anexo.strip():
+                    story.append(Paragraph(siniestro.anexo, normal_style))
 
             story.append(Spacer(1, 120))  # Salto de página
 
