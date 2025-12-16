@@ -129,6 +129,8 @@ const InvestigacionForm: React.FC = () => {
           .map((relato) => ({ texto: relato.texto.trim(), imagen_url: relato.imagen_url || "" }))
           .filter((relato) => relato.texto.length > 0);
 
+        console.log("📤 Enviando relatos a backend:", relatosValidos);
+
         if (relatosValidos.length > 0) {
           await axios.put(
             `/api/v1/siniestros/${siniestroId}/seccion/relatos_asegurado`,
