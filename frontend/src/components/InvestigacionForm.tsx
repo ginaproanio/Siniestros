@@ -7,9 +7,14 @@ const BACKEND_URL =
   "https://siniestros-production.up.railway.app";
 axios.defaults.baseURL = BACKEND_URL;
 
+interface RelatoData {
+  texto: string;
+  imagen_url?: string;
+}
+
 interface InvestigationData {
   antecedentes?: string;
-  relatos_asegurado?: string[];
+  relatos_asegurado?: RelatoData[];
 }
 
 const InvestigacionForm: React.FC = () => {
@@ -19,7 +24,7 @@ const InvestigacionForm: React.FC = () => {
   const [activeTab, setActiveTab] = useState(0);
   const [data, setData] = useState<InvestigationData>({
     antecedentes: "",
-    relatos_asegurado: [""],
+    relatos_asegurado: [{ texto: "", imagen_url: "" }],
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -46,10 +51,13 @@ const InvestigacionForm: React.FC = () => {
 
         // Cargar relatos del asegurado existentes
         const relatosExistentes = siniestro.relatos_asegurado || [];
-        const textosRelatos = relatosExistentes.map((r: any) => r.texto || "");
+        const relatosObjetos = relatosExistentes.map((r: any) => ({
+          texto: r.texto || "",
+          imagen_url: r.imagen_url || ""
+        }));
 
         // Asegurar al menos un relato vacío si no hay ninguno
-        const relatos = textosRelatos.length > 0 ? textosRelatos : [""];
+        const relatos = relatosObjetos.length > 0 ? relatosObjetos : [{ texto: "", imagen_url: "" }];
 
         setData({
           antecedentes: textoAntecedentes,
@@ -71,14 +79,14 @@ const InvestigacionForm: React.FC = () => {
   const addRelato = () => {
     setData((prev) => ({
       ...prev,
-      relatos_asegurado: [...(prev.relatos_asegurado || []), ""],
+      relatos_asegurado: [...(prev.relatos_asegurado || []), { texto: "", imagen_url: "" }],
     }));
   };
 
   const updateRelato = (index: number, value: string) => {
     setData((prev) => {
       const newRelatos = [...(prev.relatos_asegurado || [])];
-      newRelatos[index] = value;
+      newRelatos[index] = { ...newRelatos[index], texto: value };
       return { ...prev, relatos_asegurado: newRelatos };
     });
   };
@@ -91,7 +99,7 @@ const InvestigacionForm: React.FC = () => {
       // Asegurar al menos un relato
       return {
         ...prev,
-        relatos_asegurado: newRelatos.length > 0 ? newRelatos : [""],
+        relatos_asegurado: newRelatos.length > 0 ? newRelatos : [{ texto: "", imagen_url: "" }],
       };
     });
   };
@@ -103,17 +111,22 @@ const InvestigacionForm: React.FC = () => {
 
     try {
       if (currentTab.field === "antecedentes") {
-        // Guardar antecedentes
-        const antecedentesData = [{ descripcion: data.antecedentes || "" }];
-        await axios.put(
-          `/api/v1/siniestros/${siniestroId}/seccion/antecedentes`,
-          antecedentesData
-        );
-        setMessage("✅ Antecedentes guardados");
+        // Guardar antecedentes solo si tienen contenido
+        const antecedentesTexto = data.antecedentes?.trim() || "";
+        if (antecedentesTexto.length > 0) {
+          const antecedentesData = [{ descripcion: antecedentesTexto }];
+          await axios.put(
+            `/api/v1/siniestros/${siniestroId}/seccion/antecedentes`,
+            antecedentesData
+          );
+          setMessage("✅ Antecedentes guardados");
+        } else {
+          setMessage("⚠️ Antecedentes vacíos - no se guardaron");
+        }
       } else if (currentTab.field === "relatos_asegurado") {
         // Guardar relatos del asegurado
         const relatosValidos = (data.relatos_asegurado || [])
-          .map((texto) => ({ texto: texto.trim() }))
+          .map((relato) => ({ texto: relato.texto.trim(), imagen_url: relato.imagen_url || "" }))
           .filter((relato) => relato.texto.length > 0);
 
         if (relatosValidos.length > 0) {
@@ -157,6 +170,33 @@ const InvestigacionForm: React.FC = () => {
 
   const updateAntecedentes = (value: string) => {
     setData((prev) => ({ ...prev, antecedentes: value }));
+  };
+
+  const uploadImageForRelato = async (index: number, file: File) => {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await axios.post('/api/v1/upload-image', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      const imageUrl = response.data.url_presigned;
+
+      // Actualizar el relato con la nueva URL de imagen
+      setData((prev) => {
+        const newRelatos = [...(prev.relatos_asegurado || [])];
+        newRelatos[index] = { ...newRelatos[index], imagen_url: imageUrl };
+        return { ...prev, relatos_asegurado: newRelatos };
+      });
+
+      setMessage("✅ Imagen subida correctamente");
+    } catch (error) {
+      console.error("Error subiendo imagen:", error);
+      setMessage("❌ Error al subir la imagen");
+    }
   };
 
   if (loading) return <div>Cargando investigación...</div>;
@@ -273,7 +313,7 @@ const InvestigacionForm: React.FC = () => {
                     </div>
                     <div className="form-group">
                       <textarea
-                        value={relato}
+                        value={relato.texto}
                         onChange={(e) => updateRelato(index, e.target.value)}
                         rows={4}
                         placeholder="Escriba el relato del asegurado..."
@@ -286,6 +326,49 @@ const InvestigacionForm: React.FC = () => {
                           lineHeight: "1.5",
                         }}
                       />
+                    </div>
+
+                    {/* IMAGEN PARA ESTE RELATO */}
+                    <div className="form-group" style={{ marginTop: "12px" }}>
+                      <label style={{ display: "block", marginBottom: "8px", fontWeight: "500" }}>
+                        📷 Imagen del Relato (opcional)
+                      </label>
+                      <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              uploadImageForRelato(index, file);
+                            }
+                          }}
+                          style={{
+                            flex: 1,
+                            padding: "8px",
+                            border: "1px solid #ddd",
+                            borderRadius: "4px",
+                          }}
+                        />
+                        {relato.imagen_url && (
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                            <span style={{ fontSize: "12px", color: "#28a745" }}>
+                              ✅ Imagen subida
+                            </span>
+                            <img
+                              src={relato.imagen_url}
+                              alt={`Relato ${index + 1}`}
+                              style={{
+                                width: "40px",
+                                height: "40px",
+                                objectFit: "cover",
+                                borderRadius: "4px",
+                                border: "1px solid #ddd",
+                              }}
+                            />
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}
