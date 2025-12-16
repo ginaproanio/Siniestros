@@ -145,33 +145,42 @@ async def guardar_seccion(
             # Limpiar relatos existentes y crear nuevos
             db.query(models.RelatoAsegurado).filter(models.RelatoAsegurado.siniestro_id == siniestro_id).delete()
             for i, relato_data in enumerate(datos, 1):
-                # Procesar imagen si existe
-                imagen_url = relato_data.get('imagen_url')
-                imagen_base64 = relato_data.get('imagen_base64')
-                imagen_content_type = relato_data.get('imagen_content_type')
+                try:
+                    # Procesar imagen si existe
+                    imagen_url = relato_data.get('imagen_url')
+                    imagen_base64 = None
+                    imagen_content_type = None
 
-                # Si hay URL pero no base64, intentar convertir
-                if imagen_url and not imagen_base64:
-                    try:
-                        from app.services.s3_service import download_image_from_url
-                        image_data = download_image_from_url(imagen_url)
-                        if image_data:
-                            import base64
-                            imagen_base64 = base64.b64encode(image_data).decode('utf-8')
-                            imagen_content_type = 'image/jpeg'
-                            logger.info(f"✅ Convertida imagen para relato asegurado {i}")
-                    except Exception as e:
-                        logger.warning(f"⚠️ No se pudo convertir imagen para relato {i}: {e}")
+                    # Si hay URL, intentar convertir a base64 para PDFs
+                    if imagen_url and imagen_url.strip():
+                        try:
+                            from app.services.s3_service import download_image_from_url
+                            image_data = download_image_from_url(imagen_url)
+                            if image_data:
+                                import base64
+                                imagen_base64 = base64.b64encode(image_data).decode('utf-8')
+                                imagen_content_type = 'image/jpeg'
+                                logger.info(f"✅ Convertida imagen para relato asegurado {i}")
+                        except Exception as e:
+                            logger.warning(f"⚠️ No se pudo convertir imagen para relato {i}: {e}")
+                            # Continuar sin imagen base64, solo guardar URL
+                            imagen_base64 = None
+                            imagen_content_type = None
 
-                relato = models.RelatoAsegurado(
-                    siniestro_id=siniestro_id,
-                    numero_relato=i,
-                    texto=relato_data.get('texto', ''),
-                    imagen_url=imagen_url,
-                    imagen_base64=imagen_base64,
-                    imagen_content_type=imagen_content_type
-                )
-                db.add(relato)
+                    relato = models.RelatoAsegurado(
+                        siniestro_id=siniestro_id,
+                        numero_relato=i,
+                        texto=str(relato_data.get('texto', '')),
+                        imagen_url=imagen_url,
+                        imagen_base64=imagen_base64,
+                        imagen_content_type=imagen_content_type
+                    )
+                    db.add(relato)
+                    logger.info(f"✅ Relato asegurado {i} preparado para guardar")
+                except Exception as e:
+                    logger.error(f"❌ Error procesando relato asegurado {i}: {e}")
+                    # Continuar con el siguiente relato
+                    continue
 
         elif seccion == 'relatos_conductor':
             # Limpiar relatos existentes y crear nuevos
