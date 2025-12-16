@@ -25,10 +25,13 @@ from ..models import Siniestro
 
 try:
     from PIL import Image as PILImage
+
     PIL_AVAILABLE = True
 except ImportError:
     PIL_AVAILABLE = False
-    logging.warning("PIL no disponible - imágenes en PDF pueden no funcionar correctamente")
+    logging.warning(
+        "PIL no disponible - imágenes en PDF pueden no funcionar correctamente"
+    )
 
 
 def download_image_from_url(image_url: str) -> bytes:
@@ -41,7 +44,7 @@ def download_image_from_url(image_url: str) -> bytes:
         logger.info(f"📥 Descargando imagen desde: {image_url[:100]}...")
 
         # Verificar que sea una URL de S3
-        if 's3.amazonaws.com' not in image_url and 'amazonaws.com' not in image_url:
+        if "s3.amazonaws.com" not in image_url and "amazonaws.com" not in image_url:
             logger.warning(f"⚠️ URL no parece ser de S3: {image_url[:100]}")
             return None
 
@@ -52,10 +55,10 @@ def download_image_from_url(image_url: str) -> bytes:
         response.raise_for_status()
 
         # Validar que sea una imagen antes de descargar
-        content_type = response.headers.get('content-type', '').lower()
+        content_type = response.headers.get("content-type", "").lower()
         logger.info(f"📋 Content-Type: {content_type}")
 
-        if not content_type.startswith('image/'):
+        if not content_type.startswith("image/"):
             logger.warning(f"⚠️ Contenido no es imagen: {content_type}")
             return None
 
@@ -70,7 +73,9 @@ def download_image_from_url(image_url: str) -> bytes:
             logger.warning(f"⚠️ Imagen demasiado grande: {len(image_data)} bytes")
             return None
 
-        logger.info(f"✅ Imagen descargada exitosamente: {len(image_data)} bytes, tipo: {content_type}")
+        logger.info(
+            f"✅ Imagen descargada exitosamente: {len(image_data)} bytes, tipo: {content_type}"
+        )
         return image_data
 
     except requests.exceptions.Timeout:
@@ -78,7 +83,9 @@ def download_image_from_url(image_url: str) -> bytes:
         return None
     except requests.exceptions.HTTPError as e:
         logger.error(f"🌐 HTTP ERROR descargando imagen: {e}")
-        logger.error(f"🌐 Status code: {e.response.status_code if e.response else 'N/A'}")
+        logger.error(
+            f"🌐 Status code: {e.response.status_code if e.response else 'N/A'}"
+        )
         return None
     except requests.exceptions.RequestException as e:
         logger.error(f"🌐 REQUEST EXCEPTION descargando imagen: {e}")
@@ -87,11 +94,14 @@ def download_image_from_url(image_url: str) -> bytes:
         logger.error(f"❌ ERROR INESPERADO descargando imagen: {e}")
         logger.error(f"❌ Tipo de error: {type(e)}")
         import traceback
+
         logger.error(f"❌ Traceback: {traceback.format_exc()}")
         return None
 
 
-def create_pdf_image(image_data: bytes, max_width: float = 4*inch, max_height: float = 3*inch) -> Image:
+def create_pdf_image(
+    image_data: bytes, max_width: float = 4 * inch, max_height: float = 3 * inch
+) -> Image:
     """Crear objeto Image de ReportLab desde datos binarios"""
     try:
         if not image_data:
@@ -106,20 +116,22 @@ def create_pdf_image(image_data: bytes, max_width: float = 4*inch, max_height: f
                 pil_image = PILImage.open(image_buffer)
 
                 # Convertir a RGB si es necesario
-                if pil_image.mode not in ('RGB', 'L'):
-                    pil_image = pil_image.convert('RGB')
+                if pil_image.mode not in ("RGB", "L"):
+                    pil_image = pil_image.convert("RGB")
 
                 # Redimensionar manteniendo proporción
-                pil_image.thumbnail((max_width * 72, max_height * 72), PILImage.LANCZOS)  # 72 DPI
+                pil_image.thumbnail(
+                    (max_width * 72, max_height * 72), PILImage.LANCZOS
+                )  # 72 DPI
 
                 # Guardar como JPEG en buffer
                 output_buffer = io.BytesIO()
-                pil_image.save(output_buffer, format='JPEG', quality=85)
+                pil_image.save(output_buffer, format="JPEG", quality=85)
                 output_buffer.seek(0)
 
                 # Crear Image de ReportLab
                 pdf_image = Image(output_buffer)
-                pdf_image.hAlign = 'LEFT'
+                pdf_image.hAlign = "LEFT"
 
                 logger.info(f"✅ Imagen procesada: {pil_image.size}")
                 return pdf_image
@@ -131,7 +143,7 @@ def create_pdf_image(image_data: bytes, max_width: float = 4*inch, max_height: f
         image_buffer.seek(0)
         try:
             pdf_image = Image(image_buffer)
-            pdf_image.hAlign = 'LEFT'
+            pdf_image.hAlign = "LEFT"
             logger.info("✅ Imagen creada sin procesamiento PIL")
             return pdf_image
         except Exception as e:
@@ -738,17 +750,27 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
         # Función auxiliar para verificar si un campo JSON tiene contenido real
         def has_real_content(json_field):
             """Verifica si un campo JSON tiene contenido real (no vacío)"""
-            logger.info(f"🔍 DEBUG: verificando campo: {repr(json_field)} (tipo: {type(json_field)})")
+            logger.info(
+                f"🔍 DEBUG: verificando campo: {repr(json_field)} (tipo: {type(json_field)})"
+            )
             if not json_field:
                 logger.info("❌ Campo vacío o None")
                 return False
             try:
-                parsed = json.loads(json_field) if isinstance(json_field, str) else json_field
+                parsed = (
+                    json.loads(json_field)
+                    if isinstance(json_field, str)
+                    else json_field
+                )
                 logger.info(f"📋 Campo parseado: {repr(parsed)} (tipo: {type(parsed)})")
                 if isinstance(parsed, list):
                     # Filtrar elementos que no sean strings vacías
-                    has_content = any(item.strip() for item in parsed if isinstance(item, str))
-                    logger.info(f"📋 Lista con contenido real: {has_content} (elementos: {[repr(item) for item in parsed]})")
+                    has_content = any(
+                        item.strip() for item in parsed if isinstance(item, str)
+                    )
+                    logger.info(
+                        f"📋 Lista con contenido real: {has_content} (elementos: {[repr(item) for item in parsed]})"
+                    )
                     return has_content
                 result = bool(parsed)
                 logger.info(f"📋 Resultado boolean: {result}")
@@ -763,16 +785,9 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
             or siniestro.relatos_conductor
             or siniestro.inspecciones
             or siniestro.testigos
-            or (
-                siniestro.evidencias_complementarias
-                and siniestro.evidencias_complementarias.strip()
-            )
-            or (siniestro.otras_diligencias and siniestro.otras_diligencias.strip())
-            or (
-                siniestro.visita_taller
-                and siniestro.visita_taller.descripcion
-                and siniestro.visita_taller.descripcion.strip()
-            )
+            or has_real_content(siniestro.evidencias_complementarias)
+            or has_real_content(siniestro.otras_diligencias)
+            or has_real_content(siniestro.visita_taller)
             or has_real_content(siniestro.observaciones)
             or has_real_content(siniestro.recomendacion_pago_cobertura)
             or has_real_content(siniestro.conclusiones)
@@ -828,11 +843,17 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                                     story.append(Spacer(1, 5))
                                     logger.info(f"✅ Imagen incluida en relato {i}")
                                 else:
-                                    logger.warning(f"⚠️ No se pudo crear imagen para relato {i}")
+                                    logger.warning(
+                                        f"⚠️ No se pudo crear imagen para relato {i}"
+                                    )
                             else:
-                                logger.warning(f"⚠️ No se pudo descargar imagen para relato {i}")
+                                logger.warning(
+                                    f"⚠️ No se pudo descargar imagen para relato {i}"
+                                )
                     except Exception as img_error:
-                        logger.warning(f"⚠️ Error procesando imagen para relato {i}: {img_error}")
+                        logger.warning(
+                            f"⚠️ Error procesando imagen para relato {i}: {img_error}"
+                        )
                         # Continuar sin la imagen
                     story.append(Spacer(1, 10))
                 story.append(Spacer(1, 15))
@@ -868,11 +889,17 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                                     story.append(Spacer(1, 5))
                                     logger.info(f"✅ Imagen incluida en conductor {i}")
                                 else:
-                                    logger.warning(f"⚠️ No se pudo crear imagen para conductor {i}")
+                                    logger.warning(
+                                        f"⚠️ No se pudo crear imagen para conductor {i}"
+                                    )
                             else:
-                                logger.warning(f"⚠️ No se pudo descargar imagen para conductor {i}")
+                                logger.warning(
+                                    f"⚠️ No se pudo descargar imagen para conductor {i}"
+                                )
                     except Exception as img_error:
-                        logger.warning(f"⚠️ Error procesando imagen para conductor {i}: {img_error}")
+                        logger.warning(
+                            f"⚠️ Error procesando imagen para conductor {i}: {img_error}"
+                        )
                         # Continuar sin la imagen
                     story.append(Spacer(1, 10))
                 story.append(Spacer(1, 15))
@@ -908,11 +935,17 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                                     story.append(Spacer(1, 5))
                                     logger.info(f"✅ Imagen incluida en inspección {i}")
                                 else:
-                                    logger.warning(f"⚠️ No se pudo crear imagen para inspección {i}")
+                                    logger.warning(
+                                        f"⚠️ No se pudo crear imagen para inspección {i}"
+                                    )
                             else:
-                                logger.warning(f"⚠️ No se pudo descargar imagen para inspección {i}")
+                                logger.warning(
+                                    f"⚠️ No se pudo descargar imagen para inspección {i}"
+                                )
                     except Exception as img_error:
-                        logger.warning(f"⚠️ Error procesando imagen para inspección {i}: {img_error}")
+                        logger.warning(
+                            f"⚠️ Error procesando imagen para inspección {i}: {img_error}"
+                        )
                         # Continuar sin la imagen
                     story.append(Spacer(1, 10))
                 story.append(Spacer(1, 15))
@@ -946,11 +979,17 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                                     story.append(Spacer(1, 5))
                                     logger.info(f"✅ Imagen incluida en testigo {i}")
                                 else:
-                                    logger.warning(f"⚠️ No se pudo crear imagen para testigo {i}")
+                                    logger.warning(
+                                        f"⚠️ No se pudo crear imagen para testigo {i}"
+                                    )
                             else:
-                                logger.warning(f"⚠️ No se pudo descargar imagen para testigo {i}")
+                                logger.warning(
+                                    f"⚠️ No se pudo descargar imagen para testigo {i}"
+                                )
                     except Exception as img_error:
-                        logger.warning(f"⚠️ Error procesando imagen para testigo {i}: {img_error}")
+                        logger.warning(
+                            f"⚠️ Error procesando imagen para testigo {i}: {img_error}"
+                        )
                         # Continuar sin la imagen
                     story.append(Spacer(1, 10))
                 story.append(Spacer(1, 15))
@@ -1002,10 +1041,16 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                 if not json_field:
                     return False
                 try:
-                    parsed = json.loads(json_field) if isinstance(json_field, str) else json_field
+                    parsed = (
+                        json.loads(json_field)
+                        if isinstance(json_field, str)
+                        else json_field
+                    )
                     if isinstance(parsed, list):
                         # Filtrar elementos que no sean strings vacías
-                        return any(item.strip() for item in parsed if isinstance(item, str))
+                        return any(
+                            item.strip() for item in parsed if isinstance(item, str)
+                        )
                     return bool(parsed)
                 except:
                     return bool(json_field and json_field.strip())
@@ -1022,7 +1067,9 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                         else siniestro.observaciones
                     )
                     for i, obs in enumerate(observaciones_list, 1):
-                        if isinstance(obs, str) and obs.strip():  # Solo mostrar items no vacíos
+                        if (
+                            isinstance(obs, str) and obs.strip()
+                        ):  # Solo mostrar items no vacíos
                             story.append(Paragraph(f"{i}. {obs}", normal_style))
                             story.append(Spacer(1, 5))
                 except:
@@ -1048,13 +1095,20 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                         else siniestro.recomendacion_pago_cobertura
                     )
                     for i, rec in enumerate(recomendaciones_list, 1):
-                        if isinstance(rec, str) and rec.strip():  # Solo mostrar items no vacíos
+                        if (
+                            isinstance(rec, str) and rec.strip()
+                        ):  # Solo mostrar items no vacíos
                             story.append(Paragraph(f"{i}. {rec}", normal_style))
                             story.append(Spacer(1, 5))
                 except:
-                    if siniestro.recomendacion_pago_cobertura and siniestro.recomendacion_pago_cobertura.strip():
+                    if (
+                        siniestro.recomendacion_pago_cobertura
+                        and siniestro.recomendacion_pago_cobertura.strip()
+                    ):
                         story.append(
-                            Paragraph(siniestro.recomendacion_pago_cobertura, normal_style)
+                            Paragraph(
+                                siniestro.recomendacion_pago_cobertura, normal_style
+                            )
                         )
                 story.append(Spacer(1, 15))
                 section_num += 1
@@ -1071,7 +1125,9 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                         else siniestro.conclusiones
                     )
                     for i, conc in enumerate(conclusiones_list, 1):
-                        if isinstance(conc, str) and conc.strip():  # Solo mostrar items no vacíos
+                        if (
+                            isinstance(conc, str) and conc.strip()
+                        ):  # Solo mostrar items no vacíos
                             story.append(Paragraph(f"{i}. {conc}", normal_style))
                             story.append(Spacer(1, 5))
                 except:
@@ -1092,7 +1148,9 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                         else siniestro.anexo
                     )
                     for i, anex in enumerate(anexo_list, 1):
-                        if isinstance(anex, str) and anex.strip():  # Solo mostrar items no vacíos
+                        if (
+                            isinstance(anex, str) and anex.strip()
+                        ):  # Solo mostrar items no vacíos
                             story.append(Paragraph(f"{i}. {anex}", normal_style))
                             story.append(Spacer(1, 5))
                 except:
@@ -1123,7 +1181,9 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                     else siniestro.anexo
                 )
                 for i, anex in enumerate(anexo_list, 1):
-                    if isinstance(anex, str) and anex.strip():  # Solo mostrar items no vacíos
+                    if (
+                        isinstance(anex, str) and anex.strip()
+                    ):  # Solo mostrar items no vacíos
                         story.append(
                             Paragraph(
                                 f"Anexo {i}:",

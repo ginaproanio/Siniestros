@@ -76,6 +76,18 @@ class InspeccionBase(BaseModel):
     descripcion: str
     imagen_url: Optional[str] = Field(None, max_length=500)
 
+class EvidenciaComplementariaBase(BaseModel):
+    descripcion: str
+    imagen_url: Optional[str] = Field(None, max_length=500)
+
+class OtraDiligenciaBase(BaseModel):
+    descripcion: str
+    imagen_url: Optional[str] = Field(None, max_length=500)
+
+class VisitaTallerBase(BaseModel):
+    descripcion: str
+    imagen_url: Optional[str] = Field(None, max_length=500)
+
 # Create schemas
 class SiniestroCreate(SiniestroBase):
     pass
@@ -242,13 +254,10 @@ class SiniestroUpdate(BaseModel):
     # Misiva de investigación
     misiva_investigacion: Optional[str] = None
 
-    # Campos de investigación recabada
-    evidencias_complementarias: Optional[str] = None
-    evidencias_complementarias_imagen_url: Optional[str] = None
-    otras_diligencias: Optional[str] = None
-    otras_diligencias_imagen_url: Optional[str] = None
-    visita_taller_descripcion: Optional[str] = None
-    visita_taller_imagen_url: Optional[str] = None
+    # Campos de investigación recabada (todos como arrays JSON)
+    evidencias_complementarias: Optional[List[EvidenciaComplementariaBase]] = None
+    otras_diligencias: Optional[List[OtraDiligenciaBase]] = None
+    visita_taller: Optional[List[VisitaTallerBase]] = None
     observaciones: Optional[List[str]] = None
     recomendacion_pago_cobertura: Optional[List[str]] = None
     conclusiones: Optional[List[str]] = None

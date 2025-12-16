@@ -215,6 +215,13 @@ async def guardar_seccion(
                 )
                 db.add(testigo)
 
+        elif seccion in ['evidencias_complementarias', 'otras_diligencias', 'visita_taller', 'observaciones', 'recomendacion_pago_cobertura', 'conclusiones', 'anexo']:
+            # Secciones que se guardan como JSON arrays
+            import json
+            siniestro_data = siniestro.__dict__
+            siniestro_data[seccion] = json.dumps(datos)
+            setattr(siniestro, seccion, json.dumps(datos))
+
         else:
             raise HTTPException(status_code=400, detail=f"Sección '{seccion}' no reconocida")
 

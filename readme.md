@@ -22,9 +22,21 @@ Siniestros es una aplicación web completa para la gestión integral de siniestr
 - **Diseño responsivo** que funciona en móviles y desktop
 - **Feedback visual inmediato** con estados de completitud
 
-### 📊 **Gestión Completa de Datos**
-- **Campos dinámicos** para múltiples relatos, inspecciones y testigos
-- **Subida de imágenes** integrada para evidencia fotográfica
+### 📊 **Gestión Completa de Datos con CRUD**
+- **Campos dinámicos con operaciones CRUD** (Crear, Leer, Editar, Eliminar) para:
+  - ➕ **Antecedentes**: Texto libre del caso
+  - ➕ **Entrevista al Asegurado**: Múltiples relatos con imágenes
+  - ➕ **Entrevista al Conductor**: Múltiples relatos con imágenes
+  - ➕ **Inspección del Lugar**: Múltiples inspecciones con imágenes
+  - ➕ **Testigos**: Múltiples declaraciones con imágenes
+  - ➕ **Evidencias Complementarias**: Múltiples evidencias con imágenes
+  - ➕ **Otras Diligencias**: Múltiples diligencias con imágenes
+  - ➕ **Visita al Taller**: Múltiples visitas con imágenes
+  - ➕ **Observaciones**: Múltiples observaciones
+  - ➕ **Recomendación de Pago**: Múltiples recomendaciones
+  - ➕ **Conclusiones**: Múltiples conclusiones
+  - ➕ **Anexo**: Múltiples documentos adjuntos
+- **Subida de imágenes** integrada para evidencia fotográfica en todas las secciones
 - **Validación inteligente** de datos requeridos
 - **Estados de carga** y mensajes informativos
 

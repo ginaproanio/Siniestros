@@ -46,8 +46,21 @@ src/
 ```
 
 ## Funcionalidades
-- ✅ Formulario responsive para crear siniestros
+- ✅ **Formulario responsive para crear siniestros** con interfaz por pestañas
+- ✅ **Sistema CRUD completo** para todas las secciones de investigación:
+  - Entrevista al Asegurado (múltiples relatos con imágenes)
+  - Entrevista al Conductor (múltiples relatos con imágenes)
+  - Inspección del Lugar (múltiples inspecciones con imágenes)
+  - Testigos (múltiples declaraciones con imágenes)
+  - Evidencias Complementarias (múltiples evidencias con imágenes)
+  - Otras Diligencias (múltiples diligencias con imágenes)
+  - Visita al Taller (múltiples visitas con imágenes)
+  - Observaciones (múltiples observaciones)
+  - Recomendación de Pago (múltiples recomendaciones)
+  - Conclusiones (múltiples conclusiones)
+  - Anexo (múltiples documentos adjuntos)
 - ✅ Validación de campos
 - ✅ Conexión con API backend
 - ✅ Estados de carga y mensajes de error
+- ✅ Subida de imágenes integrada
 - ✅ Diseño moderno y accesible

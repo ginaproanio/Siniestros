@@ -33,17 +33,14 @@ class Siniestro(Base):
     # Misiva de investigación (no se muestra en PDF)
     misiva_investigacion = Column(Text)  # Solicitud específica de la aseguradora
 
-    # Campos de investigación recabada
-    evidencias_complementarias = Column(Text)  # Texto de evidencias complementarias
-    evidencias_complementarias_imagen_url = Column(String(500))  # URL de imagen para parte policial
-    otras_diligencias = Column(Text)  # Texto de otras diligencias
-    otras_diligencias_imagen_url = Column(String(500))  # URL de imagen para otras diligencias
-    visita_taller_descripcion = Column(Text)  # Texto de visita al taller
-    visita_taller_imagen_url = Column(String(500))  # URL de imagen para visita al taller
-    observaciones = Column(Text)  # JSON con lista numerada de observaciones
-    recomendacion_pago_cobertura = Column(Text)  # JSON con lista numerada de recomendaciones de pago
-    conclusiones = Column(Text)  # JSON con lista numerada de conclusiones
-    anexo = Column(Text)  # JSON con lista numerada de anexos
+    # Campos de investigación recabada (todos como JSON arrays para CRUD)
+    evidencias_complementarias = Column(Text)  # JSON array de evidencias complementarias
+    otras_diligencias = Column(Text)  # JSON array de otras diligencias
+    visita_taller = Column(Text)  # JSON array de visitas al taller
+    observaciones = Column(Text)  # JSON array de observaciones
+    recomendacion_pago_cobertura = Column(Text)  # JSON array de recomendaciones de pago
+    conclusiones = Column(Text)  # JSON array de conclusiones
+    anexo = Column(Text)  # JSON array de anexos
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
