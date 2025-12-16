@@ -33,23 +33,36 @@ except ImportError:
 
 def download_image_from_url(image_url: str) -> bytes:
     """Descargar imagen desde URL y retornar datos binarios"""
+    if not image_url or not image_url.strip():
+        return None
+
     try:
         logger.info(f"📥 Descargando imagen desde: {image_url[:100]}...")
-        response = requests.get(image_url, timeout=10)
+        response = requests.get(image_url, timeout=10, stream=True)
         response.raise_for_status()
 
-        image_data = response.content
-        logger.info(f"✅ Imagen descargada: {len(image_data)} bytes")
-
-        # Validar que sea una imagen
-        if not response.headers.get('content-type', '').startswith('image/'):
-            logger.warning(f"⚠️ Contenido no es imagen: {response.headers.get('content-type')}")
+        # Validar que sea una imagen antes de descargar
+        content_type = response.headers.get('content-type', '').lower()
+        if not content_type.startswith('image/'):
+            logger.warning(f"⚠️ Contenido no es imagen: {content_type}")
             return None
 
+        image_data = response.content
+        if len(image_data) == 0:
+            logger.warning("⚠️ Imagen descargada está vacía")
+            return None
+
+        logger.info(f"✅ Imagen descargada: {len(image_data)} bytes, tipo: {content_type}")
         return image_data
 
+    except requests.exceptions.Timeout:
+        logger.warning(f"⏰ Timeout descargando imagen: {image_url[:100]}")
+        return None
+    except requests.exceptions.RequestException as e:
+        logger.warning(f"🌐 Error de red descargando imagen: {e}")
+        return None
     except Exception as e:
-        logger.error(f"❌ Error descargando imagen: {e}")
+        logger.error(f"❌ Error inesperado descargando imagen: {e}")
         return None
 
 
@@ -778,15 +791,24 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                         )
                     )
                     story.append(Paragraph(relato.texto, normal_style))
-                    # Incluir imagen si existe
-                    if relato.imagen_url and relato.imagen_url.strip():
-                        image_data = download_image_from_url(relato.imagen_url)
-                        if image_data:
-                            pdf_image = create_pdf_image(image_data)
-                            if pdf_image:
-                                story.append(Spacer(1, 5))
-                                story.append(pdf_image)
-                                story.append(Spacer(1, 5))
+                    # Incluir imagen si existe (con manejo robusto de errores)
+                    try:
+                        if relato.imagen_url and relato.imagen_url.strip():
+                            image_data = download_image_from_url(relato.imagen_url)
+                            if image_data:
+                                pdf_image = create_pdf_image(image_data)
+                                if pdf_image:
+                                    story.append(Spacer(1, 5))
+                                    story.append(pdf_image)
+                                    story.append(Spacer(1, 5))
+                                    logger.info(f"✅ Imagen incluida en relato {i}")
+                                else:
+                                    logger.warning(f"⚠️ No se pudo crear imagen para relato {i}")
+                            else:
+                                logger.warning(f"⚠️ No se pudo descargar imagen para relato {i}")
+                    except Exception as img_error:
+                        logger.warning(f"⚠️ Error procesando imagen para relato {i}: {img_error}")
+                        # Continuar sin la imagen
                     story.append(Spacer(1, 10))
                 story.append(Spacer(1, 15))
                 section_num += 1
@@ -809,15 +831,24 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                         )
                     )
                     story.append(Paragraph(relato.texto, normal_style))
-                    # Incluir imagen si existe
-                    if relato.imagen_url and relato.imagen_url.strip():
-                        image_data = download_image_from_url(relato.imagen_url)
-                        if image_data:
-                            pdf_image = create_pdf_image(image_data)
-                            if pdf_image:
-                                story.append(Spacer(1, 5))
-                                story.append(pdf_image)
-                                story.append(Spacer(1, 5))
+                    # Incluir imagen si existe (con manejo robusto de errores)
+                    try:
+                        if relato.imagen_url and relato.imagen_url.strip():
+                            image_data = download_image_from_url(relato.imagen_url)
+                            if image_data:
+                                pdf_image = create_pdf_image(image_data)
+                                if pdf_image:
+                                    story.append(Spacer(1, 5))
+                                    story.append(pdf_image)
+                                    story.append(Spacer(1, 5))
+                                    logger.info(f"✅ Imagen incluida en conductor {i}")
+                                else:
+                                    logger.warning(f"⚠️ No se pudo crear imagen para conductor {i}")
+                            else:
+                                logger.warning(f"⚠️ No se pudo descargar imagen para conductor {i}")
+                    except Exception as img_error:
+                        logger.warning(f"⚠️ Error procesando imagen para conductor {i}: {img_error}")
+                        # Continuar sin la imagen
                     story.append(Spacer(1, 10))
                 story.append(Spacer(1, 15))
                 section_num += 1
@@ -840,15 +871,24 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                         )
                     )
                     story.append(Paragraph(inspeccion.descripcion, normal_style))
-                    # Incluir imagen si existe
-                    if inspeccion.imagen_url and inspeccion.imagen_url.strip():
-                        image_data = download_image_from_url(inspeccion.imagen_url)
-                        if image_data:
-                            pdf_image = create_pdf_image(image_data)
-                            if pdf_image:
-                                story.append(Spacer(1, 5))
-                                story.append(pdf_image)
-                                story.append(Spacer(1, 5))
+                    # Incluir imagen si existe (con manejo robusto de errores)
+                    try:
+                        if inspeccion.imagen_url and inspeccion.imagen_url.strip():
+                            image_data = download_image_from_url(inspeccion.imagen_url)
+                            if image_data:
+                                pdf_image = create_pdf_image(image_data)
+                                if pdf_image:
+                                    story.append(Spacer(1, 5))
+                                    story.append(pdf_image)
+                                    story.append(Spacer(1, 5))
+                                    logger.info(f"✅ Imagen incluida en inspección {i}")
+                                else:
+                                    logger.warning(f"⚠️ No se pudo crear imagen para inspección {i}")
+                            else:
+                                logger.warning(f"⚠️ No se pudo descargar imagen para inspección {i}")
+                    except Exception as img_error:
+                        logger.warning(f"⚠️ Error procesando imagen para inspección {i}: {img_error}")
+                        # Continuar sin la imagen
                     story.append(Spacer(1, 10))
                 story.append(Spacer(1, 15))
                 section_num += 1
@@ -869,15 +909,24 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                         )
                     )
                     story.append(Paragraph(testigo.texto, normal_style))
-                    # Incluir imagen si existe
-                    if testigo.imagen_url and testigo.imagen_url.strip():
-                        image_data = download_image_from_url(testigo.imagen_url)
-                        if image_data:
-                            pdf_image = create_pdf_image(image_data)
-                            if pdf_image:
-                                story.append(Spacer(1, 5))
-                                story.append(pdf_image)
-                                story.append(Spacer(1, 5))
+                    # Incluir imagen si existe (con manejo robusto de errores)
+                    try:
+                        if testigo.imagen_url and testigo.imagen_url.strip():
+                            image_data = download_image_from_url(testigo.imagen_url)
+                            if image_data:
+                                pdf_image = create_pdf_image(image_data)
+                                if pdf_image:
+                                    story.append(Spacer(1, 5))
+                                    story.append(pdf_image)
+                                    story.append(Spacer(1, 5))
+                                    logger.info(f"✅ Imagen incluida en testigo {i}")
+                                else:
+                                    logger.warning(f"⚠️ No se pudo crear imagen para testigo {i}")
+                            else:
+                                logger.warning(f"⚠️ No se pudo descargar imagen para testigo {i}")
+                    except Exception as img_error:
+                        logger.warning(f"⚠️ Error procesando imagen para testigo {i}: {img_error}")
+                        # Continuar sin la imagen
                     story.append(Spacer(1, 10))
                 story.append(Spacer(1, 15))
                 section_num += 1
