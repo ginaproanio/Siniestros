@@ -253,7 +253,7 @@ const InvestigacionForm: React.FC = () => {
                 {relato.imagen_url && (
                   <div style={{ marginTop: "5px" }}>
                     <img
-                      src={`${BACKEND_URL}${relato.imagen_url}`}
+                      src={relato.imagen_url}
                       alt={`Relato ${relato.numero_relato}`}
                       style={{ maxWidth: "200px", maxHeight: "150px", border: "1px solid #ddd" }}
                     />
@@ -364,7 +364,7 @@ const InvestigacionForm: React.FC = () => {
                 {relato.imagen_url && (
                   <div style={{ marginTop: "5px" }}>
                     <img
-                      src={`${BACKEND_URL}${relato.imagen_url}`}
+                      src={relato.imagen_url}
                       alt={`Relato ${relato.numero_relato}`}
                       style={{ maxWidth: "200px", maxHeight: "150px", border: "1px solid #ddd" }}
                     />
@@ -458,7 +458,7 @@ const InvestigacionForm: React.FC = () => {
                           headers: { "Content-Type": "multipart/form-data" },
                         });
 
-                        const imageUrl = response.data.url;
+                        const imageUrl = response.data.url_presigned;
                         setFormData((prev) => ({
                           ...prev,
                           inspecciones: prev.inspecciones?.map((insp, i) =>
@@ -475,7 +475,7 @@ const InvestigacionForm: React.FC = () => {
                 {inspeccion.imagen_url && (
                   <div style={{ marginTop: "5px" }}>
                     <img
-                      src={`${BACKEND_URL}${inspeccion.imagen_url}`}
+                      src={inspeccion.imagen_url}
                       alt={`Inspección ${inspeccion.numero_inspeccion}`}
                       style={{ maxWidth: "200px", maxHeight: "150px", border: "1px solid #ddd" }}
                     />
@@ -569,7 +569,7 @@ const InvestigacionForm: React.FC = () => {
                           headers: { "Content-Type": "multipart/form-data" },
                         });
 
-                        const imageUrl = response.data.url;
+                        const imageUrl = response.data.url_presigned;
                         setFormData((prev) => ({
                           ...prev,
                           testigos: prev.testigos?.map((test, i) =>
@@ -586,7 +586,7 @@ const InvestigacionForm: React.FC = () => {
                 {testigo.imagen_url && (
                   <div style={{ marginTop: "5px" }}>
                     <img
-                      src={`${BACKEND_URL}${testigo.imagen_url}`}
+                      src={testigo.imagen_url}
                       alt={`Testigo ${testigo.numero_relato}`}
                       style={{ maxWidth: "200px", maxHeight: "150px", border: "1px solid #ddd" }}
                     />
@@ -634,7 +634,7 @@ const InvestigacionForm: React.FC = () => {
                         headers: { "Content-Type": "multipart/form-data" },
                       });
 
-                      const imageUrl = response.data.url;
+                      const imageUrl = response.data.url_presigned;
                       setFormData((prev) => ({
                         ...prev,
                         evidencias_complementarias_imagen_url: imageUrl,
@@ -649,7 +649,7 @@ const InvestigacionForm: React.FC = () => {
               {formData.evidencias_complementarias_imagen_url && (
                 <div>
                   <img
-                    src={`${BACKEND_URL}${formData.evidencias_complementarias_imagen_url}`}
+                    src={formData.evidencias_complementarias_imagen_url}
                     alt="Parte Policial"
                     className="image-preview"
                   />
@@ -692,7 +692,7 @@ const InvestigacionForm: React.FC = () => {
                       headers: { "Content-Type": "multipart/form-data" },
                     });
 
-                    const imageUrl = response.data.url;
+                    const imageUrl = response.data.url_presigned;
                     setFormData((prev) => ({
                       ...prev,
                       otras_diligencias_imagen_url: imageUrl,
@@ -706,11 +706,11 @@ const InvestigacionForm: React.FC = () => {
             />
             {formData.otras_diligencias_imagen_url && (
               <div>
-                <img
-                  src={`${BACKEND_URL}${formData.otras_diligencias_imagen_url}`}
-                  alt="Otras Diligencias"
-                  className="image-preview"
-                />
+                  <img
+                    src={formData.otras_diligencias_imagen_url}
+                    alt="Otras Diligencias"
+                    className="image-preview"
+                  />
               </div>
             )}
           </div>
@@ -749,7 +749,7 @@ const InvestigacionForm: React.FC = () => {
                       headers: { "Content-Type": "multipart/form-data" },
                     });
 
-                    const imageUrl = response.data.url;
+                    const imageUrl = response.data.url_presigned;
                     setFormData((prev) => ({
                       ...prev,
                       visita_taller_imagen_url: imageUrl,
@@ -764,7 +764,7 @@ const InvestigacionForm: React.FC = () => {
             {formData.visita_taller_imagen_url && (
               <div>
                 <img
-                  src={`${BACKEND_URL}${formData.visita_taller_imagen_url}`}
+                  src={formData.visita_taller_imagen_url}
                   alt="Visita al Taller"
                   className="image-preview"
                 />
