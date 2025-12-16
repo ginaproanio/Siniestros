@@ -695,6 +695,11 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                         )
                     )
                     story.append(Paragraph(relato.texto, normal_style))
+                    # Incluir referencia a imagen si existe
+                    if relato.imagen_url and relato.imagen_url.strip():
+                        story.append(Paragraph(f"[Imagen adjunta: {i}]", ParagraphStyle(
+                            "ImageRef", parent=styles["Normal"], fontSize=8, textColor=colors.blue, fontName="Helvetica-Oblique"
+                        )))
                     story.append(Spacer(1, 10))
                 story.append(Spacer(1, 15))
                 section_num += 1
@@ -717,6 +722,11 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                         )
                     )
                     story.append(Paragraph(relato.texto, normal_style))
+                    # Incluir referencia a imagen si existe
+                    if relato.imagen_url and relato.imagen_url.strip():
+                        story.append(Paragraph(f"[Imagen adjunta: {i}]", ParagraphStyle(
+                            "ImageRef", parent=styles["Normal"], fontSize=8, textColor=colors.blue, fontName="Helvetica-Oblique"
+                        )))
                     story.append(Spacer(1, 10))
                 story.append(Spacer(1, 15))
                 section_num += 1
@@ -739,6 +749,11 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                         )
                     )
                     story.append(Paragraph(inspeccion.descripcion, normal_style))
+                    # Incluir referencia a imagen si existe
+                    if inspeccion.imagen_url and inspeccion.imagen_url.strip():
+                        story.append(Paragraph(f"[Imagen adjunta: {i}]", ParagraphStyle(
+                            "ImageRef", parent=styles["Normal"], fontSize=8, textColor=colors.blue, fontName="Helvetica-Oblique"
+                        )))
                     story.append(Spacer(1, 10))
                 story.append(Spacer(1, 15))
                 section_num += 1
@@ -759,6 +774,11 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                         )
                     )
                     story.append(Paragraph(testigo.texto, normal_style))
+                    # Incluir referencia a imagen si existe
+                    if testigo.imagen_url and testigo.imagen_url.strip():
+                        story.append(Paragraph(f"[Imagen adjunta: {i}]", ParagraphStyle(
+                            "ImageRef", parent=styles["Normal"], fontSize=8, textColor=colors.blue, fontName="Helvetica-Oblique"
+                        )))
                     story.append(Spacer(1, 10))
                 story.append(Spacer(1, 15))
                 section_num += 1
