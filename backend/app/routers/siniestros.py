@@ -352,65 +352,174 @@ async def generar_pdf(siniestro_id: int, db: Session = Depends(get_db)):
         full_traceback = traceback.format_exc()
         logger.error(f"❌ Traceback completo: {full_traceback}")
 
-        # Generar PDF de error con más información de debug
-        logger.info("🧪 Generando PDF de error con debug...")
-        from reportlab.lib.pagesizes import letter
-        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
-        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-        from reportlab.lib import colors
-        import io
-
-        buffer = io.BytesIO()
-        doc = SimpleDocTemplate(buffer, pagesize=letter)
-        styles = getSampleStyleSheet()
-
-        # Estilo para errores
-        error_style = ParagraphStyle(
-            "Error", parent=styles["Normal"], fontSize=8, textColor=colors.red
-        )
-
-        # Limitar el traceback para que quepa en el PDF
-        traceback_lines = full_traceback.split('\n')[:20]  # Solo primeras 20 líneas
-        limited_traceback = '\n'.join(traceback_lines)
-
-        story = [
-            Paragraph("ERROR: No se pudo generar el PDF completo", styles["Heading1"]),
-            Spacer(1, 10),
-            Paragraph(f"Siniestro ID: {siniestro_id}", styles["Normal"]),
-            Paragraph(f"Timestamp: {datetime.now().isoformat()}", styles["Normal"]),
-            Spacer(1, 20),
-            Paragraph("Error principal:", error_style),
-            Paragraph(str(e), error_style),
-            Spacer(1, 10),
-            Paragraph("Traceback (primeras líneas):", error_style),
-            Paragraph(limited_traceback, ParagraphStyle("Traceback", parent=styles["Normal"], fontSize=6, fontName="Courier")),
-            Spacer(1, 20),
-            Paragraph("Sugerencias de solución:", styles["Normal"]),
-            Paragraph("1. Verificar que las imágenes en S3 sean accesibles", styles["Normal"]),
-            Paragraph("2. Revisar configuración de ReportLab/PIL", styles["Normal"]),
-            Paragraph("3. Verificar conexión a base de datos", styles["Normal"]),
-        ]
+        # EN LUGAR DE GENERAR PDF DE ERROR, GENERAR PDF SIN IMÁGENES
+        logger.warning("⚠️ Generando PDF sin imágenes debido a error...")
 
         try:
+            # Generar PDF básico sin imágenes
+            from reportlab.lib.pagesizes import letter
+            from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+            from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+            from reportlab.lib import colors
+            from reportlab.lib.units import inch
+            import io
+
+            buffer = io.BytesIO()
+            doc = SimpleDocTemplate(
+                buffer,
+                pagesize=letter,
+                topMargin=1 * inch,
+                bottomMargin=1 * inch,
+                leftMargin=1 * inch,
+                rightMargin=1 * inch,
+            )
+            styles = getSampleStyleSheet()
+
+            title_style = ParagraphStyle(
+                "Title",
+                parent=styles["Heading1"],
+                fontSize=20,
+                alignment=1,  # TA_CENTER
+                spaceAfter=30,
+                fontName="Helvetica-Bold",
+            )
+
+            section_style = ParagraphStyle(
+                "Section",
+                parent=styles["Heading3"],
+                fontSize=14,
+                spaceAfter=15,
+                fontName="Helvetica-Bold",
+            )
+
+            normal_style = ParagraphStyle(
+                "Normal", parent=styles["Normal"], fontSize=10, fontName="Helvetica"
+            )
+
+            story = []
+
+            # Título principal
+            title = Paragraph("INFORME DE INVESTIGACIÓN<br/>DE SINIESTRO", title_style)
+            story.append(title)
+
+            # Información del siniestro
+            caratula_data = [
+                ["Compañía de Seguros:", siniestro.compania_seguros or ""],
+                ["Número de Reclamo:", siniestro.reclamo_num or ""],
+                ["Nombre de Investigador:", "Susana Espinosa"],
+            ]
+
+            caratula_data_filtered = [row for row in caratula_data if row[1].strip()]
+
+            if caratula_data_filtered:
+                from reportlab.platypus import Table
+                caratula_table = Table(
+                    caratula_data_filtered, colWidths=[2.2 * inch, 4.3 * inch]
+                )
+                caratula_table.setStyle(
+                    TableStyle(
+                        [
+                            ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
+                            ("FONTSIZE", (0, 0), (-1, -1), 12),
+                            ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                            ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
+                            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                        ]
+                    )
+                )
+                story.append(caratula_table)
+                story.append(Spacer(1, 20))
+
+            # Nota sobre imágenes no disponibles
+            warning_style = ParagraphStyle(
+                "Warning", parent=styles["Normal"], fontSize=10, textColor=colors.red
+            )
+            warning = Paragraph(
+                "⚠️ NOTA: Las imágenes no pudieron ser incluidas en este PDF debido a problemas técnicos. "
+                "Las imágenes están disponibles en la plataforma web.",
+                warning_style,
+            )
+            story.append(warning)
+            story.append(Spacer(1, 20))
+
+            # Información básica del siniestro
+            if siniestro.fecha_siniestro or siniestro.direccion_siniestro:
+                story.append(Paragraph("INFORMACIÓN DEL SINIESTRO", section_style))
+                basic_info = []
+                if siniestro.fecha_siniestro:
+                    basic_info.append(["Fecha del Siniestro:", siniestro.fecha_siniestro.strftime("%d/%m/%Y")])
+                if siniestro.direccion_siniestro:
+                    basic_info.append(["Dirección:", siniestro.direccion_siniestro])
+                if siniestro.tipo_siniestro:
+                    basic_info.append(["Tipo de Siniestro:", siniestro.tipo_siniestro])
+
+                if basic_info:
+                    basic_table = Table(basic_info, colWidths=[2.5 * inch, 4 * inch])
+                    basic_table.setStyle(
+                        TableStyle(
+                            [
+                                ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
+                                ("FONTSIZE", (0, 0), (-1, -1), 10),
+                                ("GRID", (0, 0), (-1, -1), 1, colors.black),
+                                ("ALIGN", (0, 0), (0, -1), "LEFT"),
+                            ]
+                        )
+                    )
+                    story.append(basic_table)
+                    story.append(Spacer(1, 20))
+
+            # Información del asegurado
+            if siniestro.asegurado:
+                story.append(Paragraph("INFORMACIÓN DEL ASEGURADO", section_style))
+                asegurado_info = []
+                if siniestro.asegurado.nombre:
+                    asegurado_info.append(["Nombre:", siniestro.asegurado.nombre])
+                if siniestro.asegurado.cedula:
+                    asegurado_info.append(["Cédula:", siniestro.asegurado.cedula])
+
+                if asegurado_info:
+                    aseg_table = Table(asegurado_info, colWidths=[2.5 * inch, 4 * inch])
+                    aseg_table.setStyle(
+                        TableStyle(
+                            [
+                                ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
+                                ("FONTSIZE", (0, 0), (-1, -1), 10),
+                                ("GRID", (0, 0), (-1, -1), 1, colors.black),
+                            ]
+                        )
+                    )
+                    story.append(aseg_table)
+                    story.append(Spacer(1, 20))
+
+            # Fecha de generación
+            fecha_gen = Paragraph(
+                f"Fecha de Generación: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}",
+                normal_style,
+            )
+            story.append(fecha_gen)
+
+            # Generar PDF básico
             doc.build(story)
             buffer.seek(0)
-            error_pdf = buffer.getvalue()
-            logger.info(f"✅ PDF de error con debug generado: {len(error_pdf)} bytes")
+            basic_pdf = buffer.getvalue()
+
+            logger.info(f"✅ PDF básico generado exitosamente: {len(basic_pdf)} bytes")
 
             return Response(
-                content=error_pdf,
+                content=basic_pdf,
                 media_type="application/pdf",
                 headers={
-                    "Content-Disposition": f"attachment; filename=debug_error_siniestro_{siniestro_id}.pdf",
-                    "Content-Length": str(len(error_pdf)),
+                    "Content-Disposition": f"attachment; filename={reclamo}.pdf",
+                    "Content-Length": str(len(basic_pdf)),
                 },
             )
+
         except Exception as e2:
-            logger.error(f"❌ Error generando PDF de debug: {e2}")
-            # Si ni siquiera podemos generar el PDF de error, devolver error HTTP
+            logger.error(f"❌ Error generando PDF básico: {e2}")
+            # Último recurso: error HTTP
             raise HTTPException(
                 status_code=500,
-                detail=f"Error crítico generando PDF: {str(e)}. Debug error: {str(e2)}. Traceback: {full_traceback[:500]}"
+                detail=f"Error crítico generando PDF: {str(e)}. Error básico: {str(e2)}"
             )
 
 
