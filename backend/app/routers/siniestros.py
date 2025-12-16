@@ -552,17 +552,7 @@ async def generar_pdf(siniestro_id: int, db: Session = Depends(get_db)):
             story.append(objeto_table)
             story.append(Spacer(1, 15))
 
-        # 6. NOTA SOBRE IMÁGENES
-        warning_style = ParagraphStyle(
-            "Warning", parent=styles["Normal"], fontSize=10, textColor=colors.red, fontName="Helvetica-Bold"
-        )
-        story.append(Paragraph(
-            "📷 NOTA IMPORTANTE: Las imágenes del siniestro están disponibles únicamente "
-            "en la plataforma web por razones técnicas. Para ver las imágenes, acceda al "
-            "formulario de investigación desde la aplicación web.",
-            warning_style
-        ))
-        story.append(Spacer(1, 15))
+        # Nota: Las imágenes ahora se incluyen directamente en el PDF arriba
 
         # 7. FIRMA Y FECHA
         story.append(Paragraph("INFORME GENERADO POR:", section_style))

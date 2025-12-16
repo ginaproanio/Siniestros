@@ -1,5 +1,60 @@
 # 🏗️ **Arquitectura del Sistema - Siniestros**
 
+## **📋 MISIVA DE REQUERIMIENTOS DEL SISTEMA**
+
+**Fecha:** 16 de diciembre de 2025
+**Destinatario:** Equipo de Desarrollo
+**Asunto:** Especificaciones Técnicas para Sistema de Gestión de Siniestros
+
+### **OBJETIVO GENERAL**
+Desarrollar un sistema completo de gestión de siniestros que permita la captura, almacenamiento y generación de informes profesionales con inclusión obligatoria de evidencias fotográficas en los documentos PDF generados.
+
+### **REQUERIMIENTOS FUNCIONALES CRÍTICOS**
+1. **Captura de Información Completa**: Formularios tabulados para datos del siniestro, partes involucradas y evidencia fotográfica
+2. **Almacenamiento Seguro**: Sistema híbrido con base de datos relacional + almacenamiento cloud (AWS S3)
+3. **Generación de PDFs Profesionales**: Documentos con firma digital que incluyan TODAS las imágenes subidas
+4. **Interfaz Web Completa**: No se aceptan soluciones parciales que redirijan a "plataformas web externas"
+
+### **REQUERIMIENTOS TÉCNICOS ESPECÍFICOS**
+
+#### **1. Gestión de Imágenes**
+- ✅ **Subida a AWS S3**: Almacenamiento cloud escalable
+- ✅ **URLs Presigned**: Acceso temporal seguro
+- ✅ **Base64 Dual**: Almacenamiento en BD para inclusión en PDFs
+- ✅ **Formatos Soportados**: JPEG, PNG, WebP
+- ✅ **Optimización**: Redimensionamiento automático para PDFs
+
+#### **2. Generación de PDFs**
+- ✅ **Inclusión Obligatoria de Imágenes**: NO se aceptan PDFs sin imágenes
+- ✅ **Sección Dedicada**: "EVIDENCIAS FOTOGRÁFICAS" con títulos descriptivos
+- ✅ **Firma Digital**: Certificado P12 desde S3
+- ✅ **Profesional**: Headers, footers, paginación inteligente
+
+#### **3. Arquitectura Técnica**
+- ✅ **Backend**: FastAPI + SQLAlchemy + PostgreSQL
+- ✅ **Frontend**: React + TypeScript + Vite
+- ✅ **Storage**: AWS S3 + Base64 en BD
+- ✅ **PDF**: ReportLab + PIL + endesive
+- ✅ **Deployment**: Railway (full-stack)
+
+### **RESTRICCIONES ABSOLUTAS**
+❌ **NO se acepta**: Mensaje "Las imágenes están disponibles únicamente en la plataforma web"
+❌ **NO se acepta**: PDFs sin imágenes embebidas
+❌ **NO se acepta**: Soluciones parciales o temporales
+❌ **NO se acepta**: Redireccionamiento a sistemas externos
+
+### **ENTREGABLES FINALES**
+1. **Sistema Completo**: Funcional desde la captura hasta el PDF final
+2. **Imágenes en PDFs**: Obligatorio, no opcional
+3. **Documentación Técnica**: Esta especificación en todos los documentos
+4. **Pruebas**: Validación completa del flujo de imágenes
+
+### **FIRMA**
+**Susana Espinosa - Investigadora de Siniestros**
+**Fecha:** 16/12/2025
+
+---
+
 ## **Visión General de la Arquitectura**
 
 Siniestros sigue una arquitectura **cliente-servidor** moderna con separación clara de responsabilidades, utilizando las mejores prácticas de desarrollo web contemporáneo.
