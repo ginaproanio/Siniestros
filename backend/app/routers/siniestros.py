@@ -82,6 +82,152 @@ async def get_siniestro(siniestro_id: int, db: Session = Depends(get_db)):
     return siniestro
 
 
+# NUEVOS ENDPOINTS PARA GUARDADO POR SECCIONES
+@router.put("/{siniestro_id}/seccion/{seccion}")
+async def guardar_seccion(
+    siniestro_id: int,
+    seccion: str,  # 'asegurado', 'conductor', 'objeto_asegurado', 'antecedentes', etc.
+    datos: dict,   # Datos específicos de la sección
+    db: Session = Depends(get_db),
+):
+    """Guardar datos de una sección específica del siniestro"""
+    import logging
+    logger = logging.getLogger(__name__)
+
+    logger.info(f"💾 Guardando sección '{seccion}' para siniestro {siniestro_id}")
+
+    siniestro = db.query(models.Siniestro).filter(models.Siniestro.id == siniestro_id).first()
+    if not siniestro:
+        raise HTTPException(status_code=404, detail="Siniestro no encontrado")
+
+    try:
+        if seccion == 'asegurado':
+            # Crear o actualizar asegurado
+            if siniestro.asegurado:
+                for key, value in datos.items():
+                    setattr(siniestro.asegurado, key, value)
+            else:
+                datos['siniestro_id'] = siniestro_id
+                db_asegurado = models.Asegurado(**datos)
+                db.add(db_asegurado)
+
+        elif seccion == 'conductor':
+            # Crear o actualizar conductor
+            if siniestro.conductor:
+                for key, value in datos.items():
+                    setattr(siniestro.conductor, key, value)
+            else:
+                datos['siniestro_id'] = siniestro_id
+                db_conductor = models.Conductor(**datos)
+                db.add(db_conductor)
+
+        elif seccion == 'objeto_asegurado':
+            # Crear o actualizar objeto asegurado
+            if siniestro.objeto_asegurado:
+                for key, value in datos.items():
+                    setattr(siniestro.objeto_asegurado, key, value)
+            else:
+                datos['siniestro_id'] = siniestro_id
+                db_objeto = models.ObjetoAsegurado(**datos)
+                db.add(db_objeto)
+
+        elif seccion == 'antecedentes':
+            # Limpiar antecedentes existentes y crear nuevos
+            db.query(models.Antecedente).filter(models.Antecedente.siniestro_id == siniestro_id).delete()
+            for antecedente_data in datos:
+                antecedente = models.Antecedente(
+                    siniestro_id=siniestro_id,
+                    descripcion=antecedente_data.get('descripcion', '')
+                )
+                db.add(antecedente)
+
+        elif seccion == 'relatos_asegurado':
+            # Limpiar relatos existentes y crear nuevos
+            db.query(models.RelatoAsegurado).filter(models.RelatoAsegurado.siniestro_id == siniestro_id).delete()
+            for i, relato_data in enumerate(datos, 1):
+                # Procesar imagen si existe
+                imagen_url = relato_data.get('imagen_url')
+                imagen_base64 = relato_data.get('imagen_base64')
+                imagen_content_type = relato_data.get('imagen_content_type')
+
+                # Si hay URL pero no base64, intentar convertir
+                if imagen_url and not imagen_base64:
+                    try:
+                        from app.services.s3_service import download_image_from_url
+                        image_data = download_image_from_url(imagen_url)
+                        if image_data:
+                            import base64
+                            imagen_base64 = base64.b64encode(image_data).decode('utf-8')
+                            imagen_content_type = 'image/jpeg'
+                            logger.info(f"✅ Convertida imagen para relato asegurado {i}")
+                    except Exception as e:
+                        logger.warning(f"⚠️ No se pudo convertir imagen para relato {i}: {e}")
+
+                relato = models.RelatoAsegurado(
+                    siniestro_id=siniestro_id,
+                    numero_relato=i,
+                    texto=relato_data.get('texto', ''),
+                    imagen_url=imagen_url,
+                    imagen_base64=imagen_base64,
+                    imagen_content_type=imagen_content_type
+                )
+                db.add(relato)
+
+        elif seccion == 'relatos_conductor':
+            # Limpiar relatos existentes y crear nuevos
+            db.query(models.RelatoConductor).filter(models.RelatoConductor.siniestro_id == siniestro_id).delete()
+            for i, relato_data in enumerate(datos, 1):
+                relato = models.RelatoConductor(
+                    siniestro_id=siniestro_id,
+                    numero_relato=i,
+                    texto=relato_data.get('texto', ''),
+                    imagen_url=relato_data.get('imagen_url'),
+                    imagen_base64=relato_data.get('imagen_base64'),
+                    imagen_content_type=relato_data.get('imagen_content_type')
+                )
+                db.add(relato)
+
+        elif seccion == 'inspecciones':
+            # Limpiar inspecciones existentes y crear nuevas
+            db.query(models.Inspeccion).filter(models.Inspeccion.siniestro_id == siniestro_id).delete()
+            for i, inspeccion_data in enumerate(datos, 1):
+                inspeccion = models.Inspeccion(
+                    siniestro_id=siniestro_id,
+                    numero_inspeccion=i,
+                    descripcion=inspeccion_data.get('descripcion', ''),
+                    imagen_url=inspeccion_data.get('imagen_url'),
+                    imagen_base64=inspeccion_data.get('imagen_base64'),
+                    imagen_content_type=inspeccion_data.get('imagen_content_type')
+                )
+                db.add(inspeccion)
+
+        elif seccion == 'testigos':
+            # Limpiar testigos existentes y crear nuevos
+            db.query(models.Testigo).filter(models.Testigo.siniestro_id == siniestro_id).delete()
+            for i, testigo_data in enumerate(datos, 1):
+                testigo = models.Testigo(
+                    siniestro_id=siniestro_id,
+                    numero_relato=i,
+                    texto=testigo_data.get('texto', ''),
+                    imagen_url=testigo_data.get('imagen_url'),
+                    imagen_base64=testigo_data.get('imagen_base64'),
+                    imagen_content_type=testigo_data.get('imagen_content_type')
+                )
+                db.add(testigo)
+
+        else:
+            raise HTTPException(status_code=400, detail=f"Sección '{seccion}' no reconocida")
+
+        db.commit()
+        logger.info(f"✅ Sección '{seccion}' guardada exitosamente")
+        return {"message": f"Sección '{seccion}' guardada exitosamente", "siniestro_id": siniestro_id}
+
+    except Exception as e:
+        logger.error(f"❌ Error guardando sección '{seccion}': {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error guardando sección: {str(e)}")
+
+
 @router.put("/{siniestro_id}", response_model=schemas.SiniestroResponse)
 async def update_siniestro(
     siniestro_id: int,
@@ -370,7 +516,6 @@ async def generar_pdf(siniestro_id: int, db: Session = Depends(get_db)):
             ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
             ("FONTSIZE", (0, 0), (-1, -1), 10),
             ("GRID", (0, 0), (-1, -1), 1, colors.black),
-            ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
         ]))
         story.append(basic_table)
         story.append(Spacer(1, 20))
