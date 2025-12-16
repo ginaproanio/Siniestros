@@ -142,13 +142,24 @@ const InvestigacionForm: React.FC = () => {
         }
       }
     } catch (error: any) {
-      console.error(`❌ Error guardando ${currentTab.title}:`, error);
+      console.error(`❌ Error guardando ${currentTab.title}:`, {
+        message: error.message,
+        stack: error.stack,
+        fullError: error
+      });
+
       let errorMessage = `Error guardando ${currentTab.title}`;
 
       if (error.response) {
         const status = error.response.status;
         const errorData = error.response.data;
-        console.error("Error response data:", errorData);
+        console.error("🔍 Error response details:", {
+          status,
+          statusText: error.response.statusText,
+          headers: error.response.headers,
+          data: errorData,
+          fullResponse: error.response
+        });
 
         // Extraer mensaje específico del error
         if (errorData.detail) {
@@ -158,11 +169,29 @@ const InvestigacionForm: React.FC = () => {
         } else if (typeof errorData === 'string') {
           errorMessage = `Error ${status}: ${errorData}`;
         } else if (Array.isArray(errorData)) {
-          errorMessage = `Error ${status}: ${errorData.join(', ')}`;
+          errorMessage = `Error ${status}: ${errorData.map(item =>
+            typeof item === 'string' ? item : JSON.stringify(item)
+          ).join(', ')}`;
+        } else if (errorData && typeof errorData === 'object') {
+          // Mostrar todas las claves del objeto de error
+          const errorKeys = Object.keys(errorData);
+          if (errorKeys.length > 0) {
+            errorMessage = `Error ${status}: ${errorKeys.map(key =>
+              `${key}: ${errorData[key]}`
+            ).join(', ')}`;
+          } else {
+            errorMessage = `Error ${status}: ${JSON.stringify(errorData)}`;
+          }
         } else {
-          errorMessage = `Error ${status}: ${JSON.stringify(errorData)}`;
+          errorMessage = `Error ${status}: Respuesta del servidor inválida`;
         }
       } else if (error.request) {
+        console.error("🔍 Request details:", {
+          url: error.config?.url,
+          method: error.config?.method,
+          data: error.config?.data,
+          headers: error.config?.headers
+        });
         errorMessage = "No se pudo conectar al servidor";
       } else {
         errorMessage = `Error: ${error.message || 'Error desconocido'}`;
