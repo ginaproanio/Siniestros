@@ -189,7 +189,7 @@ const InvestigacionForm: React.FC = () => {
         const formData = new FormData();
         formData.append('file', file);
 
-        const response = await axios.post('/api/v1/upload-image', formData, {
+        const response = await axios.post('/api/v1/siniestros/upload-image', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
