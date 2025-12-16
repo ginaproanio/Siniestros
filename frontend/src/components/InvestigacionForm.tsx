@@ -570,7 +570,7 @@ const InvestigacionForm: React.FC = () => {
                                       },
                                     }
                                   );
-                                  const docUrl = response.data.url_presigned;
+                                  // Documento subido exitosamente
                                   const currentAnexo = formData.anexo || [];
                                   const newAnexo = [...currentAnexo];
                                   newAnexo[
