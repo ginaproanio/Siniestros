@@ -34,35 +34,60 @@ except ImportError:
 def download_image_from_url(image_url: str) -> bytes:
     """Descargar imagen desde URL y retornar datos binarios"""
     if not image_url or not image_url.strip():
+        logger.warning("⚠️ URL de imagen vacía o None")
         return None
 
     try:
         logger.info(f"📥 Descargando imagen desde: {image_url[:100]}...")
-        response = requests.get(image_url, timeout=10, stream=True)
+
+        # Verificar que sea una URL de S3
+        if 's3.amazonaws.com' not in image_url and 'amazonaws.com' not in image_url:
+            logger.warning(f"⚠️ URL no parece ser de S3: {image_url[:100]}")
+            return None
+
+        response = requests.get(image_url, timeout=15, stream=True)
+        logger.info(f"📡 Response status: {response.status_code}")
+        logger.info(f"📡 Response headers: {dict(response.headers)}")
+
         response.raise_for_status()
 
         # Validar que sea una imagen antes de descargar
         content_type = response.headers.get('content-type', '').lower()
+        logger.info(f"📋 Content-Type: {content_type}")
+
         if not content_type.startswith('image/'):
             logger.warning(f"⚠️ Contenido no es imagen: {content_type}")
             return None
 
         image_data = response.content
+        logger.info(f"📏 Tamaño de imagen: {len(image_data)} bytes")
+
         if len(image_data) == 0:
             logger.warning("⚠️ Imagen descargada está vacía")
             return None
 
-        logger.info(f"✅ Imagen descargada: {len(image_data)} bytes, tipo: {content_type}")
+        if len(image_data) > 10 * 1024 * 1024:  # 10MB máximo
+            logger.warning(f"⚠️ Imagen demasiado grande: {len(image_data)} bytes")
+            return None
+
+        logger.info(f"✅ Imagen descargada exitosamente: {len(image_data)} bytes, tipo: {content_type}")
         return image_data
 
     except requests.exceptions.Timeout:
-        logger.warning(f"⏰ Timeout descargando imagen: {image_url[:100]}")
+        logger.error(f"⏰ TIMEOUT descargando imagen: {image_url[:100]}")
+        return None
+    except requests.exceptions.HTTPError as e:
+        logger.error(f"🌐 HTTP ERROR descargando imagen: {e}")
+        logger.error(f"🌐 Status code: {e.response.status_code if e.response else 'N/A'}")
         return None
     except requests.exceptions.RequestException as e:
-        logger.warning(f"🌐 Error de red descargando imagen: {e}")
+        logger.error(f"🌐 REQUEST EXCEPTION descargando imagen: {e}")
         return None
     except Exception as e:
-        logger.error(f"❌ Error inesperado descargando imagen: {e}")
+        logger.error(f"❌ ERROR INESPERADO descargando imagen: {e}")
+        logger.error(f"❌ Tipo de error: {type(e)}")
+        import traceback
+        logger.error(f"❌ Traceback: {traceback.format_exc()}")
         return None
 
 
