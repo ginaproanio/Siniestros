@@ -64,26 +64,29 @@ const InvestigacionForm: React.FC = () => {
         const response = await axios.get(`/api/v1/siniestros/${siniestroId}`);
         const siniestro = response.data;
         setSiniestroInfo(siniestro);
+        // Función auxiliar para parsear JSON arrays
+        const parseJsonArray = (field: any): any[] => {
+          if (!field) return [];
+          try {
+            return Array.isArray(field) ? field : JSON.parse(field);
+          } catch {
+            return [];
+          }
+        };
+
         setFormData({
           antecedentes: siniestro.antecedentes || [],
           relatos_asegurado: siniestro.relatos_asegurado || [],
           relatos_conductor: siniestro.relatos_conductor || [],
           inspecciones: siniestro.inspecciones || [],
           testigos: siniestro.testigos || [],
-          evidencias_complementarias_descripcion:
-            siniestro.evidencias_complementarias_descripcion,
-          evidencias_complementarias_imagen_url:
-            siniestro.evidencias_complementarias_imagen_url,
-          otras_diligencias_descripcion:
-            siniestro.otras_diligencias_descripcion,
-          otras_diligencias_imagen_url: siniestro.otras_diligencias_imagen_url,
-          visita_taller_descripcion: siniestro.visita_taller_descripcion,
-          visita_taller_imagen_url: siniestro.visita_taller_imagen_url,
-          observaciones: siniestro.observaciones || [],
-          recomendacion_pago_cobertura:
-            siniestro.recomendacion_pago_cobertura || [],
-          conclusiones: siniestro.conclusiones || [],
-          anexo: siniestro.anexo || [],
+          evidencias_complementarias: parseJsonArray(siniestro.evidencias_complementarias),
+          otras_diligencias: parseJsonArray(siniestro.otras_diligencias),
+          visita_taller: parseJsonArray(siniestro.visita_taller),
+          observaciones: parseJsonArray(siniestro.observaciones),
+          recomendacion_pago_cobertura: parseJsonArray(siniestro.recomendacion_pago_cobertura),
+          conclusiones: parseJsonArray(siniestro.conclusiones),
+          anexo: parseJsonArray(siniestro.anexo),
         });
       } catch (error) {
         console.error("Error fetching siniestro data:", error);
@@ -1187,60 +1190,116 @@ const InvestigacionForm: React.FC = () => {
                     </div>
                   </div>
                   <div className="form-group">
-                    <label>Descripción:</label>
-                    <textarea
-                      value={formData.visita_taller_descripcion || ""}
-                      onChange={(e) =>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const currentVisitas = formData.visita_taller || [];
                         setFormData((prev) => ({
                           ...prev,
-                          visita_taller_descripcion: e.target.value,
-                        }))
-                      }
-                      rows={4}
-                      placeholder="Describe la visita al taller..."
-                    />
+                          visita_taller: [
+                            ...currentVisitas,
+                            {
+                              descripcion: "",
+                              imagen_url: "",
+                            },
+                          ],
+                        }));
+                      }}
+                      style={{
+                        backgroundColor: "#28a745",
+                        marginBottom: "10px",
+                      }}
+                    >
+                      ➕ Agregar Visita
+                    </button>
                   </div>
-                  <div className="form-group">
-                    <label>Imagen:</label>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={async (e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          try {
-                            const formDataUpload = new FormData();
-                            formDataUpload.append("file", file);
-                            const response = await axios.post(
-                              "/api/v1/siniestros/upload-image",
-                              formDataUpload,
-                              {
-                                headers: {
-                                  "Content-Type": "multipart/form-data",
-                                },
-                              }
-                            );
-                            const imageUrl = response.data.url_presigned;
+                  {(formData.visita_taller || []).map((visita, index) => (
+                    <div key={index} className="dynamic-item">
+                      <div className="dynamic-item-header">
+                        <h4 className="dynamic-item-title">
+                          Visita {index + 1}
+                        </h4>
+                        <button
+                          type="button"
+                          className="btn-delete"
+                          onClick={() => {
                             setFormData((prev) => ({
                               ...prev,
-                              visita_taller_imagen_url: imageUrl,
+                              visita_taller:
+                                prev.visita_taller?.filter(
+                                  (_, i) => i !== index
+                                ) || [],
                             }));
-                          } catch (error) {
-                            alert(
-                              "Error al subir la imagen. Intente nuevamente."
-                            );
-                          }
-                        }
-                      }}
-                    />
-                    {formData.visita_taller_imagen_url && (
-                      <img
-                        src={formData.visita_taller_imagen_url}
-                        alt="Visita al Taller"
-                        style={{ maxWidth: "200px", marginTop: "5px" }}
-                      />
-                    )}
-                  </div>
+                          }}
+                        >
+                          ❌ Eliminar
+                        </button>
+                      </div>
+                      <div className="form-group">
+                        <textarea
+                          value={visita.descripcion}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setFormData((prev) => (({
+                              ...prev,
+                              visita_taller:
+                                prev.visita_taller?.map((r, i) =>
+                                  i === index ? { ...r, descripcion: value } : r
+                                ) || [],
+                            })));
+                          }}
+                          rows={3}
+                          placeholder="Describe la visita al taller..."
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Imagen:</label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              try {
+                                const formDataUpload = new FormData();
+                                formDataUpload.append("file", file);
+                                const response = await axios.post(
+                                  "/api/v1/siniestros/upload-image",
+                                  formDataUpload,
+                                  {
+                                    headers: {
+                                      "Content-Type": "multipart/form-data",
+                                    },
+                                  }
+                                );
+                                const imageUrl = response.data.url_presigned;
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  visita_taller:
+                                    prev.visita_taller?.map((r, i) =>
+                                      i === index
+                                        ? { ...r, imagen_url: imageUrl }
+                                        : r
+                                    ) || [],
+                                }));
+                              } catch (error) {
+                                alert(
+                                  "Error al subir la imagen. Intente nuevamente."
+                                );
+                              }
+                            }
+                          }}
+                        />
+                        {visita.imagen_url && (
+                          <img
+                            src={visita.imagen_url}
+                            alt={`Visita ${index + 1}`}
+                            style={{ maxWidth: "200px", marginTop: "5px" }}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  ))}
                   <div className="tab-navigation">
                     <button
                       type="button"
@@ -1253,10 +1312,10 @@ const InvestigacionForm: React.FC = () => {
                       type="button"
                       className="btn-submit-tab"
                       onClick={() =>
-                        guardarSeccion("visita_taller", {
-                          descripcion: formData.visita_taller_descripcion,
-                          imagen_url: formData.visita_taller_imagen_url,
-                        })
+                        guardarSeccion(
+                          "visita_taller",
+                          formData.visita_taller || []
+                        )
                       }
                       disabled={saving}
                     >
