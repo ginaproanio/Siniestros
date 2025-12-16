@@ -295,9 +295,23 @@ async def generar_pdf(siniestro_id: int, db: Session = Depends(get_db)):
         logger.info(f"🔍 INICIANDO GENERACIÓN PDF - Siniestro ID: {siniestro_id}")
         from app.utils.pdf_generator import generate_simple_pdf
 
-        # Get siniestro data first
+        # Get siniestro data with all relationships loaded
+        from sqlalchemy.orm import selectinload
+
         siniestro = (
             db.query(models.Siniestro)
+            .options(
+                selectinload(models.Siniestro.asegurado),
+                selectinload(models.Siniestro.beneficiario),
+                selectinload(models.Siniestro.conductor),
+                selectinload(models.Siniestro.objeto_asegurado),
+                selectinload(models.Siniestro.antecedentes),
+                selectinload(models.Siniestro.relatos_asegurado),
+                selectinload(models.Siniestro.relatos_conductor),
+                selectinload(models.Siniestro.inspecciones),
+                selectinload(models.Siniestro.testigos),
+                selectinload(models.Siniestro.visita_taller),
+            )
             .filter(models.Siniestro.id == siniestro_id)
             .first()
         )
@@ -385,9 +399,23 @@ async def generar_pdf_sin_firma(siniestro_id: int, db: Session = Depends(get_db)
         logger.info(f"🔍 GENERANDO PDF SIN FIRMA - Siniestro ID: {siniestro_id}")
         from app.utils.pdf_generator import generate_unsigned_pdf
 
-        # Get siniestro data first
+        # Get siniestro data with all relationships loaded
+        from sqlalchemy.orm import selectinload
+
         siniestro = (
             db.query(models.Siniestro)
+            .options(
+                selectinload(models.Siniestro.asegurado),
+                selectinload(models.Siniestro.beneficiario),
+                selectinload(models.Siniestro.conductor),
+                selectinload(models.Siniestro.objeto_asegurado),
+                selectinload(models.Siniestro.antecedentes),
+                selectinload(models.Siniestro.relatos_asegurado),
+                selectinload(models.Siniestro.relatos_conductor),
+                selectinload(models.Siniestro.inspecciones),
+                selectinload(models.Siniestro.testigos),
+                selectinload(models.Siniestro.visita_taller),
+            )
             .filter(models.Siniestro.id == siniestro_id)
             .first()
         )
