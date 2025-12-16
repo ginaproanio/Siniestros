@@ -31,11 +31,15 @@
 # Base de datos (Railway asigna automáticamente)
 DATABASE_URL=postgresql://[usuario]:[password]@postgres.railway.internal:5432/railway
 
-# AWS S3 (requeridas para upload de imágenes)
+# AWS S3 (requeridas para upload de imágenes y certificados)
 AWS_ACCESS_KEY_ID=tu_access_key
 AWS_SECRET_ACCESS_KEY=tu_secret_key
 AWS_DEFAULT_REGION=us-east-2
 S3_BUCKET_NAME=siniestrossusiespinosa
+
+# Firma Digital PDF (certificado P12 en S3)
+CERT_PASSWORD=tu_password_certificado
+CERT_KEY=certificates/maria_susana_espinosa_lozada.p12
 
 # CORS (permitir requests del frontend)
 ALLOWED_ORIGINS=https://siniestros-production.up.railway.app/

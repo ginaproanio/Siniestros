@@ -212,6 +212,29 @@ async def upload_image_to_s3(file: UploadFile, siniestro_id: int) -> str:
     return f"https://{BUCKET_NAME}.s3.amazonaws.com/{unique_filename}"
 ```
 
+### **Generación de PDFs con Firma Digital**
+
+```mermaid
+sequenceDiagram
+    participant U as Usuario
+    participant F as Frontend
+    participant B as Backend
+    participant S as S3 Storage
+    participant P as PDF Generator
+
+    U->>F: Solicita generar PDF
+    F->>B: GET /api/v1/siniestros/{id}/generar-pdf
+    B->>B: Recupera datos del siniestro
+    B->>P: Genera PDF con contenido condicional
+    P->>P: Aplica headers/footers profesionales
+    P->>P: Estructura por páginas inteligentes
+    P->>B: Retorna PDF sin firma
+    B->>S: Descarga certificado P12
+    B->>B: Firma PDF digitalmente con endesive
+    B->>F: Retorna PDF firmado
+    F->>U: Descarga automática del PDF
+```
+
 ## **Seguridad y Validación**
 
 ### **Validaciones Frontend**

@@ -28,7 +28,15 @@ Siniestros es una aplicación web completa para la gestión integral de siniestr
 - **Validación inteligente** de datos requeridos
 - **Estados de carga** y mensajes informativos
 
-### 🔧 **Arquitectura Técnica**
+### � **Sistema de Reportes PDF Profesional**
+- **Generación automática de informes** en formato PDF con firma digital
+- **Estructura inteligente por páginas** que agrupa información lógicamente
+- **Headers/footers profesionales** con numeración de páginas
+- **Contenido condicional** - solo incluye secciones que tienen información
+- **Firma digital automática** usando certificados P12 almacenados en S3
+- **Nombres de archivo optimizados** - solo número de reclamo para fácil identificación
+
+### �🔧 **Arquitectura Técnica**
 - **Frontend**: React + TypeScript + Vite
 - **Backend**: FastAPI + Python + PostgreSQL
 - **Despliegue**: Railway (Frontend + Backend)
@@ -54,6 +62,12 @@ Siniestros es una aplicación web completa para la gestión integral de siniestr
 - **Railway** - Plataforma de despliegue en la nube
 - **Git** - Control de versiones
 - **ESLint** - Linting para calidad de código
+
+### Firma Digital y PDFs
+- **endesive** - Librería para firma digital P12
+- **reportlab** - Generación de PDFs profesionales
+- **AWS S3** - Almacenamiento de certificados e imágenes
+- **cryptography** - Manejo de certificados digitales
 
 ## 📁 **Estructura del Proyecto**
 
@@ -166,6 +180,83 @@ El proyecto está configurado para desplegarse automáticamente en Railway:
 - Ver progreso visual en la parte superior
 - Campos requeridos marcados automáticamente
 - Validación en tiempo real de datos
+
+## 📄 **Sistema de Reportes PDF**
+
+### **Generación de Informes**
+El sistema incluye un generador completo de informes PDF profesionales con las siguientes características:
+
+#### **Estructura del Informe por Páginas**
+```
+Página 1: Carátula + Índice
+├── Carátula con datos básicos (Compañía, Reclamo, Asegurado, Investigador)
+└── Índice generado automáticamente según secciones con contenido
+
+Página 2: Registro del Siniestro
+├── Datos básicos del siniestro (solo campos con información)
+├── Declaración del siniestro (si existe)
+├── Información de entidades (asegurado, beneficiario, conductor, objeto)
+└── Salto de página automático
+
+Página 3: Investigación del Siniestro
+├── Antecedentes (si existen)
+├── Entrevista al Asegurado (si hay relatos)
+├── Entrevista al Conductor (si hay relatos)
+├── Inspección del Lugar (si hay inspecciones)
+├── Testigos (si hay declaraciones)
+├── Evidencias Complementarias (si hay descripción)
+├── Otras Diligencias (si hay descripción)
+├── Visita al Taller (si hay descripción)
+├── Observaciones (si hay datos)
+├── Recomendación sobre el Pago (si hay datos)
+├── Conclusiones (si hay datos)
+└── Anexo (si hay datos)
+
+Página siguiente: Anexos (opcional)
+└── Lista de documentos adjuntos (si existen)
+
+Página final: Cierre
+├── Texto de despedida profesional
+├── Firma digital automática
+└── Fecha de emisión
+```
+
+#### **Headers y Footers Profesionales**
+- **Header**: Título del informe + número de página
+- **Footer**: Información del sistema + fecha actual
+- **Numeración automática** en todas las páginas
+
+#### **Contenido Condicional**
+- ✅ **Solo secciones con datos** aparecen en el PDF
+- ✅ **Títulos solo cuando hay contenido** en esa sección
+- ✅ **Tablas filtradas** - filas vacías son omitidas
+- ✅ **Índice dinámico** basado en contenido real
+
+#### **Firma Digital Automática**
+- **Certificado P12** almacenado en AWS S3
+- **Firma digital automática** al generar PDF
+- **Compatible con lectores PDF** estándar
+- **Validación de integridad** del documento
+
+### **Nombres de Archivo**
+- **Formato**: `{numero_reclamo}.pdf`
+- **Ejemplo**: `25-01-VH-7079448.pdf`
+- **Caracteres especiales** normalizados automáticamente
+
+### **Endpoints para PDFs**
+```bash
+# PDF con firma digital
+GET /api/v1/siniestros/{id}/generar-pdf
+
+# PDF sin firma (para pruebas)
+GET /api/v1/siniestros/{id}/generar-pdf-sin-firma
+
+# Diagnóstico del sistema PDF
+GET /api/v1/diagnostico-pdf
+
+# PDF de prueba básico
+GET /api/v1/test-pdf
+```
 
 ## 🔧 **Desarrollo y Contribución**
 
