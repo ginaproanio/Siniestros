@@ -163,7 +163,16 @@ const InvestigacionForm: React.FC = () => {
 
         // Extraer mensaje específico del error
         if (errorData.detail) {
-          errorMessage = `Error ${status}: ${errorData.detail}`;
+          if (Array.isArray(errorData.detail)) {
+            // Detail es un array - mostrar cada error
+            errorMessage = `Error ${status}: ${errorData.detail.map(item => {
+              if (typeof item === 'string') return item;
+              if (item && typeof item === 'object' && item.msg) return item.msg;
+              return JSON.stringify(item);
+            }).join(', ')}`;
+          } else {
+            errorMessage = `Error ${status}: ${errorData.detail}`;
+          }
         } else if (errorData.message) {
           errorMessage = `Error ${status}: ${errorData.message}`;
         } else if (typeof errorData === 'string') {
@@ -176,9 +185,15 @@ const InvestigacionForm: React.FC = () => {
           // Mostrar todas las claves del objeto de error
           const errorKeys = Object.keys(errorData);
           if (errorKeys.length > 0) {
-            errorMessage = `Error ${status}: ${errorKeys.map(key =>
-              `${key}: ${errorData[key]}`
-            ).join(', ')}`;
+            errorMessage = `Error ${status}: ${errorKeys.map(key => {
+              const value = errorData[key];
+              if (key === 'detail' && Array.isArray(value)) {
+                return `${key}: [${value.map(item =>
+                  typeof item === 'object' && item.msg ? item.msg : JSON.stringify(item)
+                ).join(', ')}]`;
+              }
+              return `${key}: ${value}`;
+            }).join(', ')}`;
           } else {
             errorMessage = `Error ${status}: ${JSON.stringify(errorData)}`;
           }
