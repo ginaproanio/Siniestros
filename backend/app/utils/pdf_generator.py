@@ -614,6 +614,20 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
         # ==================== INVESTIGACIÓN ====================
         logger.info("🔍 Generando sección de investigación...")
 
+        # Función auxiliar para verificar si un campo JSON tiene contenido real
+        def has_real_content(json_field):
+            """Verifica si un campo JSON tiene contenido real (no vacío)"""
+            if not json_field:
+                return False
+            try:
+                parsed = json.loads(json_field) if isinstance(json_field, str) else json_field
+                if isinstance(parsed, list):
+                    # Filtrar elementos que no sean strings vacías
+                    return any(item.strip() for item in parsed if isinstance(item, str))
+                return bool(parsed)
+            except:
+                return bool(json_field and json_field.strip())
+
         has_any_investigation = (
             siniestro.antecedentes
             or siniestro.relatos_asegurado
@@ -630,13 +644,10 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                 and siniestro.visita_taller.descripcion
                 and siniestro.visita_taller.descripcion.strip()
             )
-            or (siniestro.observaciones and siniestro.observaciones.strip())
-            or (
-                siniestro.recomendacion_pago_cobertura
-                and siniestro.recomendacion_pago_cobertura.strip()
-            )
-            or (siniestro.conclusiones and siniestro.conclusiones.strip())
-            or (siniestro.anexo and siniestro.anexo.strip())
+            or has_real_content(siniestro.observaciones)
+            or has_real_content(siniestro.recomendacion_pago_cobertura)
+            or has_real_content(siniestro.conclusiones)
+            or has_real_content(siniestro.anexo)
         )
 
         if has_any_investigation:
@@ -784,8 +795,22 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                 story.append(Spacer(1, 15))
                 section_num += 1
 
+            # Función auxiliar para verificar si un campo JSON tiene contenido real
+            def has_real_content(json_field):
+                """Verifica si un campo JSON tiene contenido real (no vacío)"""
+                if not json_field:
+                    return False
+                try:
+                    parsed = json.loads(json_field) if isinstance(json_field, str) else json_field
+                    if isinstance(parsed, list):
+                        # Filtrar elementos que no sean strings vacías
+                        return any(item.strip() for item in parsed if isinstance(item, str))
+                    return bool(parsed)
+                except:
+                    return bool(json_field and json_field.strip())
+
             # 2.9 Observaciones
-            if siniestro.observaciones and siniestro.observaciones.strip():
+            if has_real_content(siniestro.observaciones):
                 story.append(Paragraph(f"{section_num}. Observaciones", section_style))
                 import json
 
@@ -796,18 +821,17 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                         else siniestro.observaciones
                     )
                     for i, obs in enumerate(observaciones_list, 1):
-                        story.append(Paragraph(f"{i}. {obs}", normal_style))
-                        story.append(Spacer(1, 5))
+                        if isinstance(obs, str) and obs.strip():  # Solo mostrar items no vacíos
+                            story.append(Paragraph(f"{i}. {obs}", normal_style))
+                            story.append(Spacer(1, 5))
                 except:
-                    story.append(Paragraph(siniestro.observaciones, normal_style))
+                    if siniestro.observaciones and siniestro.observaciones.strip():
+                        story.append(Paragraph(siniestro.observaciones, normal_style))
                 story.append(Spacer(1, 15))
                 section_num += 1
 
             # 2.10 Recomendación sobre el Pago de la Cobertura
-            if (
-                siniestro.recomendacion_pago_cobertura
-                and siniestro.recomendacion_pago_cobertura.strip()
-            ):
+            if has_real_content(siniestro.recomendacion_pago_cobertura):
                 story.append(
                     Paragraph(
                         f"{section_num}. Recomendación sobre el Pago de la Cobertura",
@@ -823,17 +847,19 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                         else siniestro.recomendacion_pago_cobertura
                     )
                     for i, rec in enumerate(recomendaciones_list, 1):
-                        story.append(Paragraph(f"{i}. {rec}", normal_style))
-                        story.append(Spacer(1, 5))
+                        if isinstance(rec, str) and rec.strip():  # Solo mostrar items no vacíos
+                            story.append(Paragraph(f"{i}. {rec}", normal_style))
+                            story.append(Spacer(1, 5))
                 except:
-                    story.append(
-                        Paragraph(siniestro.recomendacion_pago_cobertura, normal_style)
-                    )
+                    if siniestro.recomendacion_pago_cobertura and siniestro.recomendacion_pago_cobertura.strip():
+                        story.append(
+                            Paragraph(siniestro.recomendacion_pago_cobertura, normal_style)
+                        )
                 story.append(Spacer(1, 15))
                 section_num += 1
 
             # 2.11 Conclusiones
-            if siniestro.conclusiones and siniestro.conclusiones.strip():
+            if has_real_content(siniestro.conclusiones):
                 story.append(Paragraph(f"{section_num}. Conclusiones", section_style))
                 import json
 
@@ -844,15 +870,17 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                         else siniestro.conclusiones
                     )
                     for i, conc in enumerate(conclusiones_list, 1):
-                        story.append(Paragraph(f"{i}. {conc}", normal_style))
-                        story.append(Spacer(1, 5))
+                        if isinstance(conc, str) and conc.strip():  # Solo mostrar items no vacíos
+                            story.append(Paragraph(f"{i}. {conc}", normal_style))
+                            story.append(Spacer(1, 5))
                 except:
-                    story.append(Paragraph(siniestro.conclusiones, normal_style))
+                    if siniestro.conclusiones and siniestro.conclusiones.strip():
+                        story.append(Paragraph(siniestro.conclusiones, normal_style))
                 story.append(Spacer(1, 15))
                 section_num += 1
 
             # 2.12 Anexo (si está en la sección de investigación)
-            if siniestro.anexo and siniestro.anexo.strip():
+            if has_real_content(siniestro.anexo):
                 story.append(Paragraph(f"{section_num}. Anexo", section_style))
                 import json
 
@@ -863,10 +891,12 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                         else siniestro.anexo
                     )
                     for i, anex in enumerate(anexo_list, 1):
-                        story.append(Paragraph(f"{i}. {anex}", normal_style))
-                        story.append(Spacer(1, 5))
+                        if isinstance(anex, str) and anex.strip():  # Solo mostrar items no vacíos
+                            story.append(Paragraph(f"{i}. {anex}", normal_style))
+                            story.append(Spacer(1, 5))
                 except:
-                    story.append(Paragraph(siniestro.anexo, normal_style))
+                    if siniestro.anexo and siniestro.anexo.strip():
+                        story.append(Paragraph(siniestro.anexo, normal_style))
                 story.append(Spacer(1, 15))
                 section_num += 1
 
@@ -920,44 +950,25 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
         story.append(despedida)
         story.append(Spacer(1, 40))
 
-        # Espacio para firma (sin texto "Firma Electrónica:")
-        story.append(Spacer(1, 60))  # Espacio para firma
-
-        # Línea para firma
-        firma_line = Paragraph(
-            "_______________________________",
-            ParagraphStyle(
-                "Linea", parent=styles["Normal"], fontSize=10, alignment=TA_CENTER
-            ),
+        # Firma alineada a la izquierda (sin línea de firma)
+        firma_style = ParagraphStyle(
+            "Firma", parent=styles["Normal"], fontSize=10, alignment=TA_LEFT
         )
-        story.append(firma_line)
-        story.append(Spacer(1, 10))
 
-        # Nombre del investigador
-        nombre_investigador = Paragraph(
-            "Susana Espinosa",
-            ParagraphStyle(
-                "Nombre", parent=styles["Normal"], fontSize=10, alignment=TA_CENTER
-            ),
+        firma_text = Paragraph(
+            "Saludos cordiales,<br/><br/>"
+            "<b>SUSANA ESPINOSA - INVESTIGADORA DE SINIESTROS</b><br/>"
+            "susi.espinosa@hotmail.com   |   PBX: 022.417.481   |   CEL: 099.9846.432",
+            firma_style,
         )
-        story.append(nombre_investigador)
-        story.append(Spacer(1, 5))
-
-        # Título
-        titulo_investigador = Paragraph(
-            "Investigador de Siniestros",
-            ParagraphStyle(
-                "Titulo", parent=styles["Normal"], fontSize=9, alignment=TA_CENTER
-            ),
-        )
-        story.append(titulo_investigador)
+        story.append(firma_text)
         story.append(Spacer(1, 30))
 
-        # Fecha del informe
+        # Fecha del informe (alineada a la izquierda)
         fecha_cierre = Paragraph(
             f"Quito, {datetime.now().strftime('%d de %B de %Y')}",
             ParagraphStyle(
-                "FechaCierre", parent=styles["Normal"], fontSize=10, alignment=TA_CENTER
+                "FechaCierre", parent=styles["Normal"], fontSize=10, alignment=TA_LEFT
             ),
         )
         story.append(fecha_cierre)
