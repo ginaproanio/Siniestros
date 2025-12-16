@@ -349,43 +349,68 @@ async def generar_pdf(siniestro_id: int, db: Session = Depends(get_db)):
         logger.error(f"❌ Error generando PDF: {e}")
         import traceback
 
-        logger.error(f"❌ Traceback completo: {traceback.format_exc()}")
+        full_traceback = traceback.format_exc()
+        logger.error(f"❌ Traceback completo: {full_traceback}")
 
-        # Generar PDF de error mínimo como prueba
-        logger.info("🧪 Generando PDF de error mínimo...")
+        # Generar PDF de error con más información de debug
+        logger.info("🧪 Generando PDF de error con debug...")
         from reportlab.lib.pagesizes import letter
-        from reportlab.platypus import SimpleDocTemplate, Paragraph
-        from reportlab.lib.styles import getSampleStyleSheet
+        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib import colors
         import io
 
         buffer = io.BytesIO()
         doc = SimpleDocTemplate(buffer, pagesize=letter)
         styles = getSampleStyleSheet()
+
+        # Estilo para errores
+        error_style = ParagraphStyle(
+            "Error", parent=styles["Normal"], fontSize=8, textColor=colors.red
+        )
+
+        # Limitar el traceback para que quepa en el PDF
+        traceback_lines = full_traceback.split('\n')[:20]  # Solo primeras 20 líneas
+        limited_traceback = '\n'.join(traceback_lines)
+
         story = [
-            Paragraph(
-                "ERROR: No se pudo generar el PDF completo. Intente nuevamente.",
-                styles["Normal"],
-            )
+            Paragraph("ERROR: No se pudo generar el PDF completo", styles["Heading1"]),
+            Spacer(1, 10),
+            Paragraph(f"Siniestro ID: {siniestro_id}", styles["Normal"]),
+            Paragraph(f"Timestamp: {datetime.now().isoformat()}", styles["Normal"]),
+            Spacer(1, 20),
+            Paragraph("Error principal:", error_style),
+            Paragraph(str(e), error_style),
+            Spacer(1, 10),
+            Paragraph("Traceback (primeras líneas):", error_style),
+            Paragraph(limited_traceback, ParagraphStyle("Traceback", parent=styles["Normal"], fontSize=6, fontName="Courier")),
+            Spacer(1, 20),
+            Paragraph("Sugerencias de solución:", styles["Normal"]),
+            Paragraph("1. Verificar que las imágenes en S3 sean accesibles", styles["Normal"]),
+            Paragraph("2. Revisar configuración de ReportLab/PIL", styles["Normal"]),
+            Paragraph("3. Verificar conexión a base de datos", styles["Normal"]),
         ]
 
         try:
             doc.build(story)
             buffer.seek(0)
             error_pdf = buffer.getvalue()
-            logger.info(f"✅ PDF de error generado: {len(error_pdf)} bytes")
+            logger.info(f"✅ PDF de error con debug generado: {len(error_pdf)} bytes")
 
             return Response(
                 content=error_pdf,
                 media_type="application/pdf",
                 headers={
-                    "Content-Disposition": f"attachment; filename=error_siniestro_{siniestro_id}.pdf",
+                    "Content-Disposition": f"attachment; filename=debug_error_siniestro_{siniestro_id}.pdf",
                     "Content-Length": str(len(error_pdf)),
                 },
             )
         except Exception as e2:
-            logger.error(f"❌ Error generando PDF de error: {e2}")
+            logger.error(f"❌ Error generando PDF de debug: {e2}")
+            # Si ni siquiera podemos generar el PDF de error, devolver error HTTP
             raise HTTPException(
-                status_code=500, detail=f"Error crítico generando PDF: {str(e)}"
+                status_code=500,
+                detail=f"Error crítico generando PDF: {str(e)}. Debug error: {str(e2)}. Traceback: {full_traceback[:500]}"
             )
 
 
