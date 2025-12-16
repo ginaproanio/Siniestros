@@ -267,6 +267,7 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
 
         # Salto de página explícito antes del Índice
         from reportlab.platypus import PageBreak
+
         story.append(PageBreak())
 
         # ==================== ÍNDICE EN PÁGINA SEPARADA ====================
@@ -285,18 +286,28 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
 
         # Verificar qué secciones de investigación tienen contenido
         has_investigacion = (
-            siniestro.antecedentes or
-            siniestro.relatos_asegurado or
-            siniestro.relatos_conductor or
-            siniestro.inspecciones or
-            siniestro.testigos or
-            (siniestro.evidencias_complementarias and siniestro.evidencias_complementarias.strip()) or
-            (siniestro.otras_diligencias and siniestro.otras_diligencias.strip()) or
-            (siniestro.visita_taller and siniestro.visita_taller.descripcion and siniestro.visita_taller.descripcion.strip()) or
-            (siniestro.observaciones and siniestro.observaciones.strip()) or
-            (siniestro.recomendacion_pago_cobertura and siniestro.recomendacion_pago_cobertura.strip()) or
-            (siniestro.conclusiones and siniestro.conclusiones.strip()) or
-            (siniestro.anexo and siniestro.anexo.strip())
+            siniestro.antecedentes
+            or siniestro.relatos_asegurado
+            or siniestro.relatos_conductor
+            or siniestro.inspecciones
+            or siniestro.testigos
+            or (
+                siniestro.evidencias_complementarias
+                and siniestro.evidencias_complementarias.strip()
+            )
+            or (siniestro.otras_diligencias and siniestro.otras_diligencias.strip())
+            or (
+                siniestro.visita_taller
+                and siniestro.visita_taller.descripcion
+                and siniestro.visita_taller.descripcion.strip()
+            )
+            or (siniestro.observaciones and siniestro.observaciones.strip())
+            or (
+                siniestro.recomendacion_pago_cobertura
+                and siniestro.recomendacion_pago_cobertura.strip()
+            )
+            or (siniestro.conclusiones and siniestro.conclusiones.strip())
+            or (siniestro.anexo and siniestro.anexo.strip())
         )
 
         if has_investigacion:
