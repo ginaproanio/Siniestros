@@ -264,10 +264,13 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
             ),
         )
         story.append(fecha_gen)
-        story.append(Spacer(1, 40))  # Espacio antes del índice
 
-        # ==================== ÍNDICE EN LA MISMA PÁGINA ====================
-        logger.info("📋 Generando índice en la misma página...")
+        # Salto de página explícito antes del Índice
+        from reportlab.platypus import PageBreak
+        story.append(PageBreak())
+
+        # ==================== ÍNDICE EN PÁGINA SEPARADA ====================
+        logger.info("📋 Generando índice en página separada...")
 
         indice_title = Paragraph("ÍNDICE", subtitle_style)
         story.append(indice_title)
@@ -275,7 +278,7 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
 
         # Crear índice dinámico basado en secciones que tienen contenido
         indice_items = []
-        page_num = 2  # Página del registro del siniestro
+        page_num = 3  # Página del registro del siniestro (ahora página 3)
 
         # Siempre incluir registro del siniestro
         indice_items.append(f"{page_num}. REGISTRO DEL SINIESTRO")
@@ -312,7 +315,8 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
             story.append(Paragraph(item, normal_style))
             story.append(Spacer(1, 5))
 
-        story.append(Spacer(1, 120))  # Salto de página completo
+        # Salto de página explícito antes del Registro del Siniestro
+        story.append(PageBreak())
 
         # ==================== REGISTRO DEL SINIESTRO ====================
         logger.info("📝 Generando registro del siniestro...")
@@ -625,6 +629,9 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
         )
 
         if has_any_investigation:
+            # Salto de página explícito antes de la Investigación
+            story.append(PageBreak())
+
             investigacion_title = Paragraph("INVESTIGACIÓN", section_style)
             story.append(investigacion_title)
             story.append(Spacer(1, 15))
