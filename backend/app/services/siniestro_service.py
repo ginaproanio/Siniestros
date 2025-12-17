@@ -5,9 +5,10 @@ Handles all business logic related to siniestros, including CRUD operations,
 data validation, and business rules.
 """
 
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Union
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_
+from pydantic import BaseModel
 from .. import models, schemas
 from .s3_service import upload_file_to_s3, download_image_from_url
 import logging
@@ -87,8 +88,12 @@ class SiniestroService:
         self.db.refresh(siniestro)
         return siniestro
 
-    def update_section(self, siniestro_id: int, section: str, data: Any) -> Dict[str, Any]:
-        """Update a specific section of siniestro data"""
+    def update_section(self, siniestro_id: int, section: str, data: Union[List[BaseModel], BaseModel, Any]) -> Dict[str, Any]:
+        """Update a specific section of siniestro data
+
+        Accepts Pydantic models directly from FastAPI, maintaining type safety
+        while preserving backward compatibility with dict-based calls.
+        """
         siniestro = self.get_siniestro(siniestro_id)
         if not siniestro:
             raise ValueError(f"Siniestro {siniestro_id} no encontrado")
@@ -149,8 +154,11 @@ class SiniestroService:
         self.db.commit()
         return {"message": "Objeto asegurado actualizado", "siniestro_id": siniestro.id}
 
-    def _update_list_section(self, siniestro: models.Siniestro, section: str, data: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """Update list-type sections (antecedentes, relatos, etc.)"""
+    def _update_list_section(self, siniestro: models.Siniestro, section: str, data: Union[List[BaseModel], List[Dict[str, Any]], Any]) -> Dict[str, Any]:
+        """Update list-type sections (antecedentes, relatos, etc.)
+
+        Accepts both Pydantic models (from FastAPI) and dictionaries (backward compatibility).
+        """
         # Map section names to model classes
         model_map = {
             "antecedentes": models.Antecedente,
@@ -164,13 +172,25 @@ class SiniestroService:
         if not model_class:
             raise ValueError(f"Sección '{section}' no válida")
 
+        # Ensure data is a list
+        if not isinstance(data, list):
+            data = [data] if data else []
+
         # Clear existing data
         self.db.query(model_class).filter(
             getattr(model_class, 'siniestro_id') == siniestro.id
         ).delete()
 
         # Add new data
-        for item_data in data:
+        for item in data:
+            # Convert Pydantic model to dict if needed
+            if hasattr(item, 'model_dump'):
+                item_data = item.model_dump()
+            elif isinstance(item, dict):
+                item_data = item.copy()
+            else:
+                raise ValueError(f"Formato de datos no válido para {section}: {type(item)}")
+
             # Handle image processing for relatos and inspecciones
             if section in ["relatos_asegurado", "relatos_conductor", "inspecciones", "testigos"]:
                 item_data = self._process_image_data(item_data)

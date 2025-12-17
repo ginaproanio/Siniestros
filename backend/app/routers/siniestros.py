@@ -71,31 +71,21 @@ async def guardar_seccion(
     ),  # Datos específicos de la sección
     db: Session = Depends(get_db),
 ):
-    """Guardar datos de una sección específica del siniestro"""
+    """
+    Guardar datos de una sección específica del siniestro.
+
+    Service layer now accepts Pydantic models directly, eliminating
+    manual conversion and maintaining type safety throughout.
+    """
     siniestro_service = SiniestroService(db)
     validation_service = ValidationService()
 
     try:
-        # Convert Pydantic models to dicts for service layer compatibility
-        if isinstance(datos, list):
-            # Handle list of Pydantic models
-            converted_data = []
-            for item in datos:
-                if hasattr(item, 'model_dump'):  # Pydantic model
-                    converted_data.append(item.model_dump())
-                else:
-                    converted_data.append(item)
-            processed_data = converted_data
-        elif hasattr(datos, 'model_dump'):  # Single Pydantic model
-            processed_data = datos.model_dump()
-        else:
-            processed_data = datos
+        # Validate section data (service handles Pydantic conversion internally)
+        validated_data = validation_service.validate_section_data(seccion, datos)
 
-        # Validate section data
-        validated_data = validation_service.validate_section_data(seccion, processed_data)
-
-        # Update section using service
-        result = siniestro_service.update_section(siniestro_id, seccion, validated_data)
+        # Update section using service (accepts Pydantic models directly)
+        result = siniestro_service.update_section(siniestro_id, seccion, datos)
 
         return result
 
