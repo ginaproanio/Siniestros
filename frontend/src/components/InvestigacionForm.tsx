@@ -276,7 +276,7 @@ const InvestigacionForm: React.FC = () => {
           }
         );
 
-        const s3Url = response.data.url_presigned;
+        const s3Url = response.data.url_optimizada;
 
         // Actualizar con la URL de S3
         setData((prev) => {

@@ -1,0 +1,100 @@
+===========================================
+DIAGNÓSTICO BASE DE DATOS - SISTEMA SINIESTROS
+Fecha: 17/12/2025 - 12:08
+===========================================
+
+ESTRUCTURA CORRECTA (12 tablas):
+- siniestros ✓
+- asegurados ✓
+- beneficiarios ✓
+- conductores ✓
+- objetos_asegurados ✓
+- antecedentes ✓
+- relatos_asegurado ✓
+- relatos_conductor ✓
+- inspecciones ✓
+- testigos ✓
+- visitas_taller ✓
+- dinamicas_accidente ✓
+
+PROBLEMAS ENCONTRADOS:
+
+1. TABLAS DE INVESTIGACIÓN VACÍAS (PDF sale vacío):
+   - antecedentes: 0 registros ❌
+   - relatos_asegurado: 0 registros ❌
+   - relatos_conductor: 0 registros ❌
+   - inspecciones: 0 registros ❌
+   - testigos: 0 registros ❌
+
+2. INCOMPATIBILIDAD CÓDIGO-BD (PDF busca campo equivocado):
+   - BD tiene: imagen_url (character varying(500)) ✅
+   - Código busca: imagen_base64 ❌ (ya corregido)
+
+3. CAMPOS JSON INCOMPLETOS en siniestro_service.py:
+   - En BD: evidencias_complementarias (text) ✅
+   - En BD: otras_diligencias (text) ✅
+   - En service: FALTAN en json_fields ❌
+
+4. DATOS EXISTENTES (funciona persistencia básica):
+   - 1 siniestro (ID 1, reclamo 25-01-VH-7079448) ✅
+   - 1 asegurado (cedula 2100348008) ✅
+   - 1 objeto (placa PFB4337, TOYOTA) ✅
+
+===========================================
+ANÁLISIS DE CAUSAS RAÍZ
+===========================================
+
+¿POR QUÉ RAILWAY "PIERDE" DATOS?
+NO es que Railway los pierda. El problema es que NUNCA se guardaron
+en primer lugar. Los datos de investigación (antecedentes, relatos, etc.)
+no llegan a la base de datos.
+
+FLUJO PROBLEMÁTICO:
+1. Frontend envía datos de investigación
+2. Endpoint PUT /{id}/seccion/{seccion} recibe datos
+3. siniestro_service.update_section() procesa datos
+4. ❌ FALTA: db.commit() para datos de investigación
+5. Datos nunca llegan a BD → Tablas vacías → PDF vacío
+
+===========================================
+ESTADO DE CORRECCIONES APLICADAS
+===========================================
+
+✅ CORREGIDO: PDF generator busca imagen_base64 → imagen_url
+✅ CORREGIDO: Función descargar_imagen_desde_url() implementada
+✅ CORREGIDO: Arquitectura S3 URLs funcionando
+✅ PENDIENTE: Campos JSON faltantes en siniestro_service.py
+❌ PENDIENTE: Endpoint guardar_seccion no hace commit
+
+===========================================
+PRUEBAS PARA VALIDAR
+===========================================
+
+1. INSERT MANUAL para verificar BD:
+   INSERT INTO antecedentes (siniestro_id, descripcion)
+   VALUES (1, 'PRUEBA MANUAL - Para ver si el PDF lo muestra');
+
+2. VERIFICAR CAMPOS JSON:
+   SELECT evidencias_complementarias, otras_diligencias
+   FROM siniestros WHERE id = 1;
+
+3. VERIFICAR CAMPOS IMAGEN:
+   SELECT column_name, data_type
+   FROM information_schema.columns
+   WHERE table_name = 'relatos_asegurado';
+
+===========================================
+CONCLUSIÓN
+===========================================
+
+La base de datos está BIEN estructurada, pero los datos
+de investigación NUNCA llegan a guardarse. El PDF está
+vacío porque no hay contenido en las tablas de relatos,
+antecedentes, inspecciones o testigos.
+
+El problema está en el flujo:
+Frontend → Endpoint → Service → ❌ Falta commit → BD vacía
+
+Próximo paso: Revisar endpoint PUT /{id}/seccion/{seccion}
+y siniestro_service.update_section() para encontrar por qué
+no se hace db.commit() en los datos de investigación.
