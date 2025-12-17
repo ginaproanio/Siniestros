@@ -45,19 +45,23 @@ const InvestigacionForm: React.FC = () => {
 
         // Cargar antecedentes existentes
         const antecedentesExistentes = siniestro.antecedentes || [];
-        const textoAntecedentes = antecedentesExistentes.length > 0
-          ? antecedentesExistentes[0]?.descripcion || ""
-          : "";
+        const textoAntecedentes =
+          antecedentesExistentes.length > 0
+            ? antecedentesExistentes[0]?.descripcion || ""
+            : "";
 
         // Cargar relatos del asegurado existentes
         const relatosExistentes = siniestro.relatos_asegurado || [];
         const relatosObjetos = relatosExistentes.map((r: any) => ({
           texto: r.texto || "",
-          imagen_url: r.imagen_url || ""
+          imagen_url: r.imagen_url || "",
         }));
 
         // Asegurar al menos un relato vacío si no hay ninguno
-        const relatos = relatosObjetos.length > 0 ? relatosObjetos : [{ texto: "", imagen_url: "" }];
+        const relatos =
+          relatosObjetos.length > 0
+            ? relatosObjetos
+            : [{ texto: "", imagen_url: "" }];
 
         setData({
           antecedentes: textoAntecedentes,
@@ -74,12 +78,13 @@ const InvestigacionForm: React.FC = () => {
     if (siniestroId) fetchData();
   }, [siniestroId]);
 
-
-
   const addRelato = () => {
     setData((prev) => ({
       ...prev,
-      relatos_asegurado: [...(prev.relatos_asegurado || []), { texto: "", imagen_url: "" }],
+      relatos_asegurado: [
+        ...(prev.relatos_asegurado || []),
+        { texto: "", imagen_url: "" },
+      ],
     }));
   };
 
@@ -99,7 +104,8 @@ const InvestigacionForm: React.FC = () => {
       // Asegurar al menos un relato
       return {
         ...prev,
-        relatos_asegurado: newRelatos.length > 0 ? newRelatos : [{ texto: "", imagen_url: "" }],
+        relatos_asegurado:
+          newRelatos.length > 0 ? newRelatos : [{ texto: "", imagen_url: "" }],
       };
     });
   };
@@ -126,7 +132,11 @@ const InvestigacionForm: React.FC = () => {
       } else if (currentTab.field === "relatos_asegurado") {
         // Guardar relatos del asegurado
         const relatosValidos = (data.relatos_asegurado || [])
-          .map((relato) => ({ texto: relato.texto.trim(), imagen_url: relato.imagen_url || "" }))
+          .map((relato, index) => ({
+            numero_relato: index + 1,
+            texto: relato.texto.trim(),
+            imagen_url: relato.imagen_url || "",
+          }))
           .filter((relato) => relato.texto.length > 0);
 
         console.log("📤 Enviando relatos a backend:", relatosValidos);
@@ -145,7 +155,7 @@ const InvestigacionForm: React.FC = () => {
       console.error(`❌ Error guardando ${currentTab.title}:`, {
         message: error.message,
         stack: error.stack,
-        fullError: error
+        fullError: error,
       });
 
       let errorMessage = `Error guardando ${currentTab.title}`;
@@ -158,42 +168,53 @@ const InvestigacionForm: React.FC = () => {
           statusText: error.response.statusText,
           headers: error.response.headers,
           data: errorData,
-          fullResponse: error.response
+          fullResponse: error.response,
         });
 
         // Extraer mensaje específico del error
         if (errorData.detail) {
           if (Array.isArray(errorData.detail)) {
             // Detail es un array - mostrar cada error
-            errorMessage = `Error ${status}: ${errorData.detail.map(item => {
-              if (typeof item === 'string') return item;
-              if (item && typeof item === 'object' && item.msg) return item.msg;
-              return JSON.stringify(item);
-            }).join(', ')}`;
+            errorMessage = `Error ${status}: ${errorData.detail
+              .map((item) => {
+                if (typeof item === "string") return item;
+                if (item && typeof item === "object" && item.msg)
+                  return item.msg;
+                return JSON.stringify(item);
+              })
+              .join(", ")}`;
           } else {
             errorMessage = `Error ${status}: ${errorData.detail}`;
           }
         } else if (errorData.message) {
           errorMessage = `Error ${status}: ${errorData.message}`;
-        } else if (typeof errorData === 'string') {
+        } else if (typeof errorData === "string") {
           errorMessage = `Error ${status}: ${errorData}`;
         } else if (Array.isArray(errorData)) {
-          errorMessage = `Error ${status}: ${errorData.map(item =>
-            typeof item === 'string' ? item : JSON.stringify(item)
-          ).join(', ')}`;
-        } else if (errorData && typeof errorData === 'object') {
+          errorMessage = `Error ${status}: ${errorData
+            .map((item) =>
+              typeof item === "string" ? item : JSON.stringify(item)
+            )
+            .join(", ")}`;
+        } else if (errorData && typeof errorData === "object") {
           // Mostrar todas las claves del objeto de error
           const errorKeys = Object.keys(errorData);
           if (errorKeys.length > 0) {
-            errorMessage = `Error ${status}: ${errorKeys.map(key => {
-              const value = errorData[key];
-              if (key === 'detail' && Array.isArray(value)) {
-                return `${key}: [${value.map(item =>
-                  typeof item === 'object' && item.msg ? item.msg : JSON.stringify(item)
-                ).join(', ')}]`;
-              }
-              return `${key}: ${value}`;
-            }).join(', ')}`;
+            errorMessage = `Error ${status}: ${errorKeys
+              .map((key) => {
+                const value = errorData[key];
+                if (key === "detail" && Array.isArray(value)) {
+                  return `${key}: [${value
+                    .map((item) =>
+                      typeof item === "object" && item.msg
+                        ? item.msg
+                        : JSON.stringify(item)
+                    )
+                    .join(", ")}]`;
+                }
+                return `${key}: ${value}`;
+              })
+              .join(", ")}`;
           } else {
             errorMessage = `Error ${status}: ${JSON.stringify(errorData)}`;
           }
@@ -205,11 +226,11 @@ const InvestigacionForm: React.FC = () => {
           url: error.config?.url,
           method: error.config?.method,
           data: error.config?.data,
-          headers: error.config?.headers
+          headers: error.config?.headers,
         });
         errorMessage = "No se pudo conectar al servidor";
       } else {
-        errorMessage = `Error: ${error.message || 'Error desconocido'}`;
+        errorMessage = `Error: ${error.message || "Error desconocido"}`;
       }
 
       setMessage(errorMessage);
@@ -243,13 +264,17 @@ const InvestigacionForm: React.FC = () => {
       // Intentar subir a S3 en segundo plano
       try {
         const formData = new FormData();
-        formData.append('file', file);
+        formData.append("file", file);
 
-        const response = await axios.post('/api/v1/siniestros/upload-image', formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        });
+        const response = await axios.post(
+          "/api/v1/siniestros/upload-image",
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
 
         const s3Url = response.data.url_presigned;
 
@@ -296,18 +321,38 @@ const InvestigacionForm: React.FC = () => {
 
       {/* PESTAÑAS */}
       <div className="tabs-container">
-        <div className="tabs-header">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              className={`tab-button${activeTab === tab.id ? " active" : ""}`}
-              onClick={() => handleTabChange(tab.id)}
-              disabled={saving}
-            >
-              {tab.title}
-            </button>
-          ))}
+        <div className="tabs-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ display: "flex" }}>
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                className={`tab-button${activeTab === tab.id ? " active" : ""}`}
+                onClick={() => handleTabChange(tab.id)}
+                disabled={saving}
+              >
+                {tab.title}
+              </button>
+            ))}
+          </div>
+          <button
+            type="button"
+            className="btn-submit-main"
+            onClick={() => saveCurrentTab()}
+            disabled={saving}
+            style={{
+              backgroundColor: "#007bff",
+              color: "white",
+              border: "none",
+              padding: "10px 20px",
+              borderRadius: "4px",
+              fontSize: "14px",
+              cursor: saving ? "not-allowed" : "pointer",
+              opacity: saving ? 0.6 : 1
+            }}
+          >
+            {saving ? "💾 Guardando..." : `💾 Guardar ${tabs[activeTab].title}`}
+          </button>
         </div>
 
         <div className="tab-content">
@@ -320,7 +365,8 @@ const InvestigacionForm: React.FC = () => {
                   <div>
                     <h3 className="card-title">Antecedentes del Caso</h3>
                     <p className="card-description">
-                      Información histórica y antecedentes relevantes del siniestro
+                      Información histórica y antecedentes relevantes del
+                      siniestro
                     </p>
                   </div>
                 </div>
@@ -339,27 +385,6 @@ const InvestigacionForm: React.FC = () => {
                       lineHeight: "1.5",
                     }}
                   />
-                </div>
-
-                {/* BOTÓN GUARDAR ANTECEDENTES */}
-                <div className="tab-navigation" style={{ justifyContent: "center", marginTop: "20px" }}>
-                  <button
-                    type="button"
-                    className="btn-submit-tab"
-                    onClick={() => saveCurrentTab()}
-                    disabled={saving}
-                    style={{
-                      backgroundColor: "#007bff",
-                      color: "white",
-                      border: "none",
-                      padding: "12px 24px",
-                      borderRadius: "4px",
-                      fontSize: "16px",
-                      cursor: saving ? "not-allowed" : "pointer",
-                    }}
-                  >
-                    {saving ? "💾 Guardando..." : "💾 Guardar Antecedentes"}
-                  </button>
                 </div>
               </div>
             </div>
@@ -423,10 +448,22 @@ const InvestigacionForm: React.FC = () => {
 
                     {/* IMAGEN PARA ESTE RELATO */}
                     <div className="form-group" style={{ marginTop: "12px" }}>
-                      <label style={{ display: "block", marginBottom: "8px", fontWeight: "500" }}>
+                      <label
+                        style={{
+                          display: "block",
+                          marginBottom: "8px",
+                          fontWeight: "500",
+                        }}
+                      >
                         📷 Imagen del Relato (opcional)
                       </label>
-                      <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: "12px",
+                          alignItems: "center",
+                        }}
+                      >
                         <input
                           type="file"
                           accept="image/*"
@@ -444,8 +481,16 @@ const InvestigacionForm: React.FC = () => {
                           }}
                         />
                         {relato.imagen_url && (
-                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                            <span style={{ fontSize: "12px", color: "#28a745" }}>
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "8px",
+                            }}
+                          >
+                            <span
+                              style={{ fontSize: "12px", color: "#28a745" }}
+                            >
                               ✅ Imagen subida
                             </span>
                             <img
@@ -466,26 +511,7 @@ const InvestigacionForm: React.FC = () => {
                   </div>
                 ))}
 
-                {/* BOTÓN GUARDAR RELATOS ASEGURADO */}
-                <div className="tab-navigation" style={{ justifyContent: "center", marginTop: "20px" }}>
-                  <button
-                    type="button"
-                    className="btn-submit-tab"
-                    onClick={() => saveCurrentTab()}
-                    disabled={saving}
-                    style={{
-                      backgroundColor: "#007bff",
-                      color: "white",
-                      border: "none",
-                      padding: "12px 24px",
-                      borderRadius: "4px",
-                      fontSize: "16px",
-                      cursor: saving ? "not-allowed" : "pointer",
-                    }}
-                  >
-                    {saving ? "💾 Guardando..." : "💾 Guardar Relatos"}
-                  </button>
-                </div>
+
               </div>
             </div>
           )}
