@@ -120,6 +120,32 @@ def create_pdf_image(image_data: bytes, max_width: float = 4 * inch, max_height:
         return None
 
 
+def crear_tabla_estandar(datos, titulo=None, font_size=10, add_grid=True, background_color=colors.lightgrey, valign="MIDDLE"):
+    """Crear tabla PDF con estilo estándar customizable"""
+    from reportlab.platypus import Table, TableStyle
+
+    table = Table(datos, colWidths=[2.5 * inch, 4 * inch])
+
+    styles = [
+        ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
+        ("FONTSIZE", (0, 0), (-1, -1), font_size),
+        ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+        ("ALIGN", (1, 0), (1, -1), "LEFT"),
+        ("VALIGN", (0, 0), (-1, -1), valign),
+        ("BACKGROUND", (0, 0), (0, -1), background_color),
+        ("LEFTPADDING", (0, 0), (-1, -1), 6),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+        ("TOPPADDING", (0, 0), (-1, -1), 4),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+    ]
+
+    if add_grid:
+        styles.insert(2, ("GRID", (0, 0), (-1, -1), 1, colors.black))
+
+    table.setStyle(TableStyle(styles))
+    return table
+
+
 def header_footer(canvas, doc):
     """Draw header and footer"""
     canvas.saveState()
