@@ -231,7 +231,7 @@ class PDFContentBuilder:
             ["Nombre de Investigador:", "Susana Espinosa"],
         ]
 
-        caratula_data_filtered = [row for row in caratula_data if row[1].strip()]
+        caratula_data_filtered = [row for row in caratula_data if row[1] and str(row[1]).strip()]
 
         if caratula_data_filtered:
             caratula_table = crear_tabla_estandar(
@@ -273,7 +273,7 @@ class PDFContentBuilder:
             ["Cobertura:", siniestro.cobertura or ""],
         ]
 
-        registro_data = [row for row in registro_data_raw if row[1].strip()]
+        registro_data = [row for row in registro_data_raw if row[1] and str(row[1]).strip()]
 
         if registro_data:
             registro_table = crear_tabla_estandar(registro_data)
@@ -297,7 +297,7 @@ class PDFContentBuilder:
                 ["Nombre/Razón Social:", siniestro.persona_declara_nombre or ""],
                 ["Relación:", siniestro.persona_declara_relacion or ""],
             ]
-            declaracion_data = [row for row in declaracion_data if row[1].strip()]
+            declaracion_data = [row for row in declaracion_data if row[1] and str(row[1]).strip()]
 
             if declaracion_data:
                 declaracion_table = crear_tabla_estandar(declaracion_data)
@@ -784,7 +784,7 @@ def generate_pdf(siniestro: Siniestro, sign_document: bool = True) -> bytes:
             ["Nombre de Investigador:", "Susana Espinosa"],
         ]
 
-        caratula_data_filtered = [row for row in caratula_data if row[1].strip()]
+        caratula_data_filtered = [row for row in caratula_data if row[1] and str(row[1]).strip()]
 
         if caratula_data_filtered:
             # Use the unified table function with caratula-specific styling
@@ -870,7 +870,7 @@ def generate_pdf(siniestro: Siniestro, sign_document: bool = True) -> bytes:
             ["Cobertura:", siniestro.cobertura or ""],
         ]
 
-        registro_data = [row for row in registro_data_raw if row[1].strip()]
+        registro_data = [row for row in registro_data_raw if row[1] and str(row[1]).strip()]
 
         if registro_data:
             registro_table = crear_tabla_estandar(registro_data)
@@ -891,7 +891,7 @@ def generate_pdf(siniestro: Siniestro, sign_document: bool = True) -> bytes:
                 ["Nombre/Razón Social:", siniestro.persona_declara_nombre or ""],
                 ["Relación:", siniestro.persona_declara_relacion or ""],
             ]
-            declaracion_data = [row for row in declaracion_data if row[1].strip()]
+            declaracion_data = [row for row in declaracion_data if row[1] and str(row[1]).strip()]
 
             if declaracion_data:
                 declaracion_table = crear_tabla_estandar(declaracion_data)
@@ -935,7 +935,7 @@ def generate_pdf(siniestro: Siniestro, sign_document: bool = True) -> bytes:
         ]
 
         for entity_name, entity_data in entities:
-            entity_data_filtered = [row for row in entity_data if row[1].strip()]
+            entity_data_filtered = [row for row in entity_data if row[1] and str(row[1]).strip()]
             if entity_data_filtered:
                 title_map = {
                     "asegurado": "Información del Asegurado:",

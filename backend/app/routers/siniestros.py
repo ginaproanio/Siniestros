@@ -286,6 +286,61 @@ async def debug_json_fields(siniestro_id: int, db: Session = Depends(get_db)):
     return result
 
 
+@router.get("/diagnostico/tablas-investigacion")
+async def diagnostico_tablas_investigacion(db: Session = Depends(get_db)):
+    """Verificar solo tablas de investigación"""
+    from sqlalchemy import text
+
+    tablas_investigacion = [
+        "antecedentes",
+        "relatos_asegurado",
+        "relatos_conductor",
+        "inspecciones",
+        "testigos"
+    ]
+
+    resultado = {}
+
+    for tabla in tablas_investigacion:
+        try:
+            # Verificar si la tabla existe
+            count = db.execute(text(f"SELECT COUNT(*) FROM {tabla}")).scalar()
+            resultado[tabla] = {
+                "existe": True,
+                "total_registros": count,
+                "con_siniestro_id": db.execute(
+                    text(f"SELECT COUNT(*) FROM {tabla} WHERE siniestro_id IS NOT NULL")
+                ).scalar()
+            }
+        except Exception as e:
+            resultado[tabla] = {
+                "existe": False,
+                "error": str(e)
+            }
+
+    # Verificar un siniestro específico
+    try:
+        siniestro_1 = db.execute(
+            text("SELECT id, reclamo_num FROM siniestros WHERE id = 1")
+        ).fetchone()
+
+        if siniestro_1:
+            resultado["siniestro_1"] = {
+                "id": siniestro_1[0],
+                "reclamo_num": siniestro_1[1],
+                "antecedentes_count": db.execute(
+                    text("SELECT COUNT(*) FROM antecedentes WHERE siniestro_id = 1")
+                ).scalar(),
+                "relatos_asegurado_count": db.execute(
+                    text("SELECT COUNT(*) FROM relatos_asegurado WHERE siniestro_id = 1")
+                ).scalar()
+            }
+    except Exception as e:
+        resultado["siniestro_1_error"] = str(e)
+
+    return resultado
+
+
 @router.post("/{siniestro_id}/upload-pdf-firmado")
 async def upload_pdf_firmado(
     siniestro_id: int, file: UploadFile = File(...), db: Session = Depends(get_db)
