@@ -649,6 +649,17 @@ def generate_pdf(siniestro: Siniestro, sign_document: bool = True) -> bytes:
     """
     try:
         logger.info(f"🔄 Iniciando generación PDF para siniestro {siniestro.id}")
+
+        # DIAGNÓSTICO DE DATOS QUE LLEGAN
+        logger.info("=== DIAGNÓSTICO PDF - INICIO ===")
+        logger.info(f"Siniestro ID: {siniestro.id}")
+        logger.info(f"Asegurado: {siniestro.asegurado}")
+        logger.info(f"Nombre asegurado: {getattr(siniestro.asegurado, 'nombre', 'NO EXISTE')}")
+        logger.info(f"Empresa: {getattr(siniestro.asegurado, 'empresa', 'NO EXISTE')}")
+        logger.info(f"Objeto asegurado: {siniestro.objeto_asegurado}")
+        logger.info(f"Descripción objeto: {getattr(siniestro.objeto_asegurado, 'descripcion', 'NO EXISTE')}")
+        logger.info(f"Antecedentes count: {len(siniestro.antecedentes) if siniestro.antecedentes else 0}")
+        logger.info("=== DIAGNÓSTICO PDF - FIN ===")
         buffer = io.BytesIO()
 
         doc = SimpleDocTemplate(
