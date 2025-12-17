@@ -14,13 +14,6 @@ async def create_siniestro(
     siniestro: schemas.SiniestroCreate, db: Session = Depends(get_db)
 ):
     """Crear un nuevo siniestro"""
-    import logging
-
-    logger = logging.getLogger(__name__)
-
-    logger.info("🚀 Iniciando creación de siniestro")
-    logger.info(f"📋 Datos recibidos: {siniestro.model_dump()}")
-
     try:
         # Check if reclamo_num already exists
         db_siniestro = (
@@ -29,37 +22,22 @@ async def create_siniestro(
             .first()
         )
         if db_siniestro:
-            logger.warning(f"⚠️ Número de reclamo ya existe: {siniestro.reclamo_num}")
             raise HTTPException(status_code=400, detail="Número de reclamo ya existe")
-
-        logger.info("✅ Validación de reclamo_num pasada")
 
         # Crear el siniestro
         siniestro_data = siniestro.model_dump()
-        logger.info(f"📝 Creando siniestro con datos: {siniestro_data}")
-
         db_siniestro = models.Siniestro(**siniestro_data)
         db.add(db_siniestro)
-
-        logger.info("💾 Guardando en base de datos...")
         db.commit()
         db.refresh(db_siniestro)
 
-        logger.info(f"✅ Siniestro creado exitosamente con ID: {db_siniestro.id}")
         return db_siniestro
 
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"❌ Error al crear siniestro: {e}")
-        logger.error(f"❌ Tipo de error: {type(e)}")
-        import traceback
-
-        logger.error(f"❌ Traceback: {traceback.format_exc()}")
         db.rollback()
-        raise HTTPException(
-            status_code=500, detail=f"Error interno del servidor: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail="Error interno del servidor")
 
 
 @router.get("/", response_model=List[schemas.SiniestroResponse])

@@ -1,57 +1,9 @@
 """
-ARQUITECTURA DE GENERACIÓN DE PDF - SISTEMA SINIESTROS
-
-ESTRUCTURA DEL PDF GENERADO:
----------------------------
-
-PÁGINA 1: CARÁTULA
-├── Título: "INFORME DE INVESTIGACIÓN DE SINIESTRO"
-├── Tabla con: Compañía, Número de Reclamo, Asegurado, Investigador
-├── Fecha de generación
-└── PageBreak() → Nueva página
-
-PÁGINA 2: ÍNDICE
-├── Lista dinámica de secciones según contenido disponible
-├── Numeración automática de páginas
-└── PageBreak() → Nueva página
-
-PÁGINA 3+: REGISTRO DEL SINIESTRO
-├── Datos básicos (Compañía, Fechas, Ubicación, etc.)
-├── Declaración del siniestro
-├── Información de entidades (Asegurado, Conductor, Objeto, etc.)
-└── FLUYE NATURALMENTE (sin PageBreak forzado)
-
-PÁGINA SIGUIENTE: INVESTIGACIÓN
-├── Antecedentes, Entrevistas, Inspecciones, Testigos
-├── Evidencias, Observaciones, Conclusiones
-└── PageBreak() antes de esta sección
-
-HEADERS/FOOTERS EN TODAS LAS PÁGINAS:
-├── Header: "INFORME DE INVESTIGACIÓN DE SINIESTRO" + "Página X"
-└── Footer: "Sistema de Gestión de Siniestros - Susana Espinosa" + Fecha
-
-FIRMA DIGITAL:
-├── Certificado P12 cargado desde AWS S3
-├── Firma automática si certificado disponible
-└── Compatible con lectores PDF estándar
-
-REGLAS DE SALTOS DE PÁGINA:
-├── PageBreak(): Fuerza nueva página REAL
-├── Spacer(1,120): Solo añade espacio vertical (NO usar para saltos)
-├── Registro fluye naturalmente, Investigación siempre en nueva página
-
-DEPENDENCIAS CRÍTICAS:
-├── reportlab: Motor de generación PDF
-├── cryptography + endesive: Firma digital
-├── pillow: Procesamiento de imágenes
-├── boto3: Acceso a certificados en S3
-
-ARCHIVO FINAL: {numero_reclamo}.pdf
+PDF Generation Utilities - Unified and Clean Implementation
 """
 
 import io
 import logging
-import os
 from datetime import datetime
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -69,36 +21,34 @@ from reportlab.lib.enums import TA_CENTER, TA_LEFT
 from sqlalchemy.orm import Session
 from ..models import Siniestro
 
+# Configure minimal logging
+logger = logging.getLogger(__name__)
+
 try:
     from PIL import Image as PILImage
-
     PIL_AVAILABLE = True
 except ImportError:
     PIL_AVAILABLE = False
-    logging.warning(
-        "PIL no disponible - imágenes en PDF pueden no funcionar correctamente"
-    )
+
+try:
+    from endesive.pdf import cms
+    from cryptography.hazmat.primitives.serialization import pkcs12
+    CRYPTO_AVAILABLE = True
+except ImportError:
+    CRYPTO_AVAILABLE = False
 
 
 def optimize_image_for_pdf(base64_str: str, max_width: int = 800, max_height: int = 600, quality: int = 85) -> str:
-    """
-    Optimiza imágenes para PDF manteniendo calidad aceptable y reduciendo tamaño del archivo final.
-    """
+    """Optimize images for PDF"""
     try:
         import base64
-
-        # Limpiar prefijo si existe
         if "base64," in base64_str:
             base64_str = base64_str.split("base64,")[1]
 
-        # Decodificar base64
         image_data = base64.b64decode(base64_str)
         img = PILImage.open(io.BytesIO(image_data))
-
-        # Mantener proporciones
         img.thumbnail((max_width, max_height), PILImage.Resampling.LANCZOS)
 
-        # Convertir a RGB si es necesario (para JPEG)
         if img.mode in ('RGBA', 'LA', 'P'):
             background = PILImage.new('RGB', img.size, (255, 255, 255))
             if img.mode == 'P':
@@ -106,258 +56,119 @@ def optimize_image_for_pdf(base64_str: str, max_width: int = 800, max_height: in
             background.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
             img = background
 
-        # Guardar optimizado en buffer
         output_buffer = io.BytesIO()
         img.save(output_buffer, format='JPEG', quality=quality, optimize=True)
-
-        # Devolver como base64 optimizado
         return base64.b64encode(output_buffer.getvalue()).decode('utf-8')
-
-    except Exception as e:
-        logger.warning(f"⚠️ Error optimizando imagen: {e}")
-        return base64_str  # Retornar original si falla
+    except Exception:
+        return base64_str
 
 
 def get_image_from_base64(base64_data: str, content_type: str = None, optimize: bool = True) -> bytes:
-    """Convertir datos base64 a bytes para procesamiento de imagen con optimización opcional"""
+    """Convert base64 to image bytes"""
     if not base64_data or not base64_data.strip():
-        logger.warning("⚠️ Datos base64 vacíos o None")
         return None
 
     try:
         import base64
-
-        # Optimizar imagen antes de procesar si está habilitado
         if optimize:
             base64_data = optimize_image_for_pdf(base64_data)
 
-        # Decodificar base64 a bytes
         image_data = base64.b64decode(base64_data)
-        logger.info(f"✅ Imagen decodificada de base64: {len(image_data)} bytes")
 
-        # Validar tamaño
-        if len(image_data) == 0:
-            logger.warning("⚠️ Imagen decodificada está vacía")
+        if len(image_data) == 0 or len(image_data) > 10 * 1024 * 1024:
             return None
 
-        if len(image_data) > 10 * 1024 * 1024:  # 10MB máximo
-            logger.warning(f"⚠️ Imagen demasiado grande: {len(image_data)} bytes")
-            return None
-
-        # Validar que sea una imagen (si tenemos content_type)
         if content_type and not content_type.startswith("image/"):
-            logger.warning(f"⚠️ Content-Type no es imagen: {content_type}")
             return None
 
         return image_data
-
-    except Exception as e:
-        logger.error(f"❌ Error decodificando base64: {e}")
+    except Exception:
         return None
 
 
-class PDFImageManager:
-    """Gestor de imágenes con cache para ReportLab"""
-
-    def __init__(self):
-        self.image_cache = {}
-
-    def get_image_from_base64(self, base64_str: str, width=None, height=None, optimize=True):
-        """Obtiene imagen optimizada desde base64 con cache"""
-
-        # Generar hash para cache
-        import hashlib
-        img_hash = hashlib.md5(base64_str.encode()).hexdigest()
-
-        if img_hash in self.image_cache:
-            img_data = self.image_cache[img_hash]
-        else:
-            # Decodificar y optimizar
-            img_data = get_image_from_base64(base64_str, optimize=optimize)
-            if img_data:
-                self.image_cache[img_hash] = img_data
-
-        if not img_data:
-            return None, 0, 0
-
-        # Crear ImageReader para ReportLab
-        from reportlab.lib.utils import ImageReader
-        img_reader = ImageReader(io.BytesIO(img_data))
-
-        # Obtener dimensiones originales
-        orig_width, orig_height = img_reader.getSize()
-
-        # Calcular dimensiones manteniendo aspecto
-        if width and height:
-            return img_reader, width, height
-        elif width:
-            height = (orig_height * width) / orig_width
-            return img_reader, width, height
-        elif height:
-            width = (orig_width * height) / orig_height
-            return img_reader, width, height
-        else:
-            return img_reader, orig_width, orig_height
-
-
-def create_pdf_image(
-    image_data: bytes, max_width: float = 4 * inch, max_height: float = 3 * inch
-) -> Image:
-    """Crear objeto Image de ReportLab desde datos binarios"""
+def create_pdf_image(image_data: bytes, max_width: float = 4 * inch, max_height: float = 3 * inch) -> Image:
+    """Create ReportLab Image object"""
     try:
         if not image_data:
             return None
 
-        # Crear buffer desde datos binarios
         image_buffer = io.BytesIO(image_data)
 
-        # Si PIL está disponible, procesar la imagen
         if PIL_AVAILABLE:
             try:
                 pil_image = PILImage.open(image_buffer)
-
-                # Convertir a RGB si es necesario
                 if pil_image.mode not in ("RGB", "L"):
                     pil_image = pil_image.convert("RGB")
 
-                # Redimensionar manteniendo proporción
-                pil_image.thumbnail(
-                    (max_width * 72, max_height * 72), PILImage.LANCZOS
-                )  # 72 DPI
+                pil_image.thumbnail((max_width * 72, max_height * 72), PILImage.LANCZOS)
 
-                # Guardar como JPEG en buffer
                 output_buffer = io.BytesIO()
                 pil_image.save(output_buffer, format="JPEG", quality=85)
                 output_buffer.seek(0)
 
-                # Crear Image de ReportLab
                 pdf_image = Image(output_buffer)
                 pdf_image.hAlign = "LEFT"
-
-                logger.info(f"✅ Imagen procesada: {pil_image.size}")
                 return pdf_image
+            except Exception:
+                pass
 
-            except Exception as e:
-                logger.warning(f"⚠️ Error procesando con PIL: {e}")
-
-        # Fallback: intentar crear Image directamente desde buffer
         image_buffer.seek(0)
-        try:
-            pdf_image = Image(image_buffer)
-            pdf_image.hAlign = "LEFT"
-            logger.info("✅ Imagen creada sin procesamiento PIL")
-            return pdf_image
-        except Exception as e:
-            logger.error(f"❌ Error creando imagen PDF: {e}")
-            return None
-
-    except Exception as e:
-        logger.error(f"❌ Error creando imagen PDF: {e}")
+        pdf_image = Image(image_buffer)
+        pdf_image.hAlign = "LEFT"
+        return pdf_image
+    except Exception:
         return None
 
 
 def header_footer(canvas, doc):
-    """Función para dibujar header y footer en cada página"""
+    """Draw header and footer"""
     canvas.saveState()
-
-    # Obtener el ancho y alto de la página
     width, height = letter
 
-    # ==================== HEADER ====================
-    # Dibujar header en la parte superior del área imprimible
     canvas.setStrokeColor(colors.black)
     canvas.setLineWidth(1)
-    # Línea horizontal en la parte superior
     canvas.line(0.5 * inch, height - 0.5 * inch, width - 0.5 * inch, height - 0.5 * inch)
 
-    # Título del header
     canvas.setFont("Helvetica-Bold", 10)
-    canvas.drawString(
-        0.75 * inch, height - 0.75 * inch, "INFORME DE INVESTIGACIÓN DE SINIESTRO"
-    )
+    canvas.drawString(0.75 * inch, height - 0.75 * inch, "INFORME DE INVESTIGACIÓN DE SINIESTRO")
 
-    # Número de página en el header (derecha)
     page_num = canvas.getPageNumber()
     canvas.setFont("Helvetica", 8)
-    canvas.drawRightString(
-        width - 0.75 * inch, height - 0.75 * inch, f"Página {page_num}"
-    )
+    canvas.drawRightString(width - 0.75 * inch, height - 0.75 * inch, f"Página {page_num}")
 
-    # ==================== FOOTER ====================
-    # Dibujar footer en la parte inferior del área imprimible
-    canvas.setStrokeColor(colors.black)
-    canvas.setLineWidth(1)
-    # Línea horizontal en la parte inferior
     canvas.line(0.5 * inch, 0.5 * inch, width - 0.5 * inch, 0.5 * inch)
 
-    # Información del footer
     canvas.setFont("Helvetica", 8)
     footer_text = "Sistema de Gestión de Siniestros - Susana Espinosa"
     canvas.drawString(0.75 * inch, 0.25 * inch, footer_text)
 
-    # Fecha en el footer (derecha)
     fecha_actual = datetime.now().strftime("%d/%m/%Y")
     canvas.drawRightString(width - 0.75 * inch, 0.25 * inch, f"Fecha: {fecha_actual}")
 
     canvas.restoreState()
 
 
-logger = logging.getLogger(__name__)
-
-try:
-    from endesive.pdf import cms
-    from cryptography.hazmat.primitives.serialization import pkcs12
-
-    CRYPTO_AVAILABLE = True
-    logger.info("✅ Bibliotecas de criptografía disponibles")
-except ImportError as e:
-    CRYPTO_AVAILABLE = False
-    logger.warning(f"⚠️ Bibliotecas de criptografía no disponibles: {e}")
-
-
-def load_certificate_from_s3(
-    cert_key: str = "certificates/maria_susana_espinosa_lozada.p12",
-) -> tuple[bytes, str]:
-    """Cargar certificado desde S3 y retornar datos + contraseña"""
+def load_certificate_from_s3(cert_key: str = "certificates/maria_susana_espinosa_lozada.p12"):
+    """Load certificate from S3"""
     try:
-        # Importar configuración de S3 con ruta relativa correcta
         from ..services.s3_service import get_s3_client, S3_BUCKET_NAME
-
         s3_client = get_s3_client()
         response = s3_client.get_object(Bucket=S3_BUCKET_NAME, Key=cert_key)
         cert_data = response["Body"].read()
-
-        # Obtener contraseña desde variables de entorno
         password = os.getenv("CERT_PASSWORD", "")
-
-        logger.info(f"✅ Certificado cargado desde S3: {len(cert_data)} bytes")
         return cert_data, password
-
-    except Exception as e:
-        logger.warning(f"❌ No se pudo cargar certificado desde S3: {e}")
+    except Exception:
         return None, None
 
 
-def sign_pdf(
-    pdf_data: bytes, certificate_data: bytes = None, password: str = None
-) -> bytes:
-    """Firmar PDF digitalmente usando certificado P12"""
+def sign_pdf(pdf_data: bytes, certificate_data: bytes = None, password: str = None) -> bytes:
+    """Sign PDF digitally"""
     try:
-        logger.info("🔐 Firmando PDF con certificado digital")
-
-        # Usar datos del certificado proporcionados
         p12_data = certificate_data
-
-        # Extraer clave privada y certificado
-        from cryptography.hazmat.primitives.serialization import pkcs12
-
-        private_key, certificate, additional_certificates = (
-            pkcs12.load_key_and_certificates(
-                p12_data, password.encode() if password else None
-            )
+        private_key, certificate, additional_certificates = pkcs12.load_key_and_certificates(
+            p12_data, password.encode() if password else None
         )
 
-        # Preparar datos para firma
         date = datetime.now().strftime("D:%Y%m%d%H%M%S+00'00'")
         dct = {
             "aligned": 0,
@@ -377,68 +188,52 @@ def sign_pdf(
             "password": password or "",
         }
 
-        # Crear firma
-        signed_pdf = cms.sign(
-            pdf_data, dct, private_key, certificate, additional_certificates or []
-        )
-
-        logger.info(f"✅ PDF firmado exitosamente: {len(signed_pdf)} bytes")
+        signed_pdf = cms.sign(pdf_data, dct, private_key, certificate, additional_certificates or [])
         return signed_pdf
-
-    except Exception as e:
-        logger.error(f"❌ Error firmando PDF: {e}")
-        # Retornar PDF sin firma si hay error
+    except Exception:
         return pdf_data
 
 
-def generate_simple_pdf(siniestro: Siniestro) -> bytes:
-    """Generar PDF completo del informe de siniestro con saltos de página entre secciones"""
-    logger.info(f"🔄 Generando PDF completo para siniestro ID: {siniestro.id}")
+def generate_pdf(siniestro: Siniestro, sign_document: bool = True) -> bytes:
+    """
+    Unified PDF generation function
 
+    Args:
+        siniestro: Siniestro model instance
+        sign_document: Whether to sign the PDF digitally
+
+    Returns:
+        PDF data as bytes
+    """
     try:
-        # Crear buffer para el PDF
         buffer = io.BytesIO()
 
-        # Crear documento con headers/footers
         doc = SimpleDocTemplate(
             buffer,
             pagesize=letter,
-            topMargin=1.2 * inch,    # Espacio para header
-            bottomMargin=1.2 * inch, # Espacio para footer
+            topMargin=1.2 * inch,
+            bottomMargin=1.2 * inch,
             leftMargin=1 * inch,
             rightMargin=1 * inch,
         )
 
-        # Asignar función de header/footer
         doc.onFirstPage = header_footer
         doc.onLaterPages = header_footer
         styles = getSampleStyleSheet()
 
-        # Estilos personalizados
         title_style = ParagraphStyle(
-            "Title",
-            parent=styles["Heading1"],
-            fontSize=20,
-            alignment=TA_CENTER,
-            spaceAfter=30,
-            fontName="Helvetica-Bold",
+            "Title", parent=styles["Heading1"], fontSize=20, alignment=TA_CENTER,
+            spaceAfter=30, fontName="Helvetica-Bold"
         )
 
         subtitle_style = ParagraphStyle(
-            "Subtitle",
-            parent=styles["Heading2"],
-            fontSize=16,
-            alignment=TA_CENTER,
-            spaceAfter=20,
-            fontName="Helvetica-Bold",
+            "Subtitle", parent=styles["Heading2"], fontSize=16, alignment=TA_CENTER,
+            spaceAfter=20, fontName="Helvetica-Bold"
         )
 
         section_style = ParagraphStyle(
-            "Section",
-            parent=styles["Heading3"],
-            fontSize=14,
-            spaceAfter=15,
-            fontName="Helvetica-Bold",
+            "Section", parent=styles["Heading3"], fontSize=14,
+            spaceAfter=15, fontName="Helvetica-Bold"
         )
 
         normal_style = ParagraphStyle(
@@ -447,475 +242,237 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
 
         story = []
 
-        # ==================== CARÁTULA ====================
-        logger.info("📄 Generando carátula...")
+        # Title with optional signature note
+        title_text = "INFORME DE INVESTIGACIÓN<br/>DE SINIESTRO"
+        if not sign_document:
+            title_text += " (SIN FIRMA)"
 
-        # DEBUG: Agregar texto visible para verificar que el PDF se genera
-        debug_text = Paragraph(
-            "DEBUG: PDF GENERADO CORRECTAMENTE - SI VES ESTE TEXTO, EL PDF FUNCIONA",
-            ParagraphStyle("Debug", parent=styles["Normal"], fontSize=12, textColor=colors.red, alignment=TA_CENTER)
-        )
-        story.append(debug_text)
-        story.append(Spacer(1, 20))
-
-        # Título principal
-        title = Paragraph("INFORME DE INVESTIGACIÓN<br/>DE SINIESTRO", title_style)
+        title = Paragraph(title_text, title_style)
         story.append(title)
 
-        # Información del siniestro en la carátula (solo campos solicitados)
+        # Basic data table
         caratula_data = [
             ["Compañía de Seguros:", siniestro.compania_seguros or ""],
             ["Número de Reclamo:", siniestro.reclamo_num or ""],
-            [
-                "Asegurado:",
-                (
-                    siniestro.asegurado.nombre
-                    if siniestro.asegurado and siniestro.asegurado.nombre
-                    else ""
-                ),
-            ],
+            ["Asegurado:", siniestro.asegurado.nombre if siniestro.asegurado and siniestro.asegurado.nombre else ""],
             ["Nombre de Investigador:", "Susana Espinosa"],
         ]
 
-        # Solo mostrar filas que tengan información
         caratula_data_filtered = [row for row in caratula_data if row[1].strip()]
 
         if caratula_data_filtered:
-            caratula_table = Table(
-                caratula_data_filtered, colWidths=[2.2 * inch, 4.3 * inch]
-            )
-            caratula_table.setStyle(
-                TableStyle(
-                    [
-                        ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
-                        ("FONTSIZE", (0, 0), (-1, -1), 12),
-                        ("ALIGN", (0, 0), (-1, -1), "LEFT"),
-                        ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
-                        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-                        ("LEFTPADDING", (0, 0), (-1, -1), 6),
-                        ("RIGHTPADDING", (0, 0), (-1, -1), 6),
-                        ("TOPPADDING", (0, 0), (-1, -1), 4),
-                        ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-                    ]
-                )
-            )
+            caratula_table = Table(caratula_data_filtered, colWidths=[2.2 * inch, 4.3 * inch])
+            caratula_table.setStyle(TableStyle([
+                ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
+                ("FONTSIZE", (0, 0), (-1, -1), 12),
+                ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
+                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                ("LEFTPADDING", (0, 0), (-1, -1), 6),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+                ("TOPPADDING", (0, 0), (-1, -1), 4),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+            ]))
             story.append(caratula_table)
             story.append(Spacer(1, 40))
 
-        # Fecha de generación
+        # Generation date
         fecha_gen = Paragraph(
             f"Fecha de Generación: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}",
-            ParagraphStyle(
-                "Fecha", parent=styles["Normal"], fontSize=10, alignment=TA_CENTER
-            ),
+            ParagraphStyle("Fecha", parent=styles["Normal"], fontSize=10, alignment=TA_CENTER)
         )
         story.append(fecha_gen)
 
-        # Salto de página explícito antes del Índice
+        # Note for unsigned documents
+        if not sign_document:
+            nota_style = ParagraphStyle(
+                "Nota", parent=styles["Normal"], fontSize=8, textColor=colors.red, alignment=TA_CENTER
+            )
+            nota = Paragraph("NOTA: Este PDF fue generado sin firma digital para pruebas.", nota_style)
+            story.append(Spacer(1, 10))
+            story.append(nota)
+
+        # Index page
         from reportlab.platypus import PageBreak
-
         story.append(PageBreak())
-
-        # ==================== ÍNDICE EN PÁGINA SEPARADA ====================
-        logger.info("📋 Generando índice en página separada...")
 
         indice_title = Paragraph("ÍNDICE", subtitle_style)
         story.append(indice_title)
         story.append(Spacer(1, 20))
 
-        # Crear índice dinámico basado en secciones que tienen contenido
-        indice_items = []
-        page_num = 3  # Página del registro del siniestro (ahora página 3)
+        indice_items = ["3. REGISTRO DEL SINIESTRO"]
 
-        # Siempre incluir registro del siniestro
-        indice_items.append(f"{page_num}. REGISTRO DEL SINIESTRO")
-
-        # Verificar qué secciones de investigación tienen contenido
         has_investigacion = (
-            siniestro.antecedentes
-            or siniestro.relatos_asegurado
-            or siniestro.relatos_conductor
-            or siniestro.inspecciones
-            or siniestro.testigos
-            or (
-                siniestro.evidencias_complementarias
-                and siniestro.evidencias_complementarias.strip()
-            )
-            or (siniestro.otras_diligencias and siniestro.otras_diligencias.strip())
-            or (
-                siniestro.visita_taller
-                and siniestro.visita_taller.descripcion
-                and siniestro.visita_taller.descripcion.strip()
-            )
-            or (siniestro.observaciones and siniestro.observaciones.strip())
-            or (
-                siniestro.recomendacion_pago_cobertura
-                and siniestro.recomendacion_pago_cobertura.strip()
-            )
-            or (siniestro.conclusiones and siniestro.conclusiones.strip())
-            or (siniestro.anexo and siniestro.anexo.strip())
+            siniestro.antecedentes or siniestro.relatos_asegurado or siniestro.relatos_conductor or
+            siniestro.inspecciones or siniestro.testigos or
+            (siniestro.evidencias_complementarias and siniestro.evidencias_complementarias.strip()) or
+            (siniestro.otras_diligencias and siniestro.otras_diligencias.strip()) or
+            (siniestro.visita_taller and siniestro.visita_taller.descripcion and siniestro.visita_taller.descripcion.strip()) or
+            (siniestro.observaciones and siniestro.observaciones.strip()) or
+            (siniestro.recomendacion_pago_cobertura and siniestro.recomendacion_pago_cobertura.strip()) or
+            (siniestro.conclusiones and siniestro.conclusiones.strip()) or
+            (siniestro.anexo and siniestro.anexo.strip())
         )
 
         if has_investigacion:
-            indice_items.append(f"{page_num + 1}. INVESTIGACIÓN")
-            page_num += 1
-
-        # Agregar anexos si hay
+            indice_items.append("4. INVESTIGACIÓN")
         if siniestro.anexo and siniestro.anexo.strip():
-            indice_items.append(f"{page_num + 1}. ANEXOS")
-            page_num += 1
-
-        # Siempre agregar cierre
-        indice_items.append(f"{page_num + 1}. CIERRE")
+            indice_items.append("5. ANEXOS")
+        indice_items.append("6. CIERRE")
 
         for item in indice_items:
             story.append(Paragraph(item, normal_style))
             story.append(Spacer(1, 5))
 
-        # Salto de página explícito antes del Registro del Siniestro
         story.append(PageBreak())
 
-        # ==================== REGISTRO DEL SINIESTRO ====================
-        logger.info("📝 Generando registro del siniestro...")
-
+        # Registration section
         registro_title = Paragraph("REGISTRO DEL SINIESTRO", section_style)
         story.append(registro_title)
         story.append(Spacer(1, 15))
 
-        # Datos básicos del siniestro (solo filas con información)
         registro_data_raw = [
             ["Compañía de Seguros:", siniestro.compania_seguros or ""],
             ["RUC Compañía:", siniestro.ruc_compania or ""],
             ["Tipo de Reclamo:", siniestro.tipo_reclamo or ""],
             ["Póliza:", siniestro.poliza or ""],
             ["Número de Reclamo:", siniestro.reclamo_num or ""],
-            [
-                "Fecha del Siniestro:",
-                (
-                    siniestro.fecha_siniestro.strftime("%d/%m/%Y")
-                    if siniestro.fecha_siniestro
-                    else ""
-                ),
-            ],
-            [
-                "Fecha Reportado:",
-                (
-                    siniestro.fecha_reportado.strftime("%d/%m/%Y")
-                    if siniestro.fecha_reportado
-                    else ""
-                ),
-            ],
+            ["Fecha del Siniestro:", siniestro.fecha_siniestro.strftime("%d/%m/%Y") if siniestro.fecha_siniestro else ""],
+            ["Fecha Reportado:", siniestro.fecha_reportado.strftime("%d/%m/%Y") if siniestro.fecha_reportado else ""],
             ["Dirección del Siniestro:", siniestro.direccion_siniestro or ""],
-            [
-                "Ubicación Geo Lat:",
-                str(siniestro.ubicacion_geo_lat) if siniestro.ubicacion_geo_lat else "",
-            ],
-            [
-                "Ubicación Geo Lng:",
-                str(siniestro.ubicacion_geo_lng) if siniestro.ubicacion_geo_lng else "",
-            ],
+            ["Ubicación Geo Lat:", str(siniestro.ubicacion_geo_lat) if siniestro.ubicacion_geo_lat else ""],
+            ["Ubicación Geo Lng:", str(siniestro.ubicacion_geo_lng) if siniestro.ubicacion_geo_lng else ""],
             ["Daños a Terceros:", "Sí" if siniestro.danos_terceros else ""],
             ["Ejecutivo a Cargo:", siniestro.ejecutivo_cargo or ""],
-            [
-                "Fecha de Designación:",
-                (
-                    siniestro.fecha_designacion.strftime("%d/%m/%Y")
-                    if siniestro.fecha_designacion
-                    else ""
-                ),
-            ],
+            ["Fecha de Designación:", siniestro.fecha_designacion.strftime("%d/%m/%Y") if siniestro.fecha_designacion else ""],
             ["Tipo de Siniestro:", siniestro.tipo_siniestro or ""],
             ["Cobertura:", siniestro.cobertura or ""],
         ]
 
-        # Filtrar solo filas que tengan información
         registro_data = [row for row in registro_data_raw if row[1].strip()]
 
         if registro_data:
             registro_table = Table(registro_data, colWidths=[2.5 * inch, 4 * inch])
-            registro_table.setStyle(
-                TableStyle(
-                    [
-                        ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
-                        ("FONTSIZE", (0, 0), (-1, -1), 10),
-                        ("GRID", (0, 0), (-1, -1), 1, colors.black),
-                        ("ALIGN", (0, 0), (0, -1), "LEFT"),
-                        ("ALIGN", (1, 0), (1, -1), "LEFT"),
-                        ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
-                        ("LEFTPADDING", (0, 0), (-1, -1), 6),
-                        ("RIGHTPADDING", (0, 0), (-1, -1), 6),
-                        ("TOPPADDING", (0, 0), (-1, -1), 4),
-                        ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-                    ]
-                )
-            )
+            registro_table.setStyle(TableStyle([
+                ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
+                ("FONTSIZE", (0, 0), (-1, -1), 10),
+                ("GRID", (0, 0), (-1, -1), 1, colors.black),
+                ("ALIGN", (0, 0), (0, -1), "LEFT"),
+                ("ALIGN", (1, 0), (1, -1), "LEFT"),
+                ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
+                ("LEFTPADDING", (0, 0), (-1, -1), 6),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+                ("TOPPADDING", (0, 0), (-1, -1), 4),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+            ]))
             story.append(registro_table)
             story.append(Spacer(1, 20))
 
-        # Declaración del siniestro (solo título si tiene información)
-        declaracion_data_raw = [
-            [
-                "Fecha de Declaración:",
-                (
-                    siniestro.fecha_declaracion.strftime("%d/%m/%Y")
-                    if siniestro.fecha_declaracion
-                    else ""
-                ),
-            ],
-            ["Persona que Declara (Tipo):", siniestro.persona_declara_tipo or ""],
-            ["Cédula/RUC:", siniestro.persona_declara_cedula or ""],
-            ["Nombre/Razón Social:", siniestro.persona_declara_nombre or ""],
-            ["Relación:", siniestro.persona_declara_relacion or ""],
+        # Declaration section
+        if any([
+            siniestro.fecha_declaracion, siniestro.persona_declara_tipo,
+            siniestro.persona_declara_cedula, siniestro.persona_declara_nombre,
+            siniestro.persona_declara_relacion
+        ]):
+            story.append(Paragraph("Declaración del Siniestro:", section_style))
+            declaracion_data = [
+                ["Fecha de Declaración:", siniestro.fecha_declaracion.strftime("%d/%m/%Y") if siniestro.fecha_declaracion else ""],
+                ["Persona que Declara (Tipo):", siniestro.persona_declara_tipo or ""],
+                ["Cédula/RUC:", siniestro.persona_declara_cedula or ""],
+                ["Nombre/Razón Social:", siniestro.persona_declara_nombre or ""],
+                ["Relación:", siniestro.persona_declara_relacion or ""],
+            ]
+            declaracion_data = [row for row in declaracion_data if row[1].strip()]
+
+            if declaracion_data:
+                declaracion_table = Table(declaracion_data, colWidths=[2.5 * inch, 4 * inch])
+                declaracion_table.setStyle(TableStyle([
+                    ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
+                    ("FONTSIZE", (0, 0), (-1, -1), 10),
+                    ("GRID", (0, 0), (-1, -1), 1, colors.black),
+                    ("ALIGN", (0, 0), (0, -1), "LEFT"),
+                    ("ALIGN", (1, 0), (1, -1), "LEFT"),
+                    ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 6),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+                    ("TOPPADDING", (0, 0), (-1, -1), 4),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+                ]))
+                story.append(declaracion_table)
+                story.append(Spacer(1, 15))
+
+        # Entity sections (Asegurado, Beneficiario, Conductor, Objeto)
+        entities = [
+            ("asegurado", [
+                ["Tipo:", siniestro.asegurado.tipo if siniestro.asegurado else ""],
+                ["Cédula/RUC:", siniestro.asegurado.cedula or siniestro.asegurado.ruc if siniestro.asegurado else ""],
+                ["Nombre/Empresa:", siniestro.asegurado.nombre or siniestro.asegurado.empresa if siniestro.asegurado else ""],
+                ["Representante Legal:", siniestro.asegurado.representante_legal if siniestro.asegurado else ""],
+                ["Celular:", siniestro.asegurado.celular or siniestro.asegurado.telefono if siniestro.asegurado else ""],
+                ["Correo:", siniestro.asegurado.correo if siniestro.asegurado else ""],
+                ["Dirección:", siniestro.asegurado.direccion if siniestro.asegurado else ""],
+                ["Parentesco:", siniestro.asegurado.parentesco if siniestro.asegurado else ""],
+            ]),
+            ("beneficiario", [
+                ["Razón Social:", siniestro.beneficiario.razon_social if siniestro.beneficiario else ""],
+                ["Cédula/RUC:", siniestro.beneficiario.cedula_ruc if siniestro.beneficiario else ""],
+                ["Domicilio:", siniestro.beneficiario.domicilio if siniestro.beneficiario else ""],
+            ]),
+            ("conductor", [
+                ["Nombre:", siniestro.conductor.nombre if siniestro.conductor else ""],
+                ["Cédula:", siniestro.conductor.cedula if siniestro.conductor else ""],
+                ["Celular:", siniestro.conductor.celular if siniestro.conductor else ""],
+                ["Dirección:", siniestro.conductor.direccion if siniestro.conductor else ""],
+                ["Parentesco:", siniestro.conductor.parentesco if siniestro.conductor else ""],
+            ]),
+            ("objeto_asegurado", [
+                ["Placa:", siniestro.objeto_asegurado.placa if siniestro.objeto_asegurado else ""],
+                ["Marca:", siniestro.objeto_asegurado.marca if siniestro.objeto_asegurado else ""],
+                ["Modelo:", siniestro.objeto_asegurado.modelo if siniestro.objeto_asegurado else ""],
+                ["Tipo:", siniestro.objeto_asegurado.tipo if siniestro.objeto_asegurado else ""],
+                ["Color:", siniestro.objeto_asegurado.color if siniestro.objeto_asegurado else ""],
+                ["Año:", str(siniestro.objeto_asegurado.ano) if siniestro.objeto_asegurado and siniestro.objeto_asegurado.ano else ""],
+                ["Serie Motor:", siniestro.objeto_asegurado.serie_motor if siniestro.objeto_asegurado else ""],
+                ["Chasis:", siniestro.objeto_asegurado.chasis if siniestro.objeto_asegurado else ""],
+            ]),
         ]
 
-        declaracion_data = [row for row in declaracion_data_raw if row[1].strip()]
-
-        if declaracion_data:
-            story.append(Paragraph("Declaración del Siniestro:", section_style))
-            declaracion_table = Table(
-                declaracion_data, colWidths=[2.5 * inch, 4 * inch]
-            )
-            declaracion_table.setStyle(
-                TableStyle(
-                    [
-                        ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
-                        ("FONTSIZE", (0, 0), (-1, -1), 10),
-                        ("GRID", (0, 0), (-1, -1), 1, colors.black),
-                        ("ALIGN", (0, 0), (0, -1), "LEFT"),
-                        ("ALIGN", (1, 0), (1, -1), "LEFT"),
-                        ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
-                        ("LEFTPADDING", (0, 0), (-1, -1), 6),
-                        ("RIGHTPADDING", (0, 0), (-1, -1), 6),
-                        ("TOPPADDING", (0, 0), (-1, -1), 4),
-                        ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-                    ]
-                )
-            )
-            story.append(declaracion_table)
-            story.append(Spacer(1, 15))
-
-        # Información de partes relacionadas (solo títulos si hay contenido)
-        if siniestro.asegurado:
-            asegurado_data_raw = [
-                ["Tipo:", siniestro.asegurado.tipo or ""],
-                [
-                    "Cédula/RUC:",
-                    siniestro.asegurado.cedula or siniestro.asegurado.ruc or "",
-                ],
-                [
-                    "Nombre/Empresa:",
-                    siniestro.asegurado.nombre or siniestro.asegurado.empresa or "",
-                ],
-                ["Representante Legal:", siniestro.asegurado.representante_legal or ""],
-                [
-                    "Celular:",
-                    siniestro.asegurado.celular or siniestro.asegurado.telefono or "",
-                ],
-                ["Correo:", siniestro.asegurado.correo or ""],
-                ["Dirección:", siniestro.asegurado.direccion or ""],
-                ["Parentesco:", siniestro.asegurado.parentesco or ""],
-            ]
-
-            asegurado_data = [row for row in asegurado_data_raw if row[1].strip()]
-
-            if asegurado_data:
-                story.append(Paragraph("Información del Asegurado:", section_style))
-                asegurado_table = Table(
-                    asegurado_data, colWidths=[2.5 * inch, 4 * inch]
-                )
-                asegurado_table.setStyle(
-                    TableStyle(
-                        [
-                            ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
-                            ("FONTSIZE", (0, 0), (-1, -1), 10),
-                            ("GRID", (0, 0), (-1, -1), 1, colors.black),
-                            ("ALIGN", (0, 0), (0, -1), "LEFT"),
-                            ("ALIGN", (1, 0), (1, -1), "LEFT"),
-                            ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
-                            ("LEFTPADDING", (0, 0), (-1, -1), 6),
-                            ("RIGHTPADDING", (0, 0), (-1, -1), 6),
-                            ("TOPPADDING", (0, 0), (-1, -1), 4),
-                            ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-                        ]
-                    )
-                )
-                story.append(asegurado_table)
+        for entity_name, entity_data in entities:
+            entity_data_filtered = [row for row in entity_data if row[1].strip()]
+            if entity_data_filtered:
+                title_map = {
+                    "asegurado": "Información del Asegurado:",
+                    "beneficiario": "Información del Beneficiario:",
+                    "conductor": "Información del Conductor:",
+                    "objeto_asegurado": "Información del Objeto Asegurado:",
+                }
+                story.append(Paragraph(title_map[entity_name], section_style))
+                entity_table = Table(entity_data_filtered, colWidths=[2.5 * inch, 4 * inch])
+                entity_table.setStyle(TableStyle([
+                    ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
+                    ("FONTSIZE", (0, 0), (-1, -1), 10),
+                    ("GRID", (0, 0), (-1, -1), 1, colors.black),
+                    ("ALIGN", (0, 0), (0, -1), "LEFT"),
+                    ("ALIGN", (1, 0), (1, -1), "LEFT"),
+                    ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 6),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+                    ("TOPPADDING", (0, 0), (-1, -1), 4),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+                ]))
+                story.append(entity_table)
                 story.append(Spacer(1, 15))
 
-        if siniestro.beneficiario:
-            beneficiario_data_raw = [
-                ["Razón Social:", siniestro.beneficiario.razon_social or ""],
-                ["Cédula/RUC:", siniestro.beneficiario.cedula_ruc or ""],
-                ["Domicilio:", siniestro.beneficiario.domicilio or ""],
-            ]
-
-            beneficiario_data = [row for row in beneficiario_data_raw if row[1].strip()]
-
-            if beneficiario_data:
-                story.append(Paragraph("Información del Beneficiario:", section_style))
-                beneficiario_table = Table(
-                    beneficiario_data, colWidths=[2.5 * inch, 4 * inch]
-                )
-                beneficiario_table.setStyle(
-                    TableStyle(
-                        [
-                            ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
-                            ("FONTSIZE", (0, 0), (-1, -1), 10),
-                            ("GRID", (0, 0), (-1, -1), 1, colors.black),
-                            ("ALIGN", (0, 0), (0, -1), "LEFT"),
-                            ("ALIGN", (1, 0), (1, -1), "LEFT"),
-                            ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
-                            ("LEFTPADDING", (0, 0), (-1, -1), 6),
-                            ("RIGHTPADDING", (0, 0), (-1, -1), 6),
-                            ("TOPPADDING", (0, 0), (-1, -1), 4),
-                            ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-                        ]
-                    )
-                )
-                story.append(beneficiario_table)
-                story.append(Spacer(1, 15))
-
-        if siniestro.conductor:
-            conductor_data_raw = [
-                ["Nombre:", siniestro.conductor.nombre or ""],
-                ["Cédula:", siniestro.conductor.cedula or ""],
-                ["Celular:", siniestro.conductor.celular or ""],
-                ["Dirección:", siniestro.conductor.direccion or ""],
-                ["Parentesco:", siniestro.conductor.parentesco or ""],
-            ]
-
-            conductor_data = [row for row in conductor_data_raw if row[1].strip()]
-
-            if conductor_data:
-                story.append(Paragraph("Información del Conductor:", section_style))
-                conductor_table = Table(
-                    conductor_data, colWidths=[2.5 * inch, 4 * inch]
-                )
-                conductor_table.setStyle(
-                    TableStyle(
-                        [
-                            ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
-                            ("FONTSIZE", (0, 0), (-1, -1), 10),
-                            ("GRID", (0, 0), (-1, -1), 1, colors.black),
-                            ("ALIGN", (0, 0), (0, -1), "LEFT"),
-                            ("ALIGN", (1, 0), (1, -1), "LEFT"),
-                            ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
-                            ("LEFTPADDING", (0, 0), (-1, -1), 6),
-                            ("RIGHTPADDING", (0, 0), (-1, -1), 6),
-                            ("TOPPADDING", (0, 0), (-1, -1), 4),
-                            ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-                        ]
-                    )
-                )
-                story.append(conductor_table)
-                story.append(Spacer(1, 15))
-
-        if siniestro.objeto_asegurado:
-            objeto_data_raw = [
-                ["Placa:", siniestro.objeto_asegurado.placa or ""],
-                ["Marca:", siniestro.objeto_asegurado.marca or ""],
-                ["Modelo:", siniestro.objeto_asegurado.modelo or ""],
-                ["Tipo:", siniestro.objeto_asegurado.tipo or ""],
-                ["Color:", siniestro.objeto_asegurado.color or ""],
-                [
-                    "Año:",
-                    (
-                        str(siniestro.objeto_asegurado.ano)
-                        if siniestro.objeto_asegurado.ano
-                        else ""
-                    ),
-                ],
-                ["Serie Motor:", siniestro.objeto_asegurado.serie_motor or ""],
-                ["Chasis:", siniestro.objeto_asegurado.chasis or ""],
-            ]
-
-            objeto_data = [row for row in objeto_data_raw if row[1].strip()]
-
-            if objeto_data:
-                story.append(
-                    Paragraph("Información del Objeto Asegurado:", section_style)
-                )
-                objeto_table = Table(objeto_data, colWidths=[2.5 * inch, 4 * inch])
-                objeto_table.setStyle(
-                    TableStyle(
-                        [
-                            ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
-                            ("FONTSIZE", (0, 0), (-1, -1), 10),
-                            ("GRID", (0, 0), (-1, -1), 1, colors.black),
-                            ("ALIGN", (0, 0), (0, -1), "LEFT"),
-                            ("ALIGN", (1, 0), (1, -1), "LEFT"),
-                            ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
-                            ("LEFTPADDING", (0, 0), (-1, -1), 6),
-                            ("RIGHTPADDING", (0, 0), (-1, -1), 6),
-                            ("TOPPADDING", (0, 0), (-1, -1), 4),
-                            ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-                        ]
-                    )
-                )
-                story.append(objeto_table)
-                story.append(Spacer(1, 15))
-
-        # ==================== INVESTIGACIÓN ====================
-        logger.info("🔍 Generando sección de investigación...")
-
-        # Función auxiliar para verificar si un campo JSON tiene contenido real
-        def has_real_content(json_field):
-            """Verifica si un campo JSON tiene contenido real (no vacío)"""
-            logger.info(
-                f"🔍 DEBUG: verificando campo: {repr(json_field)} (tipo: {type(json_field)})"
-            )
-            if not json_field:
-                logger.info("❌ Campo vacío o None")
-                return False
-            try:
-                parsed = (
-                    json.loads(json_field)
-                    if isinstance(json_field, str)
-                    else json_field
-                )
-                logger.info(f"📋 Campo parseado: {repr(parsed)} (tipo: {type(parsed)})")
-                if isinstance(parsed, list):
-                    # Filtrar elementos que no sean strings vacías
-                    has_content = any(
-                        item.strip() for item in parsed if isinstance(item, str)
-                    )
-                    logger.info(
-                        f"📋 Lista con contenido real: {has_content} (elementos: {[repr(item) for item in parsed]})"
-                    )
-                    return has_content
-                result = bool(parsed)
-                logger.info(f"📋 Resultado boolean: {result}")
-                return result
-            except Exception as e:
-                logger.error(f"❌ Error parseando JSON: {e}")
-                return bool(json_field and json_field.strip())
-
-        has_any_investigation = (
-            siniestro.antecedentes
-            or siniestro.relatos_asegurado
-            or siniestro.relatos_conductor
-            or siniestro.inspecciones
-            or siniestro.testigos
-            or has_real_content(siniestro.evidencias_complementarias)
-            or has_real_content(siniestro.otras_diligencias)
-            or has_real_content(siniestro.visita_taller)
-            or has_real_content(siniestro.observaciones)
-            or has_real_content(siniestro.recomendacion_pago_cobertura)
-            or has_real_content(siniestro.conclusiones)
-            or has_real_content(siniestro.anexo)
-        )
-
-        if has_any_investigation:
-            # Salto de página explícito antes de la Investigación
+        # Investigation section
+        if has_investigacion:
             story.append(PageBreak())
-
             investigacion_title = Paragraph("INVESTIGACIÓN", section_style)
             story.append(investigacion_title)
             story.append(Spacer(1, 15))
 
             section_num = 1
 
-            # 2.1 Antecedentes
+            # Antecedentes
             if siniestro.antecedentes:
                 story.append(Paragraph(f"{section_num}. Antecedentes", section_style))
                 for antecedente in siniestro.antecedentes:
@@ -924,408 +481,174 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                 story.append(Spacer(1, 15))
                 section_num += 1
 
-            # 2.2 Entrevista al Asegurado
+            # Relatos del asegurado
             if siniestro.relatos_asegurado:
-                story.append(
-                    Paragraph(f"{section_num}. Entrevista al Asegurado", section_style)
-                )
+                story.append(Paragraph(f"{section_num}. Entrevista al Asegurado", section_style))
                 for i, relato in enumerate(siniestro.relatos_asegurado, 1):
-                    story.append(
-                        Paragraph(
-                            f"Relato {i}:",
-                            ParagraphStyle(
-                                "Subsection",
-                                parent=styles["Heading4"],
-                                fontSize=12,
-                                fontName="Helvetica-Bold",
-                            ),
-                        )
-                    )
+                    story.append(Paragraph(f"Relato {i}:", ParagraphStyle("Subsection", parent=styles["Heading4"], fontSize=12, fontName="Helvetica-Bold")))
                     story.append(Paragraph(relato.texto, normal_style))
-                    # Incluir imagen si existe (usando base64 de BD)
+                    # Try to include image
                     try:
                         if relato.imagen_base64 and relato.imagen_base64.strip():
-                            image_data = get_image_from_base64(
-                                relato.imagen_base64, relato.imagen_content_type
-                            )
+                            image_data = get_image_from_base64(relato.imagen_base64, relato.imagen_content_type)
                             if image_data:
                                 pdf_image = create_pdf_image(image_data)
                                 if pdf_image:
                                     story.append(Spacer(1, 5))
                                     story.append(pdf_image)
                                     story.append(Spacer(1, 5))
-                                    logger.info(f"✅ Imagen incluida en relato {i}")
-                                else:
-                                    logger.warning(
-                                        f"⚠️ No se pudo crear imagen para relato {i}"
-                                    )
-                            else:
-                                logger.warning(
-                                    f"⚠️ No se pudo procesar imagen base64 para relato {i}"
-                                )
-                    except Exception as img_error:
-                        logger.warning(
-                            f"⚠️ Error procesando imagen para relato {i}: {img_error}"
-                        )
-                        # Continuar sin la imagen
+                    except Exception:
+                        pass  # Silently skip image errors
                     story.append(Spacer(1, 10))
                 story.append(Spacer(1, 15))
                 section_num += 1
 
-            # 2.3 Entrevista al Conductor
+            # Relatos del conductor
             if siniestro.relatos_conductor:
-                story.append(
-                    Paragraph(f"{section_num}. Entrevista al Conductor", section_style)
-                )
+                story.append(Paragraph(f"{section_num}. Entrevista al Conductor", section_style))
                 for i, relato in enumerate(siniestro.relatos_conductor, 1):
-                    story.append(
-                        Paragraph(
-                            f"Relato {i}:",
-                            ParagraphStyle(
-                                "Subsection",
-                                parent=styles["Heading4"],
-                                fontSize=12,
-                                fontName="Helvetica-Bold",
-                            ),
-                        )
-                    )
+                    story.append(Paragraph(f"Relato {i}:", ParagraphStyle("Subsection", parent=styles["Heading4"], fontSize=12, fontName="Helvetica-Bold")))
                     story.append(Paragraph(relato.texto, normal_style))
-                    # Incluir imagen si existe (usando base64 de BD)
+                    # Try to include image
                     try:
                         if relato.imagen_base64 and relato.imagen_base64.strip():
-                            image_data = get_image_from_base64(
-                                relato.imagen_base64, relato.imagen_content_type
-                            )
+                            image_data = get_image_from_base64(relato.imagen_base64, relato.imagen_content_type)
                             if image_data:
                                 pdf_image = create_pdf_image(image_data)
                                 if pdf_image:
                                     story.append(Spacer(1, 5))
                                     story.append(pdf_image)
                                     story.append(Spacer(1, 5))
-                                    logger.info(f"✅ Imagen incluida en conductor {i}")
-                                else:
-                                    logger.warning(
-                                        f"⚠️ No se pudo crear imagen para conductor {i}"
-                                    )
-                            else:
-                                logger.warning(
-                                    f"⚠️ No se pudo procesar imagen base64 para conductor {i}"
-                                )
-                    except Exception as img_error:
-                        logger.warning(
-                            f"⚠️ Error procesando imagen para conductor {i}: {img_error}"
-                        )
-                        # Continuar sin la imagen
+                    except Exception:
+                        pass  # Silently skip image errors
                     story.append(Spacer(1, 10))
                 story.append(Spacer(1, 15))
                 section_num += 1
 
-            # 2.4 Inspección del Lugar
+            # Inspecciones
             if siniestro.inspecciones:
-                story.append(
-                    Paragraph(f"{section_num}. Inspección del Lugar", section_style)
-                )
+                story.append(Paragraph(f"{section_num}. Inspección del Lugar", section_style))
                 for i, inspeccion in enumerate(siniestro.inspecciones, 1):
-                    story.append(
-                        Paragraph(
-                            f"Inspección {i}:",
-                            ParagraphStyle(
-                                "Subsection",
-                                parent=styles["Heading4"],
-                                fontSize=12,
-                                fontName="Helvetica-Bold",
-                            ),
-                        )
-                    )
+                    story.append(Paragraph(f"Inspección {i}:", ParagraphStyle("Subsection", parent=styles["Heading4"], fontSize=12, fontName="Helvetica-Bold")))
                     story.append(Paragraph(inspeccion.descripcion, normal_style))
-                    # Incluir imagen si existe (usando base64 de BD)
+                    # Try to include image
                     try:
                         if inspeccion.imagen_base64 and inspeccion.imagen_base64.strip():
-                            image_data = get_image_from_base64(
-                                inspeccion.imagen_base64, inspeccion.imagen_content_type
-                            )
+                            image_data = get_image_from_base64(inspeccion.imagen_base64, inspeccion.imagen_content_type)
                             if image_data:
                                 pdf_image = create_pdf_image(image_data)
                                 if pdf_image:
                                     story.append(Spacer(1, 5))
                                     story.append(pdf_image)
                                     story.append(Spacer(1, 5))
-                                    logger.info(f"✅ Imagen incluida en inspección {i}")
-                                else:
-                                    logger.warning(
-                                        f"⚠️ No se pudo crear imagen para inspección {i}"
-                                    )
-                            else:
-                                logger.warning(
-                                    f"⚠️ No se pudo procesar imagen base64 para inspección {i}"
-                                )
-                    except Exception as img_error:
-                        logger.warning(
-                            f"⚠️ Error procesando imagen para inspección {i}: {img_error}"
-                        )
-                        # Continuar sin la imagen
+                    except Exception:
+                        pass  # Silently skip image errors
                     story.append(Spacer(1, 10))
                 story.append(Spacer(1, 15))
                 section_num += 1
 
-            # 2.5 Testigos
+            # Testigos
             if siniestro.testigos:
                 story.append(Paragraph(f"{section_num}. Testigos", section_style))
                 for i, testigo in enumerate(siniestro.testigos, 1):
-                    story.append(
-                        Paragraph(
-                            f"Testigo {i}:",
-                            ParagraphStyle(
-                                "Subsection",
-                                parent=styles["Heading4"],
-                                fontSize=12,
-                                fontName="Helvetica-Bold",
-                            ),
-                        )
-                    )
+                    story.append(Paragraph(f"Testigo {i}:", ParagraphStyle("Subsection", parent=styles["Heading4"], fontSize=12, fontName="Helvetica-Bold")))
                     story.append(Paragraph(testigo.texto, normal_style))
-                    # Incluir imagen si existe (usando base64 de BD)
+                    # Try to include image
                     try:
                         if testigo.imagen_base64 and testigo.imagen_base64.strip():
-                            image_data = get_image_from_base64(
-                                testigo.imagen_base64, testigo.imagen_content_type
-                            )
+                            image_data = get_image_from_base64(testigo.imagen_base64, testigo.imagen_content_type)
                             if image_data:
                                 pdf_image = create_pdf_image(image_data)
                                 if pdf_image:
                                     story.append(Spacer(1, 5))
                                     story.append(pdf_image)
                                     story.append(Spacer(1, 5))
-                                    logger.info(f"✅ Imagen incluida en testigo {i}")
-                                else:
-                                    logger.warning(
-                                        f"⚠️ No se pudo crear imagen para testigo {i}"
-                                    )
-                            else:
-                                logger.warning(
-                                    f"⚠️ No se pudo procesar imagen base64 para testigo {i}"
-                                )
-                    except Exception as img_error:
-                        logger.warning(
-                            f"⚠️ Error procesando imagen para testigo {i}: {img_error}"
-                        )
-                        # Continuar sin la imagen
+                    except Exception:
+                        pass  # Silently skip image errors
                     story.append(Spacer(1, 10))
                 story.append(Spacer(1, 15))
                 section_num += 1
 
-            # 2.6 Evidencias Complementarias
-            if (
-                siniestro.evidencias_complementarias
-                and siniestro.evidencias_complementarias.strip()
-            ):
-                story.append(
-                    Paragraph(
-                        f"{section_num}. Evidencias Complementarias", section_style
-                    )
-                )
-                story.append(
-                    Paragraph(siniestro.evidencias_complementarias, normal_style)
-                )
-                story.append(Spacer(1, 15))
-                section_num += 1
-
-            # 2.7 Otras Diligencias
-            if siniestro.otras_diligencias and siniestro.otras_diligencias.strip():
-                story.append(
-                    Paragraph(f"{section_num}. Otras Diligencias", section_style)
-                )
-                story.append(Paragraph(siniestro.otras_diligencias, normal_style))
-                story.append(Spacer(1, 15))
-                section_num += 1
-
-            # 2.8 Visita al Taller
-            if (
-                siniestro.visita_taller
-                and siniestro.visita_taller.descripcion
-                and siniestro.visita_taller.descripcion.strip()
-            ):
-                story.append(
-                    Paragraph(f"{section_num}. Visita al Taller", section_style)
-                )
-                story.append(
-                    Paragraph(siniestro.visita_taller.descripcion, normal_style)
-                )
-                story.append(Spacer(1, 15))
-                section_num += 1
-
-            # Función auxiliar para verificar si un campo JSON tiene contenido real
-            def has_real_content(json_field):
-                """Verifica si un campo JSON tiene contenido real (no vacío)"""
+            # Helper function for JSON content checking
+            def has_json_content(json_field):
                 if not json_field:
                     return False
                 try:
-                    parsed = (
-                        json.loads(json_field)
-                        if isinstance(json_field, str)
-                        else json_field
-                    )
+                    import json
+                    parsed = json.loads(json_field) if isinstance(json_field, str) else json_field
                     if isinstance(parsed, list):
-                        # Filtrar elementos que no sean strings vacías
-                        return any(
-                            item.strip() for item in parsed if isinstance(item, str)
-                        )
+                        return any(item.strip() for item in parsed if isinstance(item, str))
                     return bool(parsed)
                 except:
                     return bool(json_field and json_field.strip())
 
-            # 2.9 Observaciones
-            if has_real_content(siniestro.observaciones):
-                story.append(Paragraph(f"{section_num}. Observaciones", section_style))
-                import json
+            # Other investigation fields
+            investigation_fields = [
+                ("evidencias_complementarias", "Evidencias Complementarias"),
+                ("otras_diligencias", "Otras Diligencias"),
+                ("visita_taller", lambda: siniestro.visita_taller.descripcion if siniestro.visita_taller else "", "Visita al Taller"),
+                ("observaciones", "Observaciones"),
+                ("recomendacion_pago_cobertura", "Recomendación sobre el Pago de la Cobertura"),
+                ("conclusiones", "Conclusiones"),
+                ("anexo", "Anexo"),
+            ]
 
-                try:
-                    observaciones_list = (
-                        json.loads(siniestro.observaciones)
-                        if isinstance(siniestro.observaciones, str)
-                        else siniestro.observaciones
-                    )
-                    for i, obs in enumerate(observaciones_list, 1):
-                        if (
-                            isinstance(obs, str) and obs.strip()
-                        ):  # Solo mostrar items no vacíos
-                            story.append(Paragraph(f"{i}. {obs}", normal_style))
-                            story.append(Spacer(1, 5))
-                except:
-                    if siniestro.observaciones and siniestro.observaciones.strip():
-                        story.append(Paragraph(siniestro.observaciones, normal_style))
-                story.append(Spacer(1, 15))
-                section_num += 1
+            for field_name, display_name in investigation_fields:
+                if field_name == "visita_taller":
+                    content = display_name[0]() if callable(display_name[0]) else getattr(siniestro, field_name, "")
+                    display_name = display_name[1]
+                else:
+                    content = getattr(siniestro, field_name, "")
 
-            # 2.10 Recomendación sobre el Pago de la Cobertura
-            if has_real_content(siniestro.recomendacion_pago_cobertura):
-                story.append(
-                    Paragraph(
-                        f"{section_num}. Recomendación sobre el Pago de la Cobertura",
-                        section_style,
-                    )
-                )
-                import json
+                if content and content.strip():
+                    story.append(Paragraph(f"{section_num}. {display_name}", section_style))
 
-                try:
-                    recomendaciones_list = (
-                        json.loads(siniestro.recomendacion_pago_cobertura)
-                        if isinstance(siniestro.recomendacion_pago_cobertura, str)
-                        else siniestro.recomendacion_pago_cobertura
-                    )
-                    for i, rec in enumerate(recomendaciones_list, 1):
-                        if (
-                            isinstance(rec, str) and rec.strip()
-                        ):  # Solo mostrar items no vacíos
-                            story.append(Paragraph(f"{i}. {rec}", normal_style))
-                            story.append(Spacer(1, 5))
-                except:
-                    if (
-                        siniestro.recomendacion_pago_cobertura
-                        and siniestro.recomendacion_pago_cobertura.strip()
-                    ):
-                        story.append(
-                            Paragraph(
-                                siniestro.recomendacion_pago_cobertura, normal_style
-                            )
-                        )
-                story.append(Spacer(1, 15))
-                section_num += 1
+                    # Handle JSON arrays for some fields
+                    if field_name in ["observaciones", "recomendacion_pago_cobertura", "conclusiones", "anexo"]:
+                        try:
+                            import json
+                            items = json.loads(content) if isinstance(content, str) else content
+                            if isinstance(items, list):
+                                for i, item in enumerate(items, 1):
+                                    if isinstance(item, str) and item.strip():
+                                        story.append(Paragraph(f"{i}. {item}", normal_style))
+                                        story.append(Spacer(1, 5))
+                            else:
+                                story.append(Paragraph(content, normal_style))
+                        except:
+                            story.append(Paragraph(content, normal_style))
+                    else:
+                        story.append(Paragraph(content, normal_style))
 
-            # 2.11 Conclusiones
-            if has_real_content(siniestro.conclusiones):
-                story.append(Paragraph(f"{section_num}. Conclusiones", section_style))
-                import json
+                    story.append(Spacer(1, 15))
+                    section_num += 1
 
-                try:
-                    conclusiones_list = (
-                        json.loads(siniestro.conclusiones)
-                        if isinstance(siniestro.conclusiones, str)
-                        else siniestro.conclusiones
-                    )
-                    for i, conc in enumerate(conclusiones_list, 1):
-                        if (
-                            isinstance(conc, str) and conc.strip()
-                        ):  # Solo mostrar items no vacíos
-                            story.append(Paragraph(f"{i}. {conc}", normal_style))
-                            story.append(Spacer(1, 5))
-                except:
-                    if siniestro.conclusiones and siniestro.conclusiones.strip():
-                        story.append(Paragraph(siniestro.conclusiones, normal_style))
-                story.append(Spacer(1, 15))
-                section_num += 1
-
-            # 2.12 Anexo (si está en la sección de investigación)
-            if has_real_content(siniestro.anexo):
-                story.append(Paragraph(f"{section_num}. Anexo", section_style))
-                import json
-
-                try:
-                    anexo_list = (
-                        json.loads(siniestro.anexo)
-                        if isinstance(siniestro.anexo, str)
-                        else siniestro.anexo
-                    )
-                    for i, anex in enumerate(anexo_list, 1):
-                        if (
-                            isinstance(anex, str) and anex.strip()
-                        ):  # Solo mostrar items no vacíos
-                            story.append(Paragraph(f"{i}. {anex}", normal_style))
-                            story.append(Spacer(1, 5))
-                except:
-                    if siniestro.anexo and siniestro.anexo.strip():
-                        story.append(Paragraph(siniestro.anexo, normal_style))
-                story.append(Spacer(1, 15))
-                section_num += 1
-
-            # Después de TODA la investigación, salto de página
-            story.append(PageBreak())  # Salto de página completo
-
-        # ==================== ANEXOS ====================
-        if has_real_content(siniestro.anexo):
-            logger.info("📎 Generando sección de anexos...")
-            # Salto de página explícito antes de Anexos
             story.append(PageBreak())
 
+        # Annexes section
+        if siniestro.anexo and siniestro.anexo.strip():
+            story.append(PageBreak())
             anexos_title = Paragraph("ANEXOS", section_style)
             story.append(anexos_title)
             story.append(Spacer(1, 15))
 
-            import json
-
             try:
-                anexo_list = (
-                    json.loads(siniestro.anexo)
-                    if isinstance(siniestro.anexo, str)
-                    else siniestro.anexo
-                )
-                for i, anex in enumerate(anexo_list, 1):
-                    if (
-                        isinstance(anex, str) and anex.strip()
-                    ):  # Solo mostrar items no vacíos
-                        story.append(
-                            Paragraph(
-                                f"Anexo {i}:",
-                                ParagraphStyle(
-                                    "Subsection",
-                                    parent=styles["Heading4"],
-                                    fontSize=12,
-                                    fontName="Helvetica-Bold",
-                                ),
-                            ),
-                        )
-                        story.append(Paragraph(anex, normal_style))
-                        story.append(Spacer(1, 20))
-            except:
-                if siniestro.anexo and siniestro.anexo.strip():
+                import json
+                anexo_list = json.loads(siniestro.anexo) if isinstance(siniestro.anexo, str) else siniestro.anexo
+                if isinstance(anexo_list, list):
+                    for i, anex in enumerate(anexo_list, 1):
+                        if isinstance(anex, str) and anex.strip():
+                            story.append(Paragraph(f"Anexo {i}:", ParagraphStyle("Subsection", parent=styles["Heading4"], fontSize=12, fontName="Helvetica-Bold")))
+                            story.append(Paragraph(anex, normal_style))
+                            story.append(Spacer(1, 20))
+                else:
                     story.append(Paragraph(siniestro.anexo, normal_style))
+            except:
+                story.append(Paragraph(siniestro.anexo, normal_style))
 
-            story.append(PageBreak())  # Salto de página
+            story.append(PageBreak())
 
-        # ==================== CIERRE ====================
-        logger.info("📝 Generando sección de cierre...")
-
-        # Texto de despedida (sin título "CIERRE")
+        # Closing section
         despedida = Paragraph(
             "Sin otro particular, me despido atentamente esperando que la presente investigación "
             "haya sido de su completa satisfacción y utilidad. Quedo a sus órdenes para cualquier "
@@ -1335,13 +658,8 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
         story.append(despedida)
         story.append(Spacer(1, 40))
 
-        # Firma alineada a la izquierda (sin línea de firma)
-        firma_style = ParagraphStyle(
-            "Firma", parent=styles["Normal"], fontSize=10, alignment=TA_LEFT
-        )
-
+        firma_style = ParagraphStyle("Firma", parent=styles["Normal"], fontSize=10, alignment=TA_LEFT)
         firma_text = Paragraph(
-            "Saludos cordiales,<br/><br/>"
             "<b>SUSANA ESPINOSA - INVESTIGADORA DE SINIESTROS</b><br/>"
             "susi.espinosa@hotmail.com   |   PBX: 022.417.481   |   CEL: 099.9846.432",
             firma_style,
@@ -1349,207 +667,64 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
         story.append(firma_text)
         story.append(Spacer(1, 30))
 
-        # Fecha del informe (alineada a la izquierda)
         fecha_cierre = Paragraph(
             f"Quito, {datetime.now().strftime('%d de %B de %Y')}",
-            ParagraphStyle(
-                "FechaCierre", parent=styles["Normal"], fontSize=10, alignment=TA_LEFT
-            ),
+            ParagraphStyle("FechaCierre", parent=styles["Normal"], fontSize=10, alignment=TA_LEFT),
         )
         story.append(fecha_cierre)
 
-        # Generar PDF
+        # Generate PDF
         doc.build(story)
 
-        # Asegurar que el buffer esté completo antes de obtener datos
         buffer.flush()
-
-        # Obtener datos del buffer
         buffer.seek(0)
         pdf_data = buffer.getvalue()
 
-        logger.info(f"✅ PDF generado exitosamente: {len(pdf_data)} bytes")
-        logger.info(f"PDF bytes before signing: {len(pdf_data)}")
-
-        # Validar que el PDF sea válido (debe empezar con %PDF-)
+        # Validate PDF
         if not pdf_data.startswith(b"%PDF-"):
-            logger.error("PDF generado es inválido - no empieza con %PDF-")
-            raise Exception("PDF generado es corrupto - no cumple formato PDF estándar")
+            raise Exception("PDF generado es corrupto")
 
-        # Intentar firmar PDF usando certificado desde S3
-        cert_data, password = load_certificate_from_s3()
-        if cert_data and password:
-            logger.info("🔐 Firmando PDF con certificado digital desde S3...")
-            try:
-                signed_pdf = sign_pdf(pdf_data, cert_data, password)
-                # Validar que el PDF firmado siga siendo válido
-                if signed_pdf.startswith(b"%PDF-"):
-                    pdf_data = signed_pdf
-                    logger.info(f"PDF bytes after signing: {len(pdf_data)}")
-                else:
-                    logger.warning("PDF firmado es inválido - usando PDF sin firma")
-            except Exception as e:
-                logger.error(f"Error durante firma digital: {e}")
-                logger.warning("Continuando con PDF sin firma digital")
-        else:
-            logger.warning(
-                "Certificado digital no encontrado en S3. "
-                "PDF generado sin firma digital."
-            )
-            logger.info("⚠️  Certificado no encontrado en S3, PDF sin firma")
+        # Sign PDF if requested and certificates available
+        if sign_document and CRYPTO_AVAILABLE:
+            cert_data, password = load_certificate_from_s3()
+            if cert_data and password:
+                try:
+                    signed_pdf = sign_pdf(pdf_data, cert_data, password)
+                    if signed_pdf.startswith(b"%PDF-"):
+                        pdf_data = signed_pdf
+                except Exception:
+                    pass  # Continue with unsigned PDF
 
         return pdf_data
 
     except Exception as e:
-        logger.error(f"❌ Error generando PDF: {e}")
-        # PDF de error mínimo
+        # Minimal error PDF
         error_buffer = io.BytesIO()
-        try:
-            doc = SimpleDocTemplate(error_buffer, pagesize=letter)
-            story = [Paragraph("ERROR: No se pudo generar el PDF", styles["Normal"])]
-            doc.build(story)
-            error_buffer.seek(0)
-            return error_buffer.read()
-        finally:
-            error_buffer.close()
-    finally:
-        # Cerrar buffer correctamente
-        try:
-            buffer.close()
-        except:
-            pass
+        doc = SimpleDocTemplate(error_buffer, pagesize=letter)
+        story = [Paragraph("ERROR: No se pudo generar el PDF", styles["Normal"])]
+        doc.build(story)
+        error_buffer.seek(0)
+        return error_buffer.getvalue()
+
+
+# Legacy compatibility functions
+def generate_simple_pdf(siniestro: Siniestro) -> bytes:
+    """Legacy function - use generate_pdf(siniestro, sign_document=True)"""
+    return generate_pdf(siniestro, sign_document=True)
 
 
 def generate_unsigned_pdf(siniestro: Siniestro) -> bytes:
-    """Generar PDF sin firma digital para pruebas"""
-    logger.info(f"🔄 Generando PDF SIN FIRMA para siniestro ID: {siniestro.id}")
-
-    try:
-        # Crear buffer para el PDF
-        buffer = io.BytesIO()
-
-        # Crear documento
-        doc = SimpleDocTemplate(
-            buffer,
-            pagesize=letter,
-            topMargin=1 * inch,
-            bottomMargin=1 * inch,
-            leftMargin=1 * inch,
-            rightMargin=1 * inch,
-        )
-        styles = getSampleStyleSheet()
-
-        # Estilos personalizados
-        title_style = ParagraphStyle(
-            "Title",
-            parent=styles["Heading1"],
-            fontSize=18,
-            alignment=TA_CENTER,
-            spaceAfter=30,
-            fontName="Helvetica-Bold",
-        )
-
-        normal_style = ParagraphStyle(
-            "Normal", parent=styles["Normal"], fontSize=10, fontName="Helvetica"
-        )
-
-        story = []
-
-        # Título principal
-        title = Paragraph(
-            "INFORME DE INVESTIGACIÓN DE SINIESTRO (SIN FIRMA)", title_style
-        )
-        story.append(title)
-
-        # Tabla con datos básicos
-        data = [
-            ["Compañía de Seguros:", siniestro.compania_seguros or "No especificada"],
-            ["Número de Reclamo:", siniestro.reclamo_num or "No especificado"],
-            [
-                "Fecha del Siniestro:",
-                (
-                    siniestro.fecha_siniestro.strftime("%d/%m/%Y")
-                    if siniestro.fecha_siniestro
-                    else "No especificada"
-                ),
-            ],
-            ["Dirección:", siniestro.direccion_siniestro or "No especificada"],
-            ["Tipo de Siniestro:", siniestro.tipo_siniestro or "No especificado"],
-        ]
-
-        table = Table(data, colWidths=[2.5 * inch, 4 * inch])
-        table.setStyle(
-            TableStyle(
-                [
-                    ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
-                    ("FONTSIZE", (0, 0), (-1, -1), 10),
-                    ("GRID", (0, 0), (-1, -1), 1, colors.black),
-                    ("ALIGN", (0, 0), (0, -1), "LEFT"),
-                    ("ALIGN", (1, 0), (1, -1), "LEFT"),
-                    ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
-                ]
-            )
-        )
-        story.append(table)
-        story.append(Spacer(1, 20))
-
-        # Nota sobre falta de firma
-        nota_style = ParagraphStyle(
-            "Nota", parent=styles["Normal"], fontSize=8, textColor=colors.red
-        )
-        nota = Paragraph(
-            "NOTA: Este PDF fue generado sin firma digital para pruebas.", nota_style
-        )
-        story.append(nota)
-        story.append(Spacer(1, 10))
-
-        # Fecha de generación
-        fecha_gen = Paragraph(
-            f"Fecha de Generación: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}",
-            normal_style,
-        )
-        story.append(fecha_gen)
-        story.append(Spacer(1, 10))
-
-        # Generar PDF
-        doc.build(story)
-
-        # Asegurar que el buffer esté completo antes de obtener datos
-        buffer.flush()
-
-        # Obtener datos del buffer
-        buffer.seek(0)
-        pdf_data = buffer.getvalue()
-
-        logger.info(f"✅ PDF sin firma generado exitosamente: {len(pdf_data)} bytes")
-
-        # Validar que el PDF sea válido
-        if not pdf_data.startswith(b"%PDF-"):
-            logger.error("PDF generado es inválido - no empieza con %PDF-")
-            raise Exception("PDF generado es corrupto - no cumple formato PDF estándar")
-
-        return pdf_data
-
-    except Exception as e:
-        logger.error(f"❌ Error generando PDF sin firma: {e}")
-        # PDF de error mínimo
-        buffer = io.BytesIO()
-        doc = SimpleDocTemplate(buffer, pagesize=letter)
-        story = [
-            Paragraph("ERROR: No se pudo generar el PDF sin firma", styles["Normal"])
-        ]
-        doc.build(story)
-        buffer.seek(0)
-        return buffer.getvalue()
+    """Legacy function - use generate_pdf(siniestro, sign_document=False)"""
+    return generate_pdf(siniestro, sign_document=False)
 
 
 class SiniestroPDFGenerator:
-    """Generador de PDF con firma digital"""
+    """Clean PDF generator class with single responsibility"""
 
     def generate_pdf(self, siniestro: Siniestro, db: Session) -> bytes:
-        """Generar PDF del siniestro con firma digital"""
-        return generate_simple_pdf(siniestro)
+        """Generate signed PDF"""
+        return generate_pdf(siniestro, sign_document=True)
 
     def generate_unsigned_pdf(self, siniestro: Siniestro, db: Session) -> bytes:
-        """Generar PDF del siniestro sin firma digital (para pruebas)"""
-        return generate_unsigned_pdf(siniestro)
+        """Generate unsigned PDF"""
+        return generate_pdf(siniestro, sign_document=False)
