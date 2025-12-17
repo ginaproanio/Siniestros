@@ -196,3 +196,6 @@ graph TD
 - Envías PDF por email
 - Cliente abre en computadora
 - Ve fotos sin necesidad de internet
+
+🚨 RESUMEN EN UNA FRASE:
+"PostgreSQL apunta, S3 almacena, PDF incorpora - Todo queda autocontenido para impresión y digital."

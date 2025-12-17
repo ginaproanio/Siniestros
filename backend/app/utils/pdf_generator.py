@@ -502,6 +502,78 @@ def get_image_from_base64(base64_data: str, content_type: str = None, optimize: 
         return None
 
 
+def descargar_imagen_desde_url(s3_url: str) -> Optional[bytes]:
+    """
+    Descarga imagen optimizada desde URL S3 para incrustar en PDF.
+
+    Formato esperado: https://bucket.s3.region.amazonaws.com/optimizadas/filename.jpg
+    Retorna: bytes de la imagen redimensionada (800px máximo, ~150KB)
+
+    Args:
+        s3_url: URL de la imagen optimizada en S3
+
+    Returns:
+        bytes: Contenido de la imagen para PDF, o None si error
+    """
+    import requests
+
+    try:
+        # Validar URL S3 optimizada
+        if not s3_url or not s3_url.strip():
+            logger.warning("URL de imagen vacía")
+            return None
+
+        if not s3_url.startswith("https://") or "optimizadas/" not in s3_url:
+            logger.warning(f"URL no es de imagen optimizada: {s3_url}")
+            return None
+
+        if "amazonaws.com" not in s3_url:
+            logger.warning(f"URL no apunta a S3: {s3_url}")
+            return None
+
+        logger.info(f"Descargando imagen para PDF: {s3_url}")
+
+        # Descargar imagen (URLs presigned no necesitan auth especial)
+        response = requests.get(s3_url, timeout=30, stream=True)
+
+        if response.status_code != 200:
+            logger.warning(f"Error HTTP {response.status_code} descargando {s3_url}")
+            return None
+
+        # Validar tipo de contenido
+        content_type = response.headers.get('content-type', '').lower()
+        if not content_type.startswith('image/'):
+            logger.warning(f"Tipo de contenido no válido: {content_type}")
+            return None
+
+        # Leer contenido
+        content = response.content
+
+        # Validar tamaño (máximo 2MB para imágenes optimizadas)
+        max_size = 2 * 1024 * 1024
+        if len(content) > max_size:
+            logger.warning(f"Imagen demasiado grande: {len(content)} bytes")
+            return None
+
+        # Validar que sea realmente una imagen
+        try:
+            from PIL import Image
+            import io
+            Image.open(io.BytesIO(content)).verify()
+            logger.info(f"Imagen descargada exitosamente: {len(content)} bytes")
+            return content
+        except Exception as e:
+            logger.warning(f"Imagen no válida: {e}")
+            return None
+
+    except requests.exceptions.RequestException as e:
+        logger.warning(f"Error de red descargando imagen {s3_url}: {e}")
+        return None
+    except Exception as e:
+        logger.error(f"Error procesando imagen {s3_url}: {e}")
+        return None
+
+
 def create_pdf_image(image_data: bytes, max_width: float = 4 * inch, max_height: float = 3 * inch) -> Image:
     """Create ReportLab Image object"""
     try:
@@ -902,8 +974,8 @@ def generate_pdf(siniestro: Siniestro, sign_document: bool = True) -> bytes:
                     story.append(Paragraph(relato.texto, normal_style))
                     # Try to include image
                     try:
-                        if relato.imagen_base64 and relato.imagen_base64.strip():
-                            image_data = get_image_from_base64(relato.imagen_base64, relato.imagen_content_type)
+                        if relato.imagen_url and relato.imagen_url.strip():
+                            image_data = descargar_imagen_desde_url(relato.imagen_url)
                             if image_data:
                                 pdf_image = create_pdf_image(image_data)
                                 if pdf_image:
@@ -924,8 +996,8 @@ def generate_pdf(siniestro: Siniestro, sign_document: bool = True) -> bytes:
                     story.append(Paragraph(relato.texto, normal_style))
                     # Try to include image
                     try:
-                        if relato.imagen_base64 and relato.imagen_base64.strip():
-                            image_data = get_image_from_base64(relato.imagen_base64, relato.imagen_content_type)
+                        if relato.imagen_url and relato.imagen_url.strip():
+                            image_data = descargar_imagen_desde_url(relato.imagen_url)
                             if image_data:
                                 pdf_image = create_pdf_image(image_data)
                                 if pdf_image:
@@ -946,8 +1018,8 @@ def generate_pdf(siniestro: Siniestro, sign_document: bool = True) -> bytes:
                     story.append(Paragraph(inspeccion.descripcion, normal_style))
                     # Try to include image
                     try:
-                        if inspeccion.imagen_base64 and inspeccion.imagen_base64.strip():
-                            image_data = get_image_from_base64(inspeccion.imagen_base64, inspeccion.imagen_content_type)
+                        if inspeccion.imagen_url and inspeccion.imagen_url.strip():
+                            image_data = descargar_imagen_desde_url(inspeccion.imagen_url)
                             if image_data:
                                 pdf_image = create_pdf_image(image_data)
                                 if pdf_image:
@@ -968,8 +1040,8 @@ def generate_pdf(siniestro: Siniestro, sign_document: bool = True) -> bytes:
                     story.append(Paragraph(testigo.texto, normal_style))
                     # Try to include image
                     try:
-                        if testigo.imagen_base64 and testigo.imagen_base64.strip():
-                            image_data = get_image_from_base64(testigo.imagen_base64, testigo.imagen_content_type)
+                        if testigo.imagen_url and testigo.imagen_url.strip():
+                            image_data = descargar_imagen_desde_url(testigo.imagen_url)
                             if image_data:
                                 pdf_image = create_pdf_image(image_data)
                                 if pdf_image:
