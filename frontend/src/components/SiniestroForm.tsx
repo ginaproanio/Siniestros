@@ -230,10 +230,20 @@ const SiniestroForm: React.FC = () => {
     }
   };
 
+  // Estilo CSS para placeholders opacos
+  const placeholderCSS = `
+    input::placeholder, textarea::placeholder {
+      color: #9ca3af !important;
+      opacity: 0.7 !important;
+    }
+  `;
+
   return (
     <div className="form-container">
+      {/* Estilo CSS para placeholders opacos */}
+      <style dangerouslySetInnerHTML={{ __html: placeholderCSS }} />
       <div className="form-header">
-        <h2>{isEditMode ? `Editar Siniestro #${siniestroId}` : 'Registro de Siniestro'}</h2>
+        <h2>{isEditMode ? `Editar Siniestro (${formData.reclamo_num || siniestroId})` : 'Registro de Siniestro'}</h2>
       </div>
 
       {/* Tab Navigation */}
@@ -305,6 +315,7 @@ const SiniestroForm: React.FC = () => {
                         value={formData.ruc_compania || ""}
                         onChange={handleInputChange}
                         placeholder="Ej: 1791240014001"
+                        style={{ color: '#9ca3af', opacity: 0.7 }}
                       />
                     </div>
                     <div className="form-group">

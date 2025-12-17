@@ -742,7 +742,7 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                 story.append(objeto_table)
                 story.append(Spacer(1, 15))
 
-        story.append(Spacer(1, 120))  # Salto de página completo
+        story.append(PageBreak())  # Salto de página completo
 
         # ==================== INVESTIGACIÓN ====================
         logger.info("🔍 Generando sección de investigación...")
@@ -1160,7 +1160,7 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                 section_num += 1
 
             # Después de TODA la investigación, salto de página
-            story.append(Spacer(1, 120))  # Salto de página completo
+            story.append(PageBreak())  # Salto de página completo
 
         # ==================== ANEXOS ====================
         if has_real_content(siniestro.anexo):
@@ -1201,7 +1201,7 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                 if siniestro.anexo and siniestro.anexo.strip():
                     story.append(Paragraph(siniestro.anexo, normal_style))
 
-            story.append(Spacer(1, 120))  # Salto de página
+            story.append(PageBreak())  # Salto de página
 
         # ==================== CIERRE ====================
         logger.info("📝 Generando sección de cierre...")
