@@ -3,6 +3,7 @@ PDF Generation Utilities - Unified and Clean Implementation
 """
 
 import io
+import os
 import logging
 from datetime import datetime
 from reportlab.lib.pagesizes import letter
@@ -690,6 +691,97 @@ def generate_pdf(siniestro: Siniestro, sign_document: bool = True) -> bytes:
         doc.build(story)
         error_buffer.seek(0)
         return error_buffer.getvalue()
+
+
+def generate_diagnostic_pdf(db: Session) -> Response:
+    """Generate diagnostic PDF for system testing"""
+    try:
+        from fastapi.responses import Response
+        import io
+
+        buffer = io.BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=letter)
+
+        styles = getSampleStyleSheet()
+        story = []
+
+        # Diagnostic content
+        story.append(Paragraph("REPORTE DE DIAGNÓSTICO - SISTEMA PDF", styles["Heading1"]))
+        story.append(Spacer(1, 20))
+
+        # System checks
+        checks = [
+            ["ReportLab", "✅ Instalado" if True else "❌ Faltante"],
+            ["PIL/Pillow", "✅ Instalado" if PIL_AVAILABLE else "❌ Faltante"],
+            ["Cryptography", "✅ Instalado" if CRYPTO_AVAILABLE else "❌ Faltante"],
+            ["Fecha de Prueba", datetime.now().strftime("%d/%m/%Y %H:%M:%S")],
+        ]
+
+        # Add siniestro count if DB is available
+        if db:
+            try:
+                from ..models import Siniestro
+                siniestro_count = db.query(Siniestro).count()
+                checks.append([f"Siniestros en BD", str(siniestro_count)])
+            except:
+                checks.append(["Base de Datos", "❌ Error de conexión"])
+
+        # Create table
+        table = crear_tabla_estandar(checks)
+        story.append(table)
+
+        doc.build(story)
+        buffer.seek(0)
+        pdf_data = buffer.getvalue()
+
+        return Response(
+            content=pdf_data,
+            media_type="application/pdf",
+            headers={"Content-Disposition": "attachment; filename=diagnostico.pdf"}
+        )
+
+    except Exception as e:
+        # Fallback minimal response
+        from fastapi.responses import Response
+        return Response(
+            content="Error generando PDF de diagnóstico",
+            media_type="text/plain"
+        )
+
+
+def generate_test_pdf() -> Response:
+    """Generate minimal test PDF"""
+    try:
+        from fastapi.responses import Response
+        import io
+
+        buffer = io.BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=letter)
+
+        styles = getSampleStyleSheet()
+        story = [
+            Paragraph("PDF DE PRUEBA - SISTEMA FUNCIONANDO", styles["Heading1"]),
+            Paragraph("Si puedes leer esto, el generador de PDF está funcionando correctamente.", styles["Normal"]),
+            Paragraph(f"Fecha de generación: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}", styles["Normal"]),
+        ]
+
+        doc.build(story)
+        buffer.seek(0)
+        pdf_data = buffer.getvalue()
+
+        return Response(
+            content=pdf_data,
+            media_type="application/pdf",
+            headers={"Content-Disposition": "attachment; filename=test.pdf"}
+        )
+
+    except Exception as e:
+        # Fallback minimal response
+        from fastapi.responses import Response
+        return Response(
+            content="Error generando PDF de prueba",
+            media_type="text/plain"
+        )
 
 
 # Legacy compatibility functions
