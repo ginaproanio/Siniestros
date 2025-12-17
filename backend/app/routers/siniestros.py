@@ -197,12 +197,12 @@ async def generar_pdf_sin_firma(siniestro_id: int, db: Session = Depends(get_db)
 
 @router.post("/upload-image")
 async def upload_image(file: UploadFile = File(...)):
-    """Subir imagen a AWS S3 y devolver URL presigned + base64 para PDFs"""
+    """Subir imagen a AWS S3 y devolver URL optimizada para PostgreSQL"""
     from app.services.s3_service import upload_file_to_s3
 
     result = await upload_file_to_s3(file)
-    # Solo devolver la URL presigned al frontend, el base64 se guarda en BD
-    return {"url_presigned": result["url_presigned"]}
+    # Devolver URL optimizada (esta va a imagen_url en BD según arquitectura)
+    return {"url_optimizada": result["url_optimizada"]}
 
 
 @router.get("/diagnostico-pdf")

@@ -310,19 +310,24 @@ class SiniestroService:
     def _process_image_data(self, item_data: Dict[str, Any]) -> Dict[str, Any]:
         """Process image data for relatos and inspecciones
 
-        Note: Since we removed imagen_base64 and imagen_content_type columns
-        from models to sync with database, this function now only validates
-        that image URLs are accessible, without storing base64 data.
+        Valida que imagen_url apunte a versión optimizada en S3 según arquitectura.
         """
-        imagen_url = item_data.get("imagen_url")
-        if imagen_url and imagen_url.strip():
-            try:
-                # Just validate that the image URL is accessible
-                # We no longer store base64 data in the database
-                logger.info(f"Validating image URL: {imagen_url}")
-                # Could add validation logic here if needed
-            except Exception as e:
-                logger.warning(f"No se pudo validar imagen: {e}")
+        imagen_url = item_data.get("imagen_url", "").strip()
+
+        if imagen_url:
+            # VALIDAR FORMATO CORRECTO según arquitectura
+            if not imagen_url.startswith("https://") or "optimizadas/" not in imagen_url:
+                logger.warning(f"URL de imagen no cumple formato optimizada: {imagen_url}")
+                # Podríamos corregir automáticamente o rechazar
+
+            # Validar que apunte a S3 (no otros servicios)
+            if "amazonaws.com" not in imagen_url:
+                logger.warning(f"URL no apunta a S3: {imagen_url}")
+
+            # Validar que NO contenga Base64 (error de arquitectura anterior)
+            if imagen_url.startswith("data:"):
+                logger.error(f"ERROR: Se recibió Base64 en imagen_url: {imagen_url[:50]}...")
+                # En producción, esto debería rechazarse o corregirse
 
         return item_data
 

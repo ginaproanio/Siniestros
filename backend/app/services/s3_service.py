@@ -60,7 +60,9 @@ async def validate_file(file: UploadFile) -> bytes:
 
 async def upload_file_to_s3(file: UploadFile, content: bytes = None) -> dict:
     """
-    Sube archivo a S3, genera URL presigned Y convierte a base64 para PDFs
+    Sube archivo a S3 en DOS VERSIONES según arquitectura definida:
+    1. ORIGINAL (5-10MB) - Para backup legal
+    2. OPTIMIZADA (300KB) - Para PDFs y web (esta va a PostgreSQL)
 
     Args:
         file: Archivo UploadFile de FastAPI
@@ -68,15 +70,17 @@ async def upload_file_to_s3(file: UploadFile, content: bytes = None) -> dict:
 
     Returns:
         dict: {
-            "url_presigned": str,  # URL para visualización en web
-            "base64_data": str,    # Datos base64 para incluir en PDFs
-            "content_type": str    # Tipo MIME
+            "url_optimizada": str,  # ← Esta va a PostgreSQL (imagen_url)
+            "url_original": str,    # Para backup/trazabilidad
+            "content_type": str     # Tipo MIME
         }
 
     Raises:
         HTTPException: Si hay errores de validación o subida
     """
     import base64
+    from PIL import Image
+    import io
 
     try:
         # Validar archivo y obtener contenido si no se proporcionó
@@ -84,37 +88,78 @@ async def upload_file_to_s3(file: UploadFile, content: bytes = None) -> dict:
             content = await validate_file(file)
         logger.info(f"Archivo validado: {file.filename}, tamaño: {len(content)} bytes")
 
-        # Generar nombre único
-        file_extension = file.filename.split('.')[-1] if '.' in file.filename else ''
-        unique_filename = f"{uuid.uuid4()}.{file_extension}" if file_extension else str(uuid.uuid4())
-        s3_key = f"uploads/{unique_filename}"
+        # Generar ID único para ambas versiones
+        file_id = str(uuid.uuid4())
+        file_extension = file.filename.split('.')[-1] if '.' in file.filename else 'jpg'
 
-        # Subir a S3
+        # === VERSIÓN ORIGINAL (Backup Legal) ===
+        s3_key_original = f"originales/{file_id}.{file_extension}"
+
+        # Subir original a S3
         s3_client = get_s3_client()
         s3_client.put_object(
             Bucket=S3_BUCKET_NAME,
-            Key=s3_key,
+            Key=s3_key_original,
             Body=content,
             ContentType=file.content_type,
-            ACL='private'  # Explícitamente privado
+            ACL='private'
         )
-        logger.info(f"Archivo subido a S3: s3://{S3_BUCKET_NAME}/{s3_key}")
+        logger.info(f"Original subido: s3://{S3_BUCKET_NAME}/{s3_key_original}")
 
-        # Generar URL presigned
-        presigned_url = s3_client.generate_presigned_url(
-            'get_object',
-            Params={'Bucket': S3_BUCKET_NAME, 'Key': s3_key},
-            ExpiresIn=604800  # 7 días
+        # === VERSIÓN OPTIMIZADA (Para PostgreSQL) ===
+        # Optimizar imagen para web/PDF
+        try:
+            # Abrir imagen con PIL
+            img = Image.open(io.BytesIO(content))
+
+            # Convertir a RGB si es necesario (para JPEG)
+            if img.mode in ('RGBA', 'LA', 'P'):
+                img = img.convert('RGB')
+
+            # Redimensionar manteniendo proporción (máximo 1200px de ancho)
+            max_width = 1200
+            if img.width > max_width:
+                ratio = max_width / img.width
+                new_height = int(img.height * ratio)
+                img = img.resize((max_width, new_height), Image.Resampling.LANCZOS)
+
+            # Optimizar calidad
+            output_buffer = io.BytesIO()
+            img.save(output_buffer, format='JPEG', quality=85, optimize=True)
+            optimized_content = output_buffer.getvalue()
+
+            logger.info(f"Imagen optimizada: {len(content)} → {len(optimized_content)} bytes")
+
+        except Exception as e:
+            logger.warning(f"No se pudo optimizar imagen, usando original: {e}")
+            optimized_content = content
+
+        # Subir versión optimizada
+        s3_key_optimizada = f"optimizadas/{file_id}.{file_extension}"
+        s3_client.put_object(
+            Bucket=S3_BUCKET_NAME,
+            Key=s3_key_optimizada,
+            Body=optimized_content,
+            ContentType='image/jpeg',  # Siempre JPEG para consistencia
+            ACL='private'
         )
+        logger.info(f"Optimizada subida: s3://{S3_BUCKET_NAME}/{s3_key_optimizada}")
 
-        # Convertir a base64 para PDFs
-        base64_data = base64.b64encode(content).decode('utf-8')
-        logger.info(f"Imagen convertida a base64: {len(base64_data)} caracteres")
+        # === GENERAR URLs ===
+        region = os.getenv('AWS_DEFAULT_REGION', 'us-east-2')
+
+        # URL optimizada (esta va a PostgreSQL)
+        url_optimizada = f"https://{S3_BUCKET_NAME}.s3.{region}.amazonaws.com/{s3_key_optimizada}"
+
+        # URL original (para trazabilidad/backup)
+        url_original = f"https://{S3_BUCKET_NAME}.s3.{region}.amazonaws.com/{s3_key_original}"
+
+        logger.info(f"URLs generadas - Optimizada: {url_optimizada}")
 
         return {
-            "url_presigned": presigned_url,
-            "base64_data": base64_data,
-            "content_type": file.content_type
+            "url_optimizada": url_optimizada,  # ← Esta va a imagen_url en PostgreSQL
+            "url_original": url_original,      # Para backup legal
+            "content_type": 'image/jpeg'       # Siempre JPEG optimizado
         }
 
     except NoCredentialsError:
