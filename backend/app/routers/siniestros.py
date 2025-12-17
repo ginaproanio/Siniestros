@@ -40,7 +40,8 @@ async def get_siniestros(
     skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
 ):
     """Obtener todos los siniestros con paginación"""
-    siniestros = db.query(models.Siniestro).offset(skip).limit(limit).all()
+    siniestro_service = SiniestroService(db)
+    siniestros = siniestro_service.get_siniestros(skip=skip, limit=limit)
     return siniestros
 
 
