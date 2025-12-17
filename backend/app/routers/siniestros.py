@@ -22,17 +22,23 @@ async def create_siniestro(
 
     try:
         # Validate input data
-        validated_data = validation_service.validate_siniestro_data(siniestro.model_dump())
+        validated_data = validation_service.validate_siniestro_data(
+            siniestro.model_dump()
+        )
 
         # Create siniestro using service
-        db_siniestro = siniestro_service.create_siniestro(schemas.SiniestroCreate(**validated_data))
+        db_siniestro = siniestro_service.create_siniestro(
+            schemas.SiniestroCreate(**validated_data)
+        )
 
         return db_siniestro
 
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=validation_service.create_safe_error_message(e))
+        raise HTTPException(
+            status_code=500, detail=validation_service.create_safe_error_message(e)
+        )
 
 
 @router.get("/", response_model=List[schemas.SiniestroResponse])
@@ -60,7 +66,9 @@ async def get_siniestro(siniestro_id: int, db: Session = Depends(get_db)):
 async def guardar_seccion(
     siniestro_id: int,
     seccion: str,  # 'asegurado', 'conductor', 'objeto_asegurado', 'antecedentes', etc.
-    datos: List[schemas.RelatoInput] | List[schemas.AntecedenteInput] | dict,  # Datos específicos de la sección
+    datos: (
+        List[schemas.RelatoInput] | List[schemas.AntecedenteInput] | dict
+    ),  # Datos específicos de la sección
     db: Session = Depends(get_db),
 ):
     """Guardar datos de una sección específica del siniestro"""
@@ -68,8 +76,23 @@ async def guardar_seccion(
     validation_service = ValidationService()
 
     try:
+        # Convert Pydantic models to dicts for service layer compatibility
+        if isinstance(datos, list):
+            # Handle list of Pydantic models
+            converted_data = []
+            for item in datos:
+                if hasattr(item, 'model_dump'):  # Pydantic model
+                    converted_data.append(item.model_dump())
+                else:
+                    converted_data.append(item)
+            processed_data = converted_data
+        elif hasattr(datos, 'model_dump'):  # Single Pydantic model
+            processed_data = datos.model_dump()
+        else:
+            processed_data = datos
+
         # Validate section data
-        validated_data = validation_service.validate_section_data(seccion, datos)
+        validated_data = validation_service.validate_section_data(seccion, processed_data)
 
         # Update section using service
         result = siniestro_service.update_section(siniestro_id, seccion, validated_data)
@@ -81,12 +104,18 @@ async def guardar_seccion(
     except Exception as e:
         # Log the actual error for debugging
         import logging
+
         logger = logging.getLogger(__name__)
-        logger.error(f"Error guardando sección {seccion} para siniestro {siniestro_id}: {str(e)}")
+        logger.error(
+            f"Error guardando sección {seccion} para siniestro {siniestro_id}: {str(e)}"
+        )
         import traceback
+
         logger.error(f"Traceback: {traceback.format_exc()}")
 
-        raise HTTPException(status_code=500, detail=validation_service.create_safe_error_message(e))
+        raise HTTPException(
+            status_code=500, detail=validation_service.create_safe_error_message(e)
+        )
 
 
 @router.put("/{siniestro_id}", response_model=schemas.SiniestroResponse)
@@ -101,17 +130,23 @@ async def update_siniestro(
 
     try:
         # Validate input data
-        validated_data = validation_service.validate_siniestro_data(siniestro_update.model_dump(exclude_unset=True))
+        validated_data = validation_service.validate_siniestro_data(
+            siniestro_update.model_dump(exclude_unset=True)
+        )
 
         # Update siniestro using service
-        updated_siniestro = siniestro_service.update_siniestro(siniestro_id, schemas.SiniestroUpdate(**validated_data))
+        updated_siniestro = siniestro_service.update_siniestro(
+            siniestro_id, schemas.SiniestroUpdate(**validated_data)
+        )
 
         return updated_siniestro
 
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=validation_service.create_safe_error_message(e))
+        raise HTTPException(
+            status_code=500, detail=validation_service.create_safe_error_message(e)
+        )
 
 
 @router.post("/{siniestro_id}/testigo", response_model=schemas.TestigoResponse)
@@ -124,17 +159,23 @@ async def create_testigo(
 
     try:
         # Validate input data
-        validated_data = validation_service.validate_section_data("testigos", [testigo.model_dump()])
+        validated_data = validation_service.validate_section_data(
+            "testigos", [testigo.model_dump()]
+        )
 
         # Create testigo using service
-        db_testigo = siniestro_service.create_testigo(siniestro_id, schemas.TestigoCreate(**validated_data[0]))
+        db_testigo = siniestro_service.create_testigo(
+            siniestro_id, schemas.TestigoCreate(**validated_data[0])
+        )
 
         return db_testigo
 
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=validation_service.create_safe_error_message(e))
+        raise HTTPException(
+            status_code=500, detail=validation_service.create_safe_error_message(e)
+        )
 
 
 @router.get("/{siniestro_id}/generar-pdf")
@@ -181,7 +222,9 @@ async def diagnostico_pdf(db: Session = Depends(get_db)):
     try:
         return pdf_service.generate_diagnostic_pdf()
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Error generando PDF de diagnóstico")
+        raise HTTPException(
+            status_code=500, detail="Error generando PDF de diagnóstico"
+        )
 
 
 @router.get("/test-pdf")
