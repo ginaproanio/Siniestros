@@ -132,3 +132,78 @@ async def upload_file_to_s3(file: UploadFile, content: bytes = None) -> dict:
     except Exception as e:
         logger.error(f"Error inesperado en upload_file_to_s3: {e}")
         raise HTTPException(500, "Error interno del servidor")
+
+
+def download_image_from_url(image_url: str) -> bytes:
+    """
+    Descarga imagen desde URL y retorna bytes
+
+    Args:
+        image_url: URL de la imagen a descargar
+
+    Returns:
+        bytes: Contenido de la imagen
+
+    Raises:
+        HTTPException: Si hay errores de descarga o formato
+    """
+    import requests
+    from urllib.parse import urlparse
+
+    try:
+        # Validar URL básica
+        if not image_url or not image_url.strip():
+            raise HTTPException(status_code=400, detail="URL de imagen requerida")
+
+        # Parsear URL para validación básica
+        parsed_url = urlparse(image_url)
+        if not parsed_url.scheme or not parsed_url.netloc:
+            raise HTTPException(status_code=400, detail="URL inválida")
+
+        logger.info(f"Descargando imagen desde: {image_url}")
+
+        # Descargar imagen
+        response = requests.get(image_url, timeout=30, stream=True)
+
+        if response.status_code != 200:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Error descargando imagen: HTTP {response.status_code}"
+            )
+
+        # Validar tipo de contenido
+        content_type = response.headers.get('content-type', '').lower()
+        if not content_type.startswith('image/'):
+            raise HTTPException(
+                status_code=400,
+                detail=f"Tipo de contenido no válido: {content_type}"
+            )
+
+        # Leer contenido
+        content = response.content
+
+        # Validar tamaño (máximo 10MB para imágenes)
+        max_size = 10 * 1024 * 1024
+        if len(content) > max_size:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Imagen demasiado grande. Máximo: {max_size/1024/1024}MB"
+            )
+
+        # Validar que sea realmente una imagen
+        try:
+            from PIL import Image
+            import io
+            Image.open(io.BytesIO(content)).verify()
+        except Exception:
+            raise HTTPException(status_code=400, detail="Archivo no es una imagen válida")
+
+        logger.info(f"Imagen descargada exitosamente: {len(content)} bytes")
+        return content
+
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Error de red descargando imagen: {e}")
+        raise HTTPException(status_code=400, detail=f"Error descargando imagen: {str(e)}")
+    except Exception as e:
+        logger.error(f"Error procesando imagen: {e}")
+        raise HTTPException(status_code=500, detail="Error procesando imagen descargada")
