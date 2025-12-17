@@ -1108,12 +1108,9 @@ def generate_pdf(siniestro: Siniestro, sign_document: bool = True) -> bytes:
         return error_buffer.getvalue()
 
 
-def generate_diagnostic_pdf(db: Session) -> "Response":
+def generate_diagnostic_pdf(db: Session) -> bytes:
     """Generate diagnostic PDF for system testing"""
     try:
-        from fastapi.responses import Response
-        import io
-
         buffer = io.BytesIO()
         doc = SimpleDocTemplate(buffer, pagesize=letter)
 
@@ -1149,27 +1146,25 @@ def generate_diagnostic_pdf(db: Session) -> "Response":
         buffer.seek(0)
         pdf_data = buffer.getvalue()
 
-        return Response(
-            content=pdf_data,
-            media_type="application/pdf",
-            headers={"Content-Disposition": "attachment; filename=diagnostico.pdf"}
-        )
+        # Validate PDF
+        if not pdf_data.startswith(b"%PDF-"):
+            raise Exception("PDF generado es corrupto")
+
+        return pdf_data
 
     except Exception as e:
-        # Fallback minimal response
-        from fastapi.responses import Response
-        return Response(
-            content="Error generando PDF de diagnóstico",
-            media_type="text/plain"
-        )
+        # Fallback minimal PDF
+        error_buffer = io.BytesIO()
+        doc = SimpleDocTemplate(error_buffer, pagesize=letter)
+        story = [Paragraph("ERROR: No se pudo generar PDF de diagnóstico", styles["Normal"])]
+        doc.build(story)
+        error_buffer.seek(0)
+        return error_buffer.getvalue()
 
 
-def generate_test_pdf() -> "Response":
+def generate_test_pdf() -> bytes:
     """Generate minimal test PDF"""
     try:
-        from fastapi.responses import Response
-        import io
-
         buffer = io.BytesIO()
         doc = SimpleDocTemplate(buffer, pagesize=letter)
 
@@ -1184,19 +1179,20 @@ def generate_test_pdf() -> "Response":
         buffer.seek(0)
         pdf_data = buffer.getvalue()
 
-        return Response(
-            content=pdf_data,
-            media_type="application/pdf",
-            headers={"Content-Disposition": "attachment; filename=test.pdf"}
-        )
+        # Validate PDF
+        if not pdf_data.startswith(b"%PDF-"):
+            raise Exception("PDF generado es corrupto")
+
+        return pdf_data
 
     except Exception as e:
-        # Fallback minimal response
-        from fastapi.responses import Response
-        return Response(
-            content="Error generando PDF de prueba",
-            media_type="text/plain"
-        )
+        # Fallback minimal PDF
+        error_buffer = io.BytesIO()
+        doc = SimpleDocTemplate(error_buffer, pagesize=letter)
+        story = [Paragraph("ERROR: No se pudo generar PDF de prueba", styles["Normal"])]
+        doc.build(story)
+        error_buffer.seek(0)
+        return error_buffer.getvalue()
 
 
 # Legacy compatibility functions

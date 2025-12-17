@@ -78,7 +78,7 @@ async def guardar_seccion(
     manual conversion and maintaining type safety throughout.
     """
     siniestro_service = SiniestroService(db)
-    validation_service = ValidationService()
+    validation_service = get_validation_service()
 
     try:
         # Validate section data (service handles Pydantic conversion internally)
@@ -105,7 +105,7 @@ async def update_siniestro(
 ):
     """Actualizar un siniestro"""
     siniestro_service = SiniestroService(db)
-    validation_service = ValidationService()
+    validation_service = get_validation_service()
 
     try:
         # Validate input data
@@ -123,15 +123,6 @@ async def update_siniestro(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        # Log the actual error for debugging
-        import logging
-        logger = logging.getLogger(__name__)
-        logger.error(
-            f"Error guardando sección {seccion} para siniestro {siniestro_id}: {str(e)}"
-        )
-        import traceback
-        logger.error(f"Traceback: {traceback.format_exc()}")
-
         raise HTTPException(
             status_code=500, detail=validation_service.create_safe_error_message(e)
         )
@@ -143,7 +134,7 @@ async def create_testigo(
 ):
     """Crear testigo"""
     siniestro_service = SiniestroService(db)
-    validation_service = ValidationService()
+    validation_service = get_validation_service()
 
     try:
         # Validate input data
@@ -161,15 +152,6 @@ async def create_testigo(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        # Log the actual error for debugging
-        import logging
-        logger = logging.getLogger(__name__)
-        logger.error(
-            f"Error guardando sección {seccion} para siniestro {siniestro_id}: {str(e)}"
-        )
-        import traceback
-        logger.error(f"Traceback: {traceback.format_exc()}")
-
         raise HTTPException(
             status_code=500, detail=validation_service.create_safe_error_message(e)
         )
