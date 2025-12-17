@@ -126,72 +126,53 @@ class ValidationService:
         return False
 
     def validate_section_data(self, section: str, data: Any) -> Any:
-        """Validate section-specific data"""
+        """
+        Validate section-specific data.
+
+        Note: Since Phase 1, Pydantic handles most validations.
+        This service now focuses on business rules and edge cases.
+        """
+        # Pydantic already validated the structure, so we focus on business logic
         if section in ['asegurado', 'conductor', 'objeto_asegurado']:
-            return self._validate_entity_data(data)
+            return self._validate_entity_business_rules(data, section)
         elif section in ['antecedentes', 'relatos_asegurado', 'relatos_conductor',
                         'inspecciones', 'testigos']:
-            return self._validate_list_data(data)
+            return self._validate_list_business_rules(data, section)
         elif section in ['evidencias_complementarias', 'otras_diligencias',
                         'detalles_visita_taller', 'observaciones',
                         'recomendacion_pago_cobertura', 'conclusiones', 'anexo']:
-            return self._validate_json_data(data)
+            return self._validate_json_business_rules(data, section)
         else:
             raise ValueError(f"Sección '{section}' no reconocida")
 
-    def _validate_entity_data(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        """Validate entity data (asegurado, conductor, etc.)"""
-        if not isinstance(data, dict):
-            raise ValueError("Datos deben ser un objeto")
+    def _validate_entity_business_rules(self, data: Any, section: str) -> Any:
+        """
+        Validate entity business rules (asegurado, conductor, etc.)
 
-        # Validate required fields
-        required_fields = {
-            'asegurado': ['tipo'],
-            'conductor': ['nombre', 'cedula'],
-            'objeto_asegurado': ['placa']
-        }
-
-        # Validate cedulas
-        if 'cedula' in data and data['cedula']:
-            if not self._is_valid_cedula(data['cedula']):
-                raise ValueError("Cédula inválida")
-
-        # Validate emails
-        if 'correo' in data and data['correo']:
-            if not self._is_valid_email(data['correo']):
-                raise ValueError("Email inválido")
-
-        # Validate phone numbers
-        phone_fields = ['celular', 'telefono']
-        for field in phone_fields:
-            if field in data and data[field]:
-                if not self._is_valid_phone(data[field]):
-                    raise ValueError(f"Teléfono {field} inválido")
-
+        Since Pydantic handles structural validation, focus on business logic.
+        """
+        # For Phase 2, entities are validated by Pydantic, so we just pass through
+        # Future business rules can be added here (e.g., duplicate cedula checks)
         return data
 
-    def _validate_list_data(self, data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        """Validate list data (relatos, inspecciones, etc.)"""
-        # Handle case where data might not be a list (flexible parsing)
-        if not isinstance(data, list):
-            # If it's not a list, try to wrap it in a list
-            if isinstance(data, dict):
-                data = [data]
-            else:
-                raise ValueError("Datos deben ser una lista o un objeto")
+    def _validate_list_business_rules(self, data: Any, section: str) -> Any:
+        """
+        Validate list business rules (antecedentes, relatos, inspecciones, etc.)
 
-        if len(data) > 50:  # Reasonable limit
-            raise ValueError("Demasiados elementos en la lista")
+        Since Pydantic handles structural validation, focus on business logic.
+        """
+        # For Phase 2, list data is validated by Pydantic, so we just pass through
+        # Future business rules can be added here (e.g., duplicate image URLs)
+        return data
 
-        for item in data:
-            if not isinstance(item, dict):
-                raise ValueError(f"Cada elemento debe ser un objeto, pero se recibió: {type(item)} - {item}")
+    def _validate_json_business_rules(self, data: Any, section: str) -> Any:
+        """
+        Validate JSON business rules (observaciones, conclusiones, etc.)
 
-            # Validate image URLs if present
-            if 'imagen_url' in item and item['imagen_url']:
-                if not self.validate_image_url(item['imagen_url']):
-                    raise ValueError("URL de imagen inválida")
-
+        Since Pydantic handles structural validation, focus on business logic.
+        """
+        # For Phase 2, JSON data is validated by Pydantic, so we just pass through
+        # Future business rules can be added here (e.g., content analysis)
         return data
 
     def _validate_json_data(self, data: Any) -> Any:

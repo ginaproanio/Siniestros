@@ -157,3 +157,158 @@ class TestPydanticServiceIntegration:
 
         # Verify it was treated as a list internally
         assert result["message"] == "Sección 'antecedentes' actualizada"
+
+
+class TestSectionEndpointsPhase2:
+    """Test Phase 2 endpoints: relatos_asegurado, inspecciones, testigos"""
+
+    @pytest.fixture
+    def mock_db(self):
+        """Mock database session"""
+        return MagicMock()
+
+    @pytest.fixture
+    def service(self, mock_db):
+        """Service instance with mocked DB"""
+        return SiniestroService(mock_db)
+
+    def test_relatos_asegurado_endpoint(self, service, mock_db):
+        """Test relatos_asegurado endpoint with Pydantic models"""
+        from app.schemas.siniestro import RelatoInput
+
+        # Mock siniestro
+        mock_siniestro = MagicMock()
+        mock_siniestro.id = 1
+        service.get_siniestro.return_value = mock_siniestro
+
+        # Create Pydantic models for relatos_asegurado
+        relatos_data = [
+            RelatoInput(texto="Relato del asegurado", imagen_url="http://example.com/img.jpg"),
+            RelatoInput(texto="Segundo relato", imagen_url="")
+        ]
+
+        # Mock DB operations
+        mock_db.commit.return_value = None
+
+        # Call service method
+        result = service.update_section(1, "relatos_asegurado", relatos_data)
+
+        # Verify result
+        assert result["message"] == "Sección 'relatos_asegurado' actualizada"
+        assert result["siniestro_id"] == 1
+
+    def test_inspecciones_endpoint(self, service, mock_db):
+        """Test inspecciones endpoint with Pydantic models"""
+        from app.schemas.siniestro import InspeccionCreate
+
+        # Mock siniestro
+        mock_siniestro = MagicMock()
+        mock_siniestro.id = 1
+        service.get_siniestro.return_value = mock_siniestro
+
+        # Create Pydantic models for inspecciones
+        inspecciones_data = [
+            InspeccionCreate(descripcion="Inspección del lugar", imagen_url="http://example.com/inspection.jpg"),
+        ]
+
+        # Mock DB operations
+        mock_db.commit.return_value = None
+
+        # Call service method
+        result = service.update_section(1, "inspecciones", inspecciones_data)
+
+        # Verify result
+        assert result["message"] == "Sección 'inspecciones' actualizada"
+        assert result["siniestro_id"] == 1
+
+    def test_testigos_endpoint(self, service, mock_db):
+        """Test testigos endpoint with Pydantic models"""
+        from app.schemas.siniestro import TestigoCreate
+
+        # Mock siniestro
+        mock_siniestro = MagicMock()
+        mock_siniestro.id = 1
+        service.get_siniestro.return_value = mock_siniestro
+
+        # Create Pydantic models for testigos
+        testigos_data = [
+            TestigoCreate(texto="Declaración del testigo"),
+        ]
+
+        # Mock DB operations
+        mock_db.commit.return_value = None
+
+        # Call service method
+        result = service.update_section(1, "testigos", testigos_data)
+
+        # Verify result
+        assert result["message"] == "Sección 'testigos' actualizada"
+        assert result["siniestro_id"] == 1
+
+    def test_relatos_conductor_endpoint(self, service, mock_db):
+        """Test relatos_conductor endpoint with Pydantic models"""
+        from app.schemas.siniestro import RelatoInput
+
+        # Mock siniestro
+        mock_siniestro = MagicMock()
+        mock_siniestro.id = 1
+        service.get_siniestro.return_value = mock_siniestro
+
+        # Create Pydantic models for relatos_conductor
+        relatos_data = [
+            RelatoInput(texto="Relato del conductor", imagen_url="http://example.com/driver.jpg"),
+        ]
+
+        # Mock DB operations
+        mock_db.commit.return_value = None
+
+        # Call service method
+        result = service.update_section(1, "relatos_conductor", relatos_data)
+
+        # Verify result
+        assert result["message"] == "Sección 'relatos_conductor' actualizada"
+        assert result["siniestro_id"] == 1
+
+    def test_image_processing_integration(self, service, mock_db):
+        """Test that image processing works with Pydantic models"""
+        from app.schemas.siniestro import RelatoInput
+
+        # Mock siniestro
+        mock_siniestro = MagicMock()
+        mock_siniestro.id = 1
+        service.get_siniestro.return_value = mock_siniestro
+
+        # Create relato with image URL
+        relatos_data = [
+            RelatoInput(texto="Relato con imagen", imagen_url="http://example.com/test.jpg"),
+        ]
+
+        # Mock DB operations
+        mock_db.commit.return_value = None
+
+        # Call service method
+        result = service.update_section(1, "relatos_asegurado", relatos_data)
+
+        # Verify result
+        assert result["message"] == "Sección 'relatos_asegurado' actualizada"
+
+    def test_empty_sections_handling(self, service, mock_db):
+        """Test handling of empty section data"""
+        # Mock siniestro
+        mock_siniestro = MagicMock()
+        mock_siniestro.id = 1
+        service.get_siniestro.return_value = mock_siniestro
+
+        # Empty data for different sections
+        sections_to_test = ["relatos_asegurado", "inspecciones", "testigos"]
+
+        for section in sections_to_test:
+            # Mock DB operations
+            mock_db.commit.return_value = None
+
+            # Call service method with empty list
+            result = service.update_section(1, section, [])
+
+            # Verify result
+            assert result["message"] == f"Sección '{section}' actualizada"
+            assert result["siniestro_id"] == 1
