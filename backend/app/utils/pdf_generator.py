@@ -52,7 +52,6 @@ ARCHIVO FINAL: {numero_reclamo}.pdf
 import io
 import logging
 import os
-import requests
 from datetime import datetime
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -63,14 +62,10 @@ from reportlab.platypus import (
     Spacer,
     Table,
     TableStyle,
-    PageTemplate,
-    Frame,
-    NextPageTemplate,
     Image,
 )
 from reportlab.lib import colors
-from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
-from reportlab.pdfgen import canvas
+from reportlab.lib.enums import TA_CENTER, TA_LEFT
 from sqlalchemy.orm import Session
 from ..models import Siniestro
 
@@ -85,68 +80,37 @@ except ImportError:
     )
 
 
-def download_image_from_url(image_url: str) -> bytes:
-    """Descargar imagen desde URL y retornar datos binarios"""
-    if not image_url or not image_url.strip():
-        logger.warning("⚠️ URL de imagen vacía o None")
+def get_image_from_base64(base64_data: str, content_type: str = None) -> bytes:
+    """Convertir datos base64 a bytes para procesamiento de imagen"""
+    if not base64_data or not base64_data.strip():
+        logger.warning("⚠️ Datos base64 vacíos o None")
         return None
 
     try:
-        logger.info(f"📥 Descargando imagen desde: {image_url[:100]}...")
+        import base64
 
-        # Verificar que sea una URL de S3
-        if "s3.amazonaws.com" not in image_url and "amazonaws.com" not in image_url:
-            logger.warning(f"⚠️ URL no parece ser de S3: {image_url[:100]}")
-            return None
+        # Decodificar base64 a bytes
+        image_data = base64.b64decode(base64_data)
+        logger.info(f"✅ Imagen decodificada de base64: {len(image_data)} bytes")
 
-        response = requests.get(image_url, timeout=15, stream=True)
-        logger.info(f"📡 Response status: {response.status_code}")
-        logger.info(f"📡 Response headers: {dict(response.headers)}")
-
-        response.raise_for_status()
-
-        # Validar que sea una imagen antes de descargar
-        content_type = response.headers.get("content-type", "").lower()
-        logger.info(f"📋 Content-Type: {content_type}")
-
-        if not content_type.startswith("image/"):
-            logger.warning(f"⚠️ Contenido no es imagen: {content_type}")
-            return None
-
-        image_data = response.content
-        logger.info(f"📏 Tamaño de imagen: {len(image_data)} bytes")
-
+        # Validar tamaño
         if len(image_data) == 0:
-            logger.warning("⚠️ Imagen descargada está vacía")
+            logger.warning("⚠️ Imagen decodificada está vacía")
             return None
 
         if len(image_data) > 10 * 1024 * 1024:  # 10MB máximo
             logger.warning(f"⚠️ Imagen demasiado grande: {len(image_data)} bytes")
             return None
 
-        logger.info(
-            f"✅ Imagen descargada exitosamente: {len(image_data)} bytes, tipo: {content_type}"
-        )
+        # Validar que sea una imagen (si tenemos content_type)
+        if content_type and not content_type.startswith("image/"):
+            logger.warning(f"⚠️ Content-Type no es imagen: {content_type}")
+            return None
+
         return image_data
 
-    except requests.exceptions.Timeout:
-        logger.error(f"⏰ TIMEOUT descargando imagen: {image_url[:100]}")
-        return None
-    except requests.exceptions.HTTPError as e:
-        logger.error(f"🌐 HTTP ERROR descargando imagen: {e}")
-        logger.error(
-            f"🌐 Status code: {e.response.status_code if e.response else 'N/A'}"
-        )
-        return None
-    except requests.exceptions.RequestException as e:
-        logger.error(f"🌐 REQUEST EXCEPTION descargando imagen: {e}")
-        return None
     except Exception as e:
-        logger.error(f"❌ ERROR INESPERADO descargando imagen: {e}")
-        logger.error(f"❌ Tipo de error: {type(e)}")
-        import traceback
-
-        logger.error(f"❌ Traceback: {traceback.format_exc()}")
+        logger.error(f"❌ Error decodificando base64: {e}")
         return None
 
 
@@ -892,10 +856,12 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                         )
                     )
                     story.append(Paragraph(relato.texto, normal_style))
-                    # Incluir imagen si existe (con manejo robusto de errores)
+                    # Incluir imagen si existe (usando base64 de BD)
                     try:
-                        if relato.imagen_url and relato.imagen_url.strip():
-                            image_data = download_image_from_url(relato.imagen_url)
+                        if relato.imagen_base64 and relato.imagen_base64.strip():
+                            image_data = get_image_from_base64(
+                                relato.imagen_base64, relato.imagen_content_type
+                            )
                             if image_data:
                                 pdf_image = create_pdf_image(image_data)
                                 if pdf_image:
@@ -909,7 +875,7 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                                     )
                             else:
                                 logger.warning(
-                                    f"⚠️ No se pudo descargar imagen para relato {i}"
+                                    f"⚠️ No se pudo procesar imagen base64 para relato {i}"
                                 )
                     except Exception as img_error:
                         logger.warning(
@@ -938,10 +904,12 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                         )
                     )
                     story.append(Paragraph(relato.texto, normal_style))
-                    # Incluir imagen si existe (con manejo robusto de errores)
+                    # Incluir imagen si existe (usando base64 de BD)
                     try:
-                        if relato.imagen_url and relato.imagen_url.strip():
-                            image_data = download_image_from_url(relato.imagen_url)
+                        if relato.imagen_base64 and relato.imagen_base64.strip():
+                            image_data = get_image_from_base64(
+                                relato.imagen_base64, relato.imagen_content_type
+                            )
                             if image_data:
                                 pdf_image = create_pdf_image(image_data)
                                 if pdf_image:
@@ -955,7 +923,7 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                                     )
                             else:
                                 logger.warning(
-                                    f"⚠️ No se pudo descargar imagen para conductor {i}"
+                                    f"⚠️ No se pudo procesar imagen base64 para conductor {i}"
                                 )
                     except Exception as img_error:
                         logger.warning(
@@ -984,10 +952,12 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                         )
                     )
                     story.append(Paragraph(inspeccion.descripcion, normal_style))
-                    # Incluir imagen si existe (con manejo robusto de errores)
+                    # Incluir imagen si existe (usando base64 de BD)
                     try:
-                        if inspeccion.imagen_url and inspeccion.imagen_url.strip():
-                            image_data = download_image_from_url(inspeccion.imagen_url)
+                        if inspeccion.imagen_base64 and inspeccion.imagen_base64.strip():
+                            image_data = get_image_from_base64(
+                                inspeccion.imagen_base64, inspeccion.imagen_content_type
+                            )
                             if image_data:
                                 pdf_image = create_pdf_image(image_data)
                                 if pdf_image:
@@ -1001,7 +971,7 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                                     )
                             else:
                                 logger.warning(
-                                    f"⚠️ No se pudo descargar imagen para inspección {i}"
+                                    f"⚠️ No se pudo procesar imagen base64 para inspección {i}"
                                 )
                     except Exception as img_error:
                         logger.warning(
@@ -1028,10 +998,12 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                         )
                     )
                     story.append(Paragraph(testigo.texto, normal_style))
-                    # Incluir imagen si existe (con manejo robusto de errores)
+                    # Incluir imagen si existe (usando base64 de BD)
                     try:
-                        if testigo.imagen_url and testigo.imagen_url.strip():
-                            image_data = download_image_from_url(testigo.imagen_url)
+                        if testigo.imagen_base64 and testigo.imagen_base64.strip():
+                            image_data = get_image_from_base64(
+                                testigo.imagen_base64, testigo.imagen_content_type
+                            )
                             if image_data:
                                 pdf_image = create_pdf_image(image_data)
                                 if pdf_image:
@@ -1045,7 +1017,7 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                                     )
                             else:
                                 logger.warning(
-                                    f"⚠️ No se pudo descargar imagen para testigo {i}"
+                                    f"⚠️ No se pudo procesar imagen base64 para testigo {i}"
                                 )
                     except Exception as img_error:
                         logger.warning(
