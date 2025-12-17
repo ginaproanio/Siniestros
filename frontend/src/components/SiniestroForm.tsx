@@ -233,8 +233,29 @@ const SiniestroForm: React.FC = () => {
   return (
     <div className="form-container">
       <div className="form-header">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <h2>{isEditMode ? `Editar Siniestro #${siniestroId}` : 'Registro de Siniestro'}</h2>
+        <h2>{isEditMode ? `Editar Siniestro #${siniestroId}` : 'Registro de Siniestro'}</h2>
+      </div>
+
+      {/* Tab Navigation */}
+      <div className="tabs-container">
+        <div className="tabs-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ display: "flex" }}>
+            {tabs.map((tab) => {
+              const isActive = activeTab === tab.id;
+              const buttonClass = `tab-button${isActive ? " active" : ""}`;
+
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  className={buttonClass}
+                  onClick={() => goToTab(tab.id)}
+                >
+                  {tab.icon} {tab.title}
+                </button>
+              );
+            })}
+          </div>
           <button
             type="submit"
             className="btn-submit-main"
@@ -252,27 +273,6 @@ const SiniestroForm: React.FC = () => {
           >
             {saving ? "💾 Guardando..." : `💾 ${isEditMode ? "Actualizar Siniestro" : "Crear Siniestro"}`}
           </button>
-        </div>
-      </div>
-
-      {/* Tab Navigation */}
-      <div className="tabs-container">
-        <div className="tabs-header">
-          {tabs.map((tab) => {
-            const isActive = activeTab === tab.id;
-            const buttonClass = `tab-button${isActive ? " active" : ""}`;
-
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                className={buttonClass}
-                onClick={() => goToTab(tab.id)}
-              >
-                {tab.icon} {tab.title}
-              </button>
-            );
-          })}
         </div>
 
         {/* Tab Content */}
@@ -1088,15 +1088,7 @@ const SiniestroForm: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Submit Button */}
-                  <div
-                    className="tab-navigation"
-                    style={{ justifyContent: "center" }}
-                  >
-                    <button type="submit" className="btn-submit-tab">
-                      {saving ? "Guardando..." : (isEditMode ? "Actualizar Siniestro" : "Crear Siniestro")}
-                    </button>
-                  </div>
+
                 </div>
               </div>
             )}
