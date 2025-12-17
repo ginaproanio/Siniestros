@@ -233,7 +233,26 @@ const SiniestroForm: React.FC = () => {
   return (
     <div className="form-container">
       <div className="form-header">
-        <h2>{isEditMode ? `Editar Siniestro #${siniestroId}` : 'Registro de Siniestro'}</h2>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <h2>{isEditMode ? `Editar Siniestro #${siniestroId}` : 'Registro de Siniestro'}</h2>
+          <button
+            type="submit"
+            className="btn-submit-main"
+            disabled={saving}
+            style={{
+              backgroundColor: "#007bff",
+              color: "white",
+              border: "none",
+              padding: "10px 20px",
+              borderRadius: "4px",
+              fontSize: "14px",
+              cursor: saving ? "not-allowed" : "pointer",
+              opacity: saving ? 0.6 : 1
+            }}
+          >
+            {saving ? "💾 Guardando..." : `💾 ${isEditMode ? "Actualizar Siniestro" : "Crear Siniestro"}`}
+          </button>
+        </div>
       </div>
 
       {/* Tab Navigation */}
