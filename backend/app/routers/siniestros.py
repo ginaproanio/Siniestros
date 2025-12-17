@@ -238,6 +238,54 @@ async def test_pdf():
         raise HTTPException(status_code=500, detail="Error generando PDF de prueba")
 
 
+@router.get("/{siniestro_id}/debug-json")
+async def debug_json_fields(siniestro_id: int, db: Session = Depends(get_db)):
+    """Debug endpoint para verificar campos JSON"""
+    siniestro = (
+        db.query(models.Siniestro)
+        .filter(models.Siniestro.id == siniestro_id)
+        .first()
+    )
+
+    if not siniestro:
+        raise HTTPException(status_code=404, detail="Siniestro no encontrado")
+
+    import json
+
+    json_fields_to_check = [
+        "evidencias_complementarias",
+        "otras_diligencias",
+        "observaciones",
+        "recomendacion_pago_cobertura",
+        "conclusiones",
+        "anexo"
+    ]
+
+    result = {
+        "siniestro_id": siniestro_id,
+        "reclamo_num": siniestro.reclamo_num,
+        "json_fields": {}
+    }
+
+    for field in json_fields_to_check:
+        value = getattr(siniestro, field, None)
+        result["json_fields"][field] = {
+            "raw_value": value,
+            "is_json": False,
+            "parsed_value": None
+        }
+
+        if value:
+            try:
+                parsed = json.loads(value)
+                result["json_fields"][field]["is_json"] = True
+                result["json_fields"][field]["parsed_value"] = parsed
+            except json.JSONDecodeError:
+                result["json_fields"][field]["is_json"] = False
+
+    return result
+
+
 @router.post("/{siniestro_id}/upload-pdf-firmado")
 async def upload_pdf_firmado(
     siniestro_id: int, file: UploadFile = File(...), db: Session = Depends(get_db)

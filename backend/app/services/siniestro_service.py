@@ -83,8 +83,10 @@ class SiniestroService:
 
         update_dict = update_data.model_dump(exclude_unset=True)
 
-        # Handle JSON fields
+        # Handle JSON fields - INCLUIR TODOS los campos JSON del modelo
         json_fields = [
+            "evidencias_complementarias",  # ✅ AÑADIDO
+            "otras_diligencias",  # ✅ AÑADIDO
             "observaciones",
             "recomendacion_pago_cobertura",
             "conclusiones",
@@ -103,6 +105,13 @@ class SiniestroService:
 
         self.db.commit()
         self.db.refresh(siniestro)
+
+        # DEBUG: Mostrar valores de campos JSON después del update
+        print(f"DEBUG UPDATE: Siniestro {siniestro_id} actualizado")
+        for field in json_fields:
+            value = getattr(siniestro, field, None)
+            print(f"DEBUG JSON {field}: {value}")
+
         return siniestro
 
     def update_section(

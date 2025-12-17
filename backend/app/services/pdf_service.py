@@ -112,7 +112,8 @@ class PDFService:
                 selectinload(models.Siniestro.relatos_conductor),
                 selectinload(models.Siniestro.inspecciones),
                 selectinload(models.Siniestro.testigos),
-                selectinload(models.Siniestro.visita_taller),
+                selectinload(models.Siniestro.visita_taller),  # ✅ YA INCLUIDO
+                selectinload(models.Siniestro.dinamica_accidente),  # ✅ AÑADIDO
             )
             .filter(models.Siniestro.id == siniestro_id)
             .first()
