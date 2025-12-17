@@ -238,50 +238,49 @@ const SiniestroForm: React.FC = () => {
 
       {/* Tab Navigation */}
       <div className="tabs-container">
-        <div className="tabs-header">
-          {tabs.map((tab) => {
-            const isActive = activeTab === tab.id;
-            const buttonClass = `tab-button${isActive ? " active" : ""}`;
+        <div className="tabs-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ display: "flex" }}>
+            {tabs.map((tab) => {
+              const isActive = activeTab === tab.id;
+              const buttonClass = `tab-button${isActive ? " active" : ""}`;
 
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                className={buttonClass}
-                onClick={() => goToTab(tab.id)}
-              >
-                {tab.icon} {tab.title}
-              </button>
-            );
-          })}
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  className={buttonClass}
+                  onClick={() => goToTab(tab.id)}
+                >
+                  {tab.icon} {tab.title}
+                </button>
+              );
+            })}
+          </div>
+          {isEditMode && (
+            <button
+              type="button"
+              onClick={() => document.querySelector('form')?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }))}
+              className="btn-submit-main"
+              disabled={saving}
+              style={{
+                backgroundColor: "#0f172a",
+                color: "white",
+                border: "none",
+                padding: "10px 20px",
+                borderRadius: "4px",
+                fontSize: "14px",
+                cursor: saving ? "not-allowed" : "pointer",
+                opacity: saving ? 0.6 : 1
+              }}
+            >
+              {saving ? "💾 Guardando..." : "💾 Actualizar Siniestro"}
+            </button>
+          )}
         </div>
 
         {/* Tab Content */}
         <div className="tab-content">
           <form onSubmit={handleSubmit}>
-            {/* BOTÓN ACTUALIZAR SINIESTRO - dentro del form */}
-            {isEditMode && (
-              <div style={{ textAlign: "center", marginBottom: "20px" }}>
-                <button
-                  type="submit"
-                  className="btn-submit-main"
-                  disabled={saving}
-                  style={{
-                    backgroundColor: "#0f172a",
-                    color: "white",
-                    border: "none",
-                    padding: "12px 24px",
-                    borderRadius: "4px",
-                    fontSize: "16px",
-                    cursor: saving ? "not-allowed" : "pointer",
-                    opacity: saving ? 0.6 : 1
-                  }}
-                >
-                  {saving ? "💾 Guardando..." : "💾 Actualizar Siniestro"}
-                </button>
-              </div>
-            )}
-
             {/* TAB 0: Información Básica del Siniestro */}
             {activeTab === 0 && (
               <div className="tab-section active">
