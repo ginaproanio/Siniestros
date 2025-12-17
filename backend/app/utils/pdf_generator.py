@@ -287,18 +287,13 @@ def generate_pdf(siniestro: Siniestro, sign_document: bool = True) -> bytes:
         caratula_data_filtered = [row for row in caratula_data if row[1].strip()]
 
         if caratula_data_filtered:
-            caratula_table = Table(caratula_data_filtered, colWidths=[2.2 * inch, 4.3 * inch])
-            caratula_table.setStyle(TableStyle([
-                ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
-                ("FONTSIZE", (0, 0), (-1, -1), 12),
-                ("ALIGN", (0, 0), (-1, -1), "LEFT"),
-                ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
-                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-                ("LEFTPADDING", (0, 0), (-1, -1), 6),
-                ("RIGHTPADDING", (0, 0), (-1, -1), 6),
-                ("TOPPADDING", (0, 0), (-1, -1), 4),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-            ]))
+            # Use the unified table function with caratula-specific styling
+            caratula_table = crear_tabla_estandar(
+                caratula_data_filtered,
+                font_size=12,
+                add_grid=False,
+                valign="MIDDLE"
+            )
             story.append(caratula_table)
             story.append(Spacer(1, 40))
 
