@@ -96,11 +96,13 @@ async def guardar_seccion(
     logger = logging.getLogger(__name__)
 
     logger.info(f"💾 Guardando sección '{seccion}' para siniestro {siniestro_id}")
+    logger.info(f"📋 Datos recibidos: {datos}")
 
     siniestro = (
         db.query(models.Siniestro).filter(models.Siniestro.id == siniestro_id).first()
     )
     if not siniestro:
+        logger.warning(f"❌ Siniestro {siniestro_id} no encontrado")
         raise HTTPException(status_code=404, detail="Siniestro no encontrado")
 
     try:
