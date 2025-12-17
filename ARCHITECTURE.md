@@ -7,9 +7,11 @@
 **Asunto:** Especificaciones Técnicas para Sistema de Gestión de Siniestros
 
 ### **OBJETIVO GENERAL**
+
 Desarrollar un sistema completo de gestión de siniestros que permita la captura, almacenamiento y generación de informes profesionales con inclusión obligatoria de evidencias fotográficas en los documentos PDF generados.
 
 ### **REQUERIMIENTOS FUNCIONALES CRÍTICOS**
+
 1. **Captura de Información Completa**: Formularios tabulados para datos del siniestro, partes involucradas y evidencia fotográfica
 2. **Almacenamiento Seguro**: Sistema híbrido con base de datos relacional + almacenamiento cloud (AWS S3)
 3. **Generación de PDFs Profesionales**: Documentos con firma digital que incluyan TODAS las imágenes subidas
@@ -18,6 +20,7 @@ Desarrollar un sistema completo de gestión de siniestros que permita la captura
 ### **REQUERIMIENTOS TÉCNICOS ESPECÍFICOS**
 
 #### **1. Gestión de Imágenes**
+
 - ✅ **Subida a AWS S3**: Almacenamiento cloud escalable
 - ✅ **URLs Presigned**: Acceso temporal seguro
 - ✅ **Base64 Dual**: Almacenamiento en BD para inclusión en PDFs
@@ -25,12 +28,14 @@ Desarrollar un sistema completo de gestión de siniestros que permita la captura
 - ✅ **Optimización**: Redimensionamiento automático para PDFs
 
 #### **2. Generación de PDFs**
+
 - ✅ **Inclusión Obligatoria de Imágenes**: NO se aceptan PDFs sin imágenes
 - ✅ **Sección Dedicada**: "EVIDENCIAS FOTOGRÁFICAS" con títulos descriptivos
 - ✅ **Firma Digital**: Certificado P12 desde S3
 - ✅ **Profesional**: Headers, footers, paginación inteligente
 
 #### **3. Arquitectura Técnica**
+
 - ✅ **Backend**: FastAPI + SQLAlchemy + PostgreSQL
 - ✅ **Frontend**: React + TypeScript + Vite
 - ✅ **Storage**: AWS S3 + Base64 en BD
@@ -38,18 +43,21 @@ Desarrollar un sistema completo de gestión de siniestros que permita la captura
 - ✅ **Deployment**: Railway (full-stack)
 
 ### **RESTRICCIONES ABSOLUTAS**
+
 ❌ **NO se acepta**: Mensaje "Las imágenes están disponibles únicamente en la plataforma web"
 ❌ **NO se acepta**: PDFs sin imágenes embebidas
 ❌ **NO se acepta**: Soluciones parciales o temporales
 ❌ **NO se acepta**: Redireccionamiento a sistemas externos
 
 ### **ENTREGABLES FINALES**
+
 1. **Sistema Completo**: Funcional desde la captura hasta el PDF final
 2. **Imágenes en PDFs**: Obligatorio, no opcional
 3. **Documentación Técnica**: Esta especificación en todos los documentos
 4. **Pruebas**: Validación completa del flujo de imágenes
 
 ### **FIRMA**
+
 **Susana Espinosa - Investigadora de Siniestros**
 **Fecha:** 16/12/2025
 
@@ -110,11 +118,15 @@ const SiniestroForm: React.FC = () => {
 
 ```typescript
 // Patrón de manejo unificado
-const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+const handleInputChange = (
+  e: React.ChangeEvent<
+    HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+  >
+) => {
   const { name, value, type } = e.target;
   const checked = (e.target as HTMLInputElement).checked;
 
-  setFormData(prev => ({
+  setFormData((prev) => ({
     ...prev,
     [name]: type === "checkbox" ? checked : value,
   }));
@@ -134,7 +146,7 @@ const tabs = [
 
 const nextTab = () => {
   if (activeTab < tabs.length - 1) {
-    setCompletedTabs(prev => [...prev, activeTab]);
+    setCompletedTabs((prev) => [...prev, activeTab]);
     setActiveTab(activeTab + 1);
   }
 };
@@ -184,6 +196,7 @@ backend/
 ```
 
 **Beneficios de la Arquitectura Unificada:**
+
 - ✅ **Type Safety End-to-End**: Pydantic models desde HTTP hasta DB
 - ✅ **Zero Conversion Overhead**: Sin transformación manual de tipos
 - ✅ **Validation Consistency**: Pydantic + business rules complementarios
@@ -195,6 +208,7 @@ backend/
 **Contexto:** Inicialmente existía un desacople entre FastAPI (Pydantic models) y Service Layer (dicts), causando errores de conversión manual.
 
 **Solución Implementada (Phase 1-2):**
+
 ```python
 # ANTES: Conversión manual problemática
 @app.put("/{id}/seccion/antecedentes")
@@ -211,6 +225,7 @@ async def guardar_seccion(datos: List[AntecedenteInput], ...):
 ```
 
 **Service Layer Evolution:**
+
 ```python
 # ANTES: Solo dicts
 def update_section(self, id, section, data: Any) -> Dict
@@ -225,6 +240,7 @@ def update_section(self, id, section, data: Union[List[BaseModel], BaseModel, An
 ```
 
 **Beneficios de la Evolución:**
+
 - 🔄 **Zero Breaking Changes**: Funciona con código existente
 - 🔄 **Gradual Adoption**: Nuevos endpoints aprovechan Pydantic
 - 🔄 **Type Safety**: IntelliSense completo en services
@@ -360,16 +376,19 @@ sequenceDiagram
 ## **Seguridad y Validación**
 
 ### **Validaciones Frontend**
+
 - **TypeScript**: Tipado estático
 - **ESLint**: Reglas de calidad de código
 - **Validación local**: Campos requeridos, formatos
 
 ### **Validaciones Backend**
+
 - **Pydantic**: Validación automática de schemas
 - **SQLAlchemy**: Constraints a nivel de BD
 - **Sanitización**: Limpieza de datos de entrada
 
 ### **Autenticación y Autorización**
+
 ```python
 # Futuro: JWT + OAuth2
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -418,7 +437,7 @@ AWS_S3_BUCKET=...
 name: Deploy
 on:
   push:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   test:
@@ -434,6 +453,7 @@ jobs:
 ## **Monitoreo y Observabilidad**
 
 ### **Logging**
+
 ```python
 import logging
 
@@ -446,6 +466,7 @@ logger = logging.getLogger(__name__)
 ```
 
 ### **Health Checks**
+
 ```python
 @app.get("/api/v1/health")
 async def health_check(db: Session = Depends(get_db)):
@@ -459,6 +480,7 @@ async def health_check(db: Session = Depends(get_db)):
 ```
 
 ### **Métricas de Rendimiento**
+
 - **Tiempo de respuesta** de endpoints
 - **Tasa de error** de requests
 - **Uso de recursos** (CPU, memoria)
@@ -467,18 +489,21 @@ async def health_check(db: Session = Depends(get_db)):
 ## **Escalabilidad y Rendimiento**
 
 ### **Optimizaciones Frontend**
+
 - **Code splitting** con Vite
 - **Lazy loading** de componentes
 - **Memoización** con React.memo
 - **Virtualización** para listas grandes
 
 ### **Optimizaciones Backend**
+
 - **Connection pooling** con SQLAlchemy
 - **Caching** con Redis (futuro)
 - **Async/await** para operaciones I/O
 - **Background tasks** para procesamiento pesado
 
 ### **Base de Datos**
+
 - **Índices** en campos de búsqueda frecuentes
 - **Particionamiento** para tablas grandes (futuro)
 - **Read replicas** para consultas de solo lectura
@@ -487,6 +512,7 @@ async def health_check(db: Session = Depends(get_db)):
 ## **Testing Strategy**
 
 ### **Pirámide de Testing**
+
 ```
 End-to-End Tests    ┌─────────────┐
    (Cypress)        │     10      │
@@ -515,9 +541,49 @@ def test_create_siniestro_endpoint(client, db_session):
     assert "id" in response.json()
 ```
 
+## **🧠 REGLAS DE ANÁLISIS ARQUITECTURAL**
+
+### **Reglas Fundamentales para Arquitectos de Soluciones**
+
+Antes de cualquier refactorización o eliminación de código, **SIEMPRE** aplicar estas reglas:
+
+#### **1. 🔍 Analizar el Dominio Primero**
+- **NO asumir duplicación técnica** sin entender el contexto de negocio
+- **Entender la semántica** de cada entidad y su rol en el dominio
+- **Documentar conceptualmente** qué representa cada componente
+- **Ejemplo**: `asegurado`, `conductor`, `objeto_asegurado` son entidades diferentes del dominio de seguros
+
+#### **2. 🧩 Entender la Semántica Antes de Refactorizar**
+- **Preguntar**: ¿Este código representa conceptos diferentes o implementaciones similares?
+- **Validar**: ¿La eliminación afecta la claridad conceptual del sistema?
+- **Documentar**: ¿Qué rol juega cada componente en el flujo de negocio?
+- **Ejemplo**: `SiniestroForm.tsx` vs `InvestigacionForm.tsx` sirven propósitos diferentes en el workflow
+
+#### **3. ❓ Preguntar y Validar Antes de Eliminar**
+- **Mostrar evidencia**: ¿Dónde está la duplicación real?
+- **Impacto**: ¿Cómo afecta esto a la mantenibilidad futura?
+- **Alternativas**: ¿Hay mejores formas de reducir duplicación sin perder claridad?
+- **Rollback**: ¿Puedo recuperar fácilmente si me equivoco?
+
+#### **4. 🎯 Mantener la Claridad Conceptual del Dominio**
+- **Nombres expresivos**: Los identificadores deben reflejar su propósito en el dominio
+- **Separación de responsabilidades**: Técnica vs. de negocio
+- **Extensibilidad**: Permitir evolución específica por entidad
+- **Ejemplo**: Mantener métodos específicos por entidad aunque usen lógica común internamente
+
+### **Checklist Pre-Refactorización**
+- [ ] ¿Entendí completamente el dominio de negocio?
+- [ ] ¿Validé con el equipo/usuario que no son conceptos diferentes?
+- [ ] ¿Documenté qué representa cada componente?
+- [ ] ¿Puedo rollback fácilmente si me equivoco?
+- [ ] ¿La refactorización mejora más de lo que complica?
+
+---
+
 ## **Consideraciones de Seguridad**
 
 ### **OWASP Top 10**
+
 - ✅ **SQL Injection**: Usando SQLAlchemy ORM
 - ✅ **XSS**: Sanitización automática en React
 - ✅ **CSRF**: Tokens en formularios sensibles
@@ -525,6 +591,7 @@ def test_create_siniestro_endpoint(client, db_session):
 - ⚠️ **Broken Access Control**: Por implementar (futuro)
 
 ### **Mejores Prácticas**
+
 - **Input validation** en todos los endpoints
 - **CORS configuration** restrictiva
 - **HTTPS only** en producción

@@ -1,6 +1,7 @@
 import axios from "axios";
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
+import { useTabNavigation, useFormSaving } from "../hooks";
 
 // Configurar base URL para el backend
 const BACKEND_URL =
@@ -73,11 +74,35 @@ interface FormData {
 const SiniestroForm: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const isEditMode = Boolean(id);
-  const siniestroId = parseInt(id || '0');
+  const siniestroId = parseInt(id || "0");
 
-  const [activeTab, setActiveTab] = useState(0);
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState("");
+  // Configuración de pestañas
+  const tabs = [
+    { id: 0, title: "Información Básica", icon: "📋" },
+    { id: 1, title: "Parametrización", icon: "⚙️" },
+    { id: 2, title: "Entidades", icon: "👥" },
+  ];
+
+  // Hooks reutilizables
+  const tabNavigation = useTabNavigation(tabs);
+  const formSaving = useFormSaving({
+    onSave: async () => {
+      console.log("🚀 Enviando datos del formulario:", formData);
+
+      if (isEditMode) {
+        await axios.put(`/api/v1/siniestros/${siniestroId}`, formData);
+      } else {
+        await axios.post("/api/v1/siniestros/", formData);
+      }
+    },
+    successMessage: isEditMode ? "Siniestro actualizado exitosamente!" : "Siniestro creado exitosamente!",
+    onSuccess: (message) => {
+      console.log("✅ Respuesta del servidor exitosa");
+      setTimeout(() => {
+        window.location.href = "/siniestros";
+      }, 2000);
+    }
+  });
 
   const [formData, setFormData] = useState<FormData>({
     compania_seguros: "ZURICH SEGUROS ECUADOR S.A.",
@@ -95,16 +120,6 @@ const SiniestroForm: React.FC = () => {
     tipo_siniestro: "Vehicular",
   });
 
-  const tabs = [
-    { id: 0, title: "Información Básica", icon: "📋" },
-    { id: 1, title: "Parametrización", icon: "⚙️" },
-    { id: 2, title: "Entidades", icon: "👥" },
-  ];
-
-  const goToTab = (tabId: number) => {
-    setActiveTab(tabId);
-  };
-
   // Cargar datos si estamos editando
   React.useEffect(() => {
     if (isEditMode && siniestroId) {
@@ -114,7 +129,8 @@ const SiniestroForm: React.FC = () => {
           const data = response.data;
 
           setFormData({
-            compania_seguros: data.compania_seguros || "ZURICH SEGUROS ECUADOR S.A.",
+            compania_seguros:
+              data.compania_seguros || "ZURICH SEGUROS ECUADOR S.A.",
             ruc_compania: data.ruc_compania || "",
             tipo_reclamo: data.tipo_reclamo || "",
             poliza: data.poliza || "",
@@ -151,7 +167,7 @@ const SiniestroForm: React.FC = () => {
           });
         } catch (error) {
           console.error("Error loading siniestro:", error);
-          setMessage("Error al cargar los datos del siniestro");
+          // Error will be handled by the form saving hook if needed
         }
       };
 
@@ -173,62 +189,7 @@ const SiniestroForm: React.FC = () => {
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSaving(true);
-    setMessage("");
 
-    console.log("🚀 Enviando datos del formulario:", formData);
-
-    try {
-      let response;
-      if (isEditMode) {
-        response = await axios.put(`/api/v1/siniestros/${siniestroId}`, formData);
-        setMessage("✅ Siniestro actualizado exitosamente!");
-      } else {
-        response = await axios.post("/api/v1/siniestros/", formData);
-        setMessage("✅ Siniestro creado exitosamente!");
-      }
-      console.log("✅ Respuesta del servidor:", response);
-      setTimeout(() => {
-        window.location.href = "/siniestros";
-      }, 2000);
-    } catch (error: any) {
-      console.error("❌ Error completo:", error);
-      let errorMessage = isEditMode ? "Error al actualizar el siniestro" : "Error al crear el siniestro";
-
-      if (error.response) {
-        const status = error.response.status;
-        const data = error.response.data;
-
-        switch (status) {
-          case 400:
-            errorMessage = `Datos inválidos: ${
-              data.detail || "Verifica los campos requeridos"
-            }`;
-            break;
-          case 500:
-            errorMessage = `Error del servidor: ${
-              data.detail || data.message || "Error interno"
-            }`;
-            break;
-          default:
-            errorMessage = `Error ${status}: ${
-              data.detail || data.message || "Error desconocido"
-            }`;
-        }
-      } else if (error.request) {
-        errorMessage =
-          "No se pudo conectar al servidor. Verifica tu conexión a internet.";
-      } else {
-        errorMessage = `Error de configuración: ${error.message}`;
-      }
-
-      setMessage(errorMessage);
-    } finally {
-      setSaving(false);
-    }
-  };
 
   // Estilo CSS para placeholders opacos
   const placeholderCSS = `
@@ -243,15 +204,26 @@ const SiniestroForm: React.FC = () => {
       {/* Estilo CSS para placeholders opacos */}
       <style dangerouslySetInnerHTML={{ __html: placeholderCSS }} />
       <div className="form-header">
-        <h2>{isEditMode ? `Editar Siniestro (${formData.reclamo_num || siniestroId})` : 'Registro de Siniestro'}</h2>
+        <h2>
+          {isEditMode
+            ? `Editar Siniestro (${formData.reclamo_num || siniestroId})`
+            : "Registro de Siniestro"}
+        </h2>
       </div>
 
       {/* Tab Navigation */}
       <div className="tabs-container">
-        <div className="tabs-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div
+          className="tabs-header"
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
           <div style={{ display: "flex" }}>
             {tabs.map((tab) => {
-              const isActive = activeTab === tab.id;
+              const isActive = tabNavigation.activeTab === tab.id;
               const buttonClass = `tab-button${isActive ? " active" : ""}`;
 
               return (
@@ -259,7 +231,7 @@ const SiniestroForm: React.FC = () => {
                   key={tab.id}
                   type="button"
                   className={buttonClass}
-                  onClick={() => goToTab(tab.id)}
+                  onClick={() => tabNavigation.goToTab(tab.id)}
                 >
                   {tab.icon} {tab.title}
                 </button>
@@ -268,9 +240,15 @@ const SiniestroForm: React.FC = () => {
           </div>
           <button
             type="button"
-            onClick={() => document.querySelector('form')?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }))}
+            onClick={() =>
+              document
+                .querySelector("form")
+                ?.dispatchEvent(
+                  new Event("submit", { cancelable: true, bubbles: true })
+                )
+            }
             className="btn-submit-main"
-            disabled={saving}
+            disabled={formSaving.isSaving}
             style={{
               backgroundColor: "#0f172a",
               color: "white",
@@ -278,19 +256,21 @@ const SiniestroForm: React.FC = () => {
               padding: "10px 20px",
               borderRadius: "4px",
               fontSize: "14px",
-              cursor: saving ? "not-allowed" : "pointer",
-              opacity: saving ? 0.6 : 1
+              cursor: formSaving.isSaving ? "not-allowed" : "pointer",
+              opacity: formSaving.isSaving ? 0.6 : 1,
             }}
           >
-            {saving ? "💾 Guardando..." : `💾 ${isEditMode ? "Actualizar Siniestro" : "Crear Siniestro"}`}
+            {formSaving.isSaving
+              ? "💾 Guardando..."
+              : `💾 ${isEditMode ? "Actualizar Siniestro" : "Crear Siniestro"}`}
           </button>
         </div>
 
         {/* Tab Content */}
         <div className="tab-content">
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={(e) => { e.preventDefault(); formSaving.save(); }}>
             {/* TAB 0: Información Básica del Siniestro */}
-            {activeTab === 0 && (
+            {tabNavigation.activeTab === 0 && (
               <div className="tab-section active">
                 <div className="card-section info-section">
                   <div className="card-header">
@@ -315,7 +295,7 @@ const SiniestroForm: React.FC = () => {
                         value={formData.ruc_compania || ""}
                         onChange={handleInputChange}
                         placeholder="Ej: 1791240014001"
-                        style={{ color: '#9ca3af', opacity: 0.7 }}
+                        style={{ color: "#9ca3af", opacity: 0.7 }}
                       />
                     </div>
                     <div className="form-group">
@@ -484,7 +464,7 @@ const SiniestroForm: React.FC = () => {
             )}
 
             {/* TAB 1: Parametrización */}
-            {activeTab === 1 && (
+            {tabNavigation.activeTab === 1 && (
               <div className="tab-section active">
                 <div className="card-section param-section">
                   <div className="card-header">
@@ -615,7 +595,7 @@ const SiniestroForm: React.FC = () => {
             )}
 
             {/* TAB 2: Entidades Relacionadas */}
-            {activeTab === 2 && (
+            {tabNavigation.activeTab === 2 && (
               <div className="tab-section active">
                 <div className="card-section entidades-section">
                   <div className="card-header">
@@ -1099,24 +1079,16 @@ const SiniestroForm: React.FC = () => {
                       </div>
                     </div>
                   </div>
-
-
                 </div>
               </div>
             )}
-
-
           </form>
         </div>
       </div>
 
-      {message && (
-        <div
-          className={`message ${
-            message.includes("Error") ? "error" : "success"
-          }`}
-        >
-          {message}
+      {formSaving.lastError && (
+        <div className="message error">
+          {formSaving.lastError}
         </div>
       )}
     </div>

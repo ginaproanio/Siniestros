@@ -1,13 +1,12 @@
 from fastapi import APIRouter, HTTPException, Depends, UploadFile, File
 from sqlalchemy.orm import Session
 from typing import List
-from datetime import datetime
 
 from app import models, schemas
 from app.database import get_db
 from app.services.siniestro_service import SiniestroService
 from app.services.pdf_service import PDFService
-from app.services.validation_service import ValidationService
+from app.routers.error_handlers import handle_api_error, get_validation_service
 
 router = APIRouter()
 
@@ -18,7 +17,7 @@ async def create_siniestro(
 ):
     """Crear un nuevo siniestro"""
     siniestro_service = SiniestroService(db)
-    validation_service = ValidationService()
+    validation_service = get_validation_service()
 
     try:
         # Validate input data
@@ -33,20 +32,12 @@ async def create_siniestro(
 
         return db_siniestro
 
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        # Log the actual error for debugging
-        import logging
-        logger = logging.getLogger(__name__)
-        logger.error(
-            f"Error guardando sección {seccion} para siniestro {siniestro_id}: {str(e)}"
-        )
-        import traceback
-        logger.error(f"Traceback: {traceback.format_exc()}")
-
-        raise HTTPException(
-            status_code=500, detail=validation_service.create_safe_error_message(e)
+        handle_api_error(
+            e,
+            "create_siniestro",
+            {"reclamo_num": siniestro.reclamo_num},
+            validation_service
         )
 
 

@@ -139,7 +139,7 @@ class ValidationService:
                         'inspecciones', 'testigos']:
             return self._validate_list_business_rules(data, section)
         elif section in ['evidencias_complementarias', 'otras_diligencias',
-                        'detalles_visita_taller', 'observaciones',
+                        'visita_taller_descripcion', 'observaciones',
                         'recomendacion_pago_cobertura', 'conclusiones', 'anexo']:
             return self._validate_json_business_rules(data, section)
         else:

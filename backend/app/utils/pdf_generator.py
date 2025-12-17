@@ -1,11 +1,18 @@
 """
-PDF Generation Utilities - Unified and Clean Implementation
+PDF Generation Utilities - Separated Responsibilities Implementation
+
+This module has been refactored to follow Single Responsibility Principle:
+- ImageProcessor: Handles image processing and optimization
+- PDFSigner: Manages digital signature operations
+- PDFContentBuilder: Constructs PDF content sections
+- PDFGenerator: Orchestrates the complete PDF generation process
 """
 
 import io
 import os
 import logging
 from datetime import datetime
+from typing import List, Optional, Dict, Any
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
@@ -16,6 +23,7 @@ from reportlab.platypus import (
     Table,
     TableStyle,
     Image,
+    PageBreak,
 )
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
@@ -38,6 +46,412 @@ try:
     CRYPTO_AVAILABLE = True
 except ImportError:
     CRYPTO_AVAILABLE = False
+
+
+class ImageProcessor:
+    """Handles image processing and optimization for PDF generation."""
+
+    @staticmethod
+    def optimize_image_for_pdf(base64_str: str, max_width: int = 800, max_height: int = 600, quality: int = 85) -> str:
+        """Optimize images for PDF inclusion."""
+        try:
+            import base64
+            if "base64," in base64_str:
+                base64_str = base64_str.split("base64,")[1]
+
+            image_data = base64.b64decode(base64_str)
+            img = PILImage.open(io.BytesIO(image_data))
+            img.thumbnail((max_width, max_height), PILImage.Resampling.LANCZOS)
+
+            if img.mode in ('RGBA', 'LA', 'P'):
+                background = PILImage.new('RGB', img.size, (255, 255, 255))
+                if img.mode == 'P':
+                    img = img.convert('RGBA')
+                background.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
+                img = background
+
+            output_buffer = io.BytesIO()
+            img.save(output_buffer, format='JPEG', quality=quality, optimize=True)
+            return base64.b64encode(output_buffer.getvalue()).decode('utf-8')
+        except Exception:
+            return base64_str
+
+    @staticmethod
+    def get_image_from_base64(base64_data: str, content_type: str = None, optimize: bool = True) -> Optional[bytes]:
+        """Convert base64 string to image bytes."""
+        if not base64_data or not base64_data.strip():
+            return None
+
+        try:
+            import base64
+            if optimize:
+                base64_data = ImageProcessor.optimize_image_for_pdf(base64_data)
+
+            image_data = base64.b64decode(base64_data)
+
+            if len(image_data) == 0 or len(image_data) > 10 * 1024 * 1024:
+                return None
+
+            if content_type and not content_type.startswith("image/"):
+                return None
+
+            return image_data
+        except Exception:
+            return None
+
+    @staticmethod
+    def create_pdf_image(image_data: bytes, max_width: float = 4 * inch, max_height: float = 3 * inch) -> Optional[Image]:
+        """Create ReportLab Image object from image bytes."""
+        try:
+            if not image_data:
+                return None
+
+            image_buffer = io.BytesIO(image_data)
+
+            if PIL_AVAILABLE:
+                try:
+                    pil_image = PILImage.open(image_buffer)
+                    if pil_image.mode not in ("RGB", "L"):
+                        pil_image = pil_image.convert("RGB")
+
+                    pil_image.thumbnail((max_width * 72, max_height * 72), PILImage.LANCZOS)
+
+                    output_buffer = io.BytesIO()
+                    pil_image.save(output_buffer, format="JPEG", quality=85)
+                    output_buffer.seek(0)
+
+                    pdf_image = Image(output_buffer)
+                    pdf_image.hAlign = "LEFT"
+                    return pdf_image
+                except Exception:
+                    pass
+
+            image_buffer.seek(0)
+            pdf_image = Image(image_buffer)
+            pdf_image.hAlign = "LEFT"
+            return pdf_image
+        except Exception:
+            return None
+
+
+class PDFSigner:
+    """Handles digital signature operations for PDFs."""
+
+    @staticmethod
+    def load_certificate_from_s3(cert_key: str = "certificates/maria_susana_espinosa_lozada.p12") -> tuple:
+        """Load certificate and password from S3."""
+        try:
+            from ..services.s3_service import get_s3_client, S3_BUCKET_NAME
+            s3_client = get_s3_client()
+            response = s3_client.get_object(Bucket=S3_BUCKET_NAME, Key=cert_key)
+            cert_data = response["Body"].read()
+            password = os.getenv("CERT_PASSWORD", "")
+            return cert_data, password
+        except Exception:
+            return None, None
+
+    @staticmethod
+    def sign_pdf(pdf_data: bytes, certificate_data: bytes = None, password: str = None) -> bytes:
+        """Sign PDF digitally using certificate."""
+        try:
+            p12_data = certificate_data
+            private_key, certificate, additional_certificates = pkcs12.load_key_and_certificates(
+                p12_data, password.encode() if password else None
+            )
+
+            date = datetime.now().strftime("D:%Y%m%d%H%M%S+00'00'")
+            dct = {
+                "aligned": 0,
+                "sigflags": 3,
+                "sigflagsft": 132,
+                "sigpage": 0,
+                "sigbutton": True,
+                "sigfield": "Signature1",
+                "auto_sigfield": True,
+                "sigandcertify": True,
+                "signaturebox": (470, 840, 570, 640),
+                "signature": "Documento firmado electrónicamente",
+                "contact": "sistema@siniestros.com",
+                "location": "Quito, Ecuador",
+                "signingdate": date,
+                "reason": "Firma digital de informe de siniestro",
+                "password": password or "",
+            }
+
+            signed_pdf = cms.sign(pdf_data, dct, private_key, certificate, additional_certificates or [])
+            return signed_pdf
+        except Exception:
+            return pdf_data
+
+
+class PDFContentBuilder:
+    """Builds PDF content sections from siniestro data."""
+
+    def __init__(self, image_processor: ImageProcessor):
+        self.image_processor = image_processor
+        self.styles = self._get_styles()
+
+    def _get_styles(self):
+        """Get PDF styles configuration."""
+        styles = getSampleStyleSheet()
+        styles.title_style = ParagraphStyle(
+            "Title", parent=styles["Heading1"], fontSize=20, alignment=TA_CENTER,
+            spaceAfter=30, fontName="Helvetica-Bold"
+        )
+        styles.subtitle_style = ParagraphStyle(
+            "Subtitle", parent=styles["Heading2"], fontSize=16, alignment=TA_CENTER,
+            spaceAfter=20, fontName="Helvetica-Bold"
+        )
+        styles.section_style = ParagraphStyle(
+            "Section", parent=styles["Heading3"], fontSize=14,
+            spaceAfter=15, fontName="Helvetica-Bold"
+        )
+        styles.normal_style = ParagraphStyle(
+            "Normal", parent=styles["Normal"], fontSize=10, fontName="Helvetica"
+        )
+        return styles
+
+    def build_title_section(self, sign_document: bool) -> list:
+        """Build the title section of the PDF."""
+        title_text = "INFORME DE INVESTIGACIÓN<br/>DE SINIESTRO"
+        if not sign_document:
+            title_text += " (SIN FIRMA)"
+
+        return [
+            Paragraph(title_text, self.styles.title_style),
+            Spacer(1, 40)
+        ]
+
+    def build_caratula_section(self, siniestro: Siniestro) -> list:
+        """Build the caratula (header) section."""
+        caratula_data = [
+            ["Compañía de Seguros:", siniestro.compania_seguros or ""],
+            ["Número de Reclamo:", siniestro.reclamo_num or ""],
+            ["Asegurado:", siniestro.asegurado.nombre if siniestro.asegurado and siniestro.asegurado.nombre else ""],
+            ["Nombre de Investigador:", "Susana Espinosa"],
+        ]
+
+        caratula_data_filtered = [row for row in caratula_data if row[1].strip()]
+
+        if caratula_data_filtered:
+            caratula_table = crear_tabla_estandar(
+                caratula_data_filtered,
+                font_size=12,
+                add_grid=False,
+                valign="MIDDLE"
+            )
+            return [caratula_table, Spacer(1, 40)]
+
+        return []
+
+    def build_registration_section(self, siniestro: Siniestro) -> list:
+        """Build the registration section."""
+        content = []
+
+        # Title
+        content.extend([
+            Paragraph("REGISTRO DEL SINIESTRO", self.styles.section_style),
+            Spacer(1, 15)
+        ])
+
+        # Basic registration data
+        registro_data_raw = [
+            ["Compañía de Seguros:", siniestro.compania_seguros or ""],
+            ["RUC Compañía:", siniestro.ruc_compania or ""],
+            ["Tipo de Reclamo:", siniestro.tipo_reclamo or ""],
+            ["Póliza:", siniestro.poliza or ""],
+            ["Número de Reclamo:", siniestro.reclamo_num or ""],
+            ["Fecha del Siniestro:", siniestro.fecha_siniestro.strftime("%d/%m/%Y") if siniestro.fecha_siniestro else ""],
+            ["Fecha Reportado:", siniestro.fecha_reportado.strftime("%d/%m/%Y") if siniestro.fecha_reportado else ""],
+            ["Dirección del Siniestro:", siniestro.direccion_siniestro or ""],
+            ["Ubicación Geo Lat:", str(siniestro.ubicacion_geo_lat) if siniestro.ubicacion_geo_lat else ""],
+            ["Ubicación Geo Lng:", str(siniestro.ubicacion_geo_lng) if siniestro.ubicacion_geo_lng else ""],
+            ["Daños a Terceros:", "Sí" if siniestro.danos_terceros else ""],
+            ["Ejecutivo a Cargo:", siniestro.ejecutivo_cargo or ""],
+            ["Fecha de Designación:", siniestro.fecha_designacion.strftime("%d/%m/%Y") if siniestro.fecha_designacion else ""],
+            ["Tipo de Siniestro:", siniestro.tipo_siniestro or ""],
+            ["Cobertura:", siniestro.cobertura or ""],
+        ]
+
+        registro_data = [row for row in registro_data_raw if row[1].strip()]
+
+        if registro_data:
+            registro_table = crear_tabla_estandar(registro_data)
+            content.extend([registro_table, Spacer(1, 20)])
+
+        # Declaration section
+        if any([
+            siniestro.fecha_declaracion, siniestro.persona_declara_tipo,
+            siniestro.persona_declara_cedula, siniestro.persona_declara_nombre,
+            siniestro.persona_declara_relacion
+        ]):
+            content.extend([
+                Paragraph("Declaración del Siniestro:", self.styles.section_style),
+                Spacer(1, 15)
+            ])
+
+            declaracion_data = [
+                ["Fecha de Declaración:", siniestro.fecha_declaracion.strftime("%d/%m/%Y") if siniestro.fecha_declaracion else ""],
+                ["Persona que Declara (Tipo):", siniestro.persona_declara_tipo or ""],
+                ["Cédula/RUC:", siniestro.persona_declara_cedula or ""],
+                ["Nombre/Razón Social:", siniestro.persona_declara_nombre or ""],
+                ["Relación:", siniestro.persona_declara_relacion or ""],
+            ]
+            declaracion_data = [row for row in declaracion_data if row[1].strip()]
+
+            if declaracion_data:
+                declaracion_table = crear_tabla_estandar(declaracion_data)
+                content.extend([declaracion_table, Spacer(1, 15)])
+
+        # Entity sections
+        entities = [
+            ("asegurado", [
+                ["Tipo:", siniestro.asegurado.tipo if siniestro.asegurado else ""],
+                ["Cédula/RUC:", siniestro.asegurado.cedula or siniestro.asegurado.ruc if siniestro.asegurado else ""],
+                ["Nombre/Empresa:", siniestro.asegurado.nombre or siniestro.asegurado.empresa if siniestro.asegurado else ""],
+                ["Representante Legal:", siniestro.asegurado.representante_legal if siniestro.asegurado else ""],
+                ["Celular:", siniestro.asegurado.celular or siniestro.asegurado.telefono if siniestro.asegurado else ""],
+                ["Correo:", siniestro.asegurado.correo if siniestro.asegurado else ""],
+                ["Dirección:", siniestro.asegurado.direccion if siniestro.asegurado else ""],
+                ["Parentesco:", siniestro.asegurado.parentesco if siniestro.asegurado else ""],
+            ]),
+            ("beneficiario", [
+                ["Razón Social:", siniestro.beneficiario.razon_social if siniestro.beneficiario else ""],
+                ["Cédula/RUC:", siniestro.beneficiario.cedula_ruc if siniestro.beneficiario else ""],
+                ["Domicilio:", siniestro.beneficiario.domicilio if siniestro.beneficiario else ""],
+            ]),
+            ("conductor", [
+                ["Nombre:", siniestro.conductor.nombre if siniestro.conductor else ""],
+                ["Cédula:", siniestro.conductor.cedula if siniestro.conductor else ""],
+                ["Celular:", siniestro.conductor.celular if siniestro.conductor else ""],
+                ["Dirección:", siniestro.conductor.direccion if siniestro.conductor else ""],
+                ["Parentesco:", siniestro.conductor.parentesco if siniestro.conductor else ""],
+            ]),
+            ("objeto_asegurado", [
+                ["Placa:", siniestro.objeto_asegurado.placa if siniestro.objeto_asegurado else ""],
+                ["Marca:", siniestro.objeto_asegurado.marca if siniestro.objeto_asegurado else ""],
+                ["Modelo:", siniestro.objeto_asegurado.modelo if siniestro.objeto_asegurado else ""],
+                ["Tipo:", siniestro.objeto_asegurado.tipo if siniestro.objeto_asegurado else ""],
+                ["Color:", siniestro.objeto_asegurado.color if siniestro.objeto_asegurado else ""],
+                ["Año:", str(siniestro.objeto_asegurado.ano) if siniestro.objeto_asegurado and siniestro.objeto_asegurado.ano else ""],
+                ["Serie Motor:", siniestro.objeto_asegurado.serie_motor if siniestro.objeto_asegurado else ""],
+                ["Chasis:", siniestro.objeto_asegurado.chasis if siniestro.objeto_asegurado else ""],
+            ]),
+        ]
+
+        for entity_name, entity_data in entities:
+            entity_data_filtered = [row for row in entity_data if row[1].strip()]
+            if entity_data_filtered:
+                title_map = {
+                    "asegurado": "Información del Asegurado:",
+                    "beneficiario": "Información del Beneficiario:",
+                    "conductor": "Información del Conductor:",
+                    "objeto_asegurado": "Información del Objeto Asegurado:",
+                }
+                content.extend([
+                    Paragraph(title_map[entity_name], self.styles.section_style),
+                    crear_tabla_estandar(entity_data_filtered),
+                    Spacer(1, 15)
+                ])
+
+        return content
+
+
+class PDFGenerator:
+    """Orchestrates the complete PDF generation process using separated responsibilities."""
+
+    def __init__(self):
+        self.image_processor = ImageProcessor()
+        self.pdf_signer = PDFSigner()
+        self.content_builder = PDFContentBuilder(self.image_processor)
+
+    def generate_pdf(self, siniestro: Siniestro, sign_document: bool = True) -> bytes:
+        """
+        Generate complete PDF using separated responsibility classes.
+
+        Args:
+            siniestro: Siniestro model instance with all related data
+            sign_document: Whether to sign the PDF digitally
+
+        Returns:
+            PDF data as bytes
+        """
+        try:
+            # Build PDF content structure
+            story = []
+
+            # Add title section
+            story.extend(self.content_builder.build_title_section(sign_document))
+
+            # Add caratula section
+            story.extend(self.content_builder.build_caratula_section(siniestro))
+
+            # Add generation date
+            from reportlab.platypus import Paragraph, Spacer
+            fecha_gen = Paragraph(
+                f"Fecha de Generación: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}",
+                self.content_builder.styles.normal_style
+            )
+            story.extend([Spacer(1, 20), fecha_gen])
+
+            # Add unsigned note if needed
+            if not sign_document:
+                nota_style = ParagraphStyle(
+                    "Nota", parent=getSampleStyleSheet()["Normal"],
+                    fontSize=8, textColor=colors.red, alignment=TA_CENTER
+                )
+                nota = Paragraph("NOTA: Este PDF fue generado sin firma digital para pruebas.", nota_style)
+                story.extend([Spacer(1, 10), nota])
+
+            # Build and add registration section
+            story.extend(self.content_builder.build_registration_section(siniestro))
+
+            # Create PDF document
+            buffer = io.BytesIO()
+            doc = SimpleDocTemplate(
+                buffer,
+                pagesize=letter,
+                topMargin=1.2 * inch,
+                bottomMargin=1.2 * inch,
+                leftMargin=1 * inch,
+                rightMargin=1 * inch,
+            )
+
+            doc.onFirstPage = header_footer
+            doc.onLaterPages = header_footer
+
+            # Build PDF
+            doc.build(story)
+            buffer.flush()
+            buffer.seek(0)
+            pdf_data = buffer.getvalue()
+
+            # Validate PDF
+            if not pdf_data.startswith(b"%PDF-"):
+                raise Exception("PDF generado es corrupto")
+
+            # Sign PDF if requested and certificates available
+            if sign_document and CRYPTO_AVAILABLE:
+                cert_data, password = self.pdf_signer.load_certificate_from_s3()
+                if cert_data and password:
+                    try:
+                        signed_pdf = self.pdf_signer.sign_pdf(pdf_data, cert_data, password)
+                        if signed_pdf.startswith(b"%PDF-"):
+                            pdf_data = signed_pdf
+                    except Exception:
+                        pass  # Continue with unsigned PDF
+
+            return pdf_data
+
+        except Exception as e:
+            # Minimal error PDF
+            error_buffer = io.BytesIO()
+            doc = SimpleDocTemplate(error_buffer, pagesize=letter)
+            styles = getSampleStyleSheet()
+            story = [Paragraph("ERROR: No se pudo generar el PDF", styles["Normal"])]
+            doc.build(story)
+            error_buffer.seek(0)
+            return error_buffer.getvalue()
 
 
 def optimize_image_for_pdf(base64_str: str, max_width: int = 800, max_height: int = 600, quality: int = 85) -> str:

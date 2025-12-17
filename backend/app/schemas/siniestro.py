@@ -265,7 +265,7 @@ class SiniestroUpdate(BaseModel):
     # Campos de investigación recabada (todos como arrays JSON)
     evidencias_complementarias: Optional[List[EvidenciaComplementariaBase]] = None
     otras_diligencias: Optional[List[OtraDiligenciaBase]] = None
-    detalles_visita_taller: Optional[List[str]] = None
+    visita_taller_descripcion: Optional[str] = None
     observaciones: Optional[List[str]] = None
     recomendacion_pago_cobertura: Optional[List[str]] = None
     conclusiones: Optional[List[str]] = None
