@@ -20,6 +20,7 @@ from reportlab.platypus import (
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
 from sqlalchemy.orm import Session
+from fastapi.responses import Response
 from ..models import Siniestro
 
 # Configure minimal logging
@@ -693,7 +694,7 @@ def generate_pdf(siniestro: Siniestro, sign_document: bool = True) -> bytes:
         return error_buffer.getvalue()
 
 
-def generate_diagnostic_pdf(db: Session) -> Response:
+def generate_diagnostic_pdf(db: Session) -> "Response":
     """Generate diagnostic PDF for system testing"""
     try:
         from fastapi.responses import Response
@@ -749,7 +750,7 @@ def generate_diagnostic_pdf(db: Session) -> Response:
         )
 
 
-def generate_test_pdf() -> Response:
+def generate_test_pdf() -> "Response":
     """Generate minimal test PDF"""
     try:
         from fastapi.responses import Response
