@@ -20,7 +20,9 @@ class PDFService:
     def __init__(self, db: Session):
         self.db = db
 
-    def generate_siniestro_pdf(self, siniestro_id: int, sign_document: bool = True) -> Response:
+    def generate_siniestro_pdf(
+        self, siniestro_id: int, sign_document: bool = True
+    ) -> Response:
         """Generate PDF for a siniestro"""
         siniestro = self._get_siniestro_with_relations(siniestro_id)
         if not siniestro:
@@ -68,7 +70,12 @@ class PDFService:
         """Generate diagnostic PDF"""
         try:
             from ..utils.pdf_generator import generate_diagnostic_pdf
-            return generate_diagnostic_pdf(self.db)
+            pdf_bytes = generate_diagnostic_pdf(self.db)
+            return Response(
+                content=pdf_bytes,
+                media_type="application/pdf",
+                headers={"Content-Disposition": "attachment; filename=diagnostico.pdf"}
+            )
         except Exception as e:
             logger.error(f"Error generando PDF diagnóstico: {e}")
             raise
@@ -77,12 +84,19 @@ class PDFService:
         """Generate test PDF"""
         try:
             from ..utils.pdf_generator import generate_test_pdf
-            return generate_test_pdf()
+            pdf_bytes = generate_test_pdf()
+            return Response(
+                content=pdf_bytes,
+                media_type="application/pdf",
+                headers={"Content-Disposition": "attachment; filename=test.pdf"}
+            )
         except Exception as e:
             logger.error(f"Error generando PDF de prueba: {e}")
             raise
 
-    def _get_siniestro_with_relations(self, siniestro_id: int) -> Optional[models.Siniestro]:
+    def _get_siniestro_with_relations(
+        self, siniestro_id: int
+    ) -> Optional[models.Siniestro]:
         """Get siniestro with all necessary relations loaded"""
         return (
             self.db.query(models.Siniestro)
