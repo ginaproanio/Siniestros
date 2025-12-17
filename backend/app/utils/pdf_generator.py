@@ -340,7 +340,7 @@ class PDFContentBuilder:
         ]
 
         for entity_name, entity_data in entities:
-            entity_data_filtered = [row for row in entity_data if row[1].strip()]
+            entity_data_filtered = [row for row in entity_data if row[1] and str(row[1]).strip()]
             if entity_data_filtered:
                 title_map = {
                     "asegurado": "Información del Asegurado:",
