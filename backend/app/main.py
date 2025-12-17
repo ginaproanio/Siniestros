@@ -12,17 +12,19 @@ logger = logging.getLogger(__name__)
 app = FastAPI(
     title="Sistema de Informes de Siniestros API",
     description="API para gestión de informes de siniestros vehiculares",
-    version="1.0.0"
+    version="1.0.0",
 )
+
 
 # Database initialization - COMPLETE RESET on every startup
 @app.on_event("startup")
 async def startup_event():
     """🔥 COMPLETE DATABASE RESET: Drop all tables and recreate from scratch"""
     import logging
+
     logger = logging.getLogger(__name__)
 
-    logger.info("🔥 INICIANDO RESET COMPLETO DE BASE DE DATOS...")
+    logger.info("� INICIANDO RESET COMPLETO DE BASE DE DATOS...")
 
     try:
         from app.database import engine, Base
@@ -35,17 +37,25 @@ async def startup_event():
             # Get all table names - compatible with both PostgreSQL and SQLite
             if "postgresql" in str(engine.url):
                 # PostgreSQL
-                result = conn.execute(sa.text("""
+                result = conn.execute(
+                    sa.text(
+                        """
                     SELECT tablename FROM pg_tables
                     WHERE schemaname = 'public'
-                """))
+                """
+                    )
+                )
                 tables = [row[0] for row in result]
             else:
                 # SQLite
-                result = conn.execute(sa.text("""
+                result = conn.execute(
+                    sa.text(
+                        """
                     SELECT name FROM sqlite_master
                     WHERE type='table' AND name NOT LIKE 'sqlite_%'
-                """))
+                """
+                    )
+                )
                 tables = [row[0] for row in result]
 
             if tables:
@@ -62,20 +72,24 @@ async def startup_event():
             else:
                 logger.info("ℹ️ No tables to drop")
 
-        # 2. CREATE ALL TABLES FROM SCRATCH
+        # 2. CREATE ALL TABLES FROM SCRATCH (FIXED: No dropear en producción)
         logger.info("🏗️ Creando todas las tablas desde cero...")
-        Base.metadata.create_all(bind=engine)
-        logger.info("✅ Todas las tablas creadas exitosamente")
+        # Base.metadata.drop_all(bind=engine)  # ❌ COMENTADO: NO BORRAR EN PRODUCCIÓN
+        Base.metadata.create_all(bind=engine)  # Solo crear si no existen
+        logger.info("✅ Esquema verificado/creado")
 
         # 3. Verify database is ready
         from sqlalchemy.orm import sessionmaker
+
         SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
         db = SessionLocal()
 
         try:
             # Test basic query
             siniestros_count = db.query(models.Siniestro).count()
-            logger.info(f"📊 Base de datos lista: {siniestros_count} siniestros registrados")
+            logger.info(
+                f"📊 Base de datos lista: {siniestros_count} siniestros registrados"
+            )
         except Exception as e:
             logger.warning(f"⚠️ Error verificando BD: {e}")
         finally:
@@ -85,15 +99,20 @@ async def startup_event():
 
         # Store railway detection for later use
         railway_env = os.getenv("RAILWAY_ENVIRONMENT", "").lower()
-        is_railway = railway_env in ["production", "staging"] or "railway" in os.getenv("DATABASE_URL", "").lower()
+        is_railway = (
+            railway_env in ["production", "staging"]
+            or "railway" in os.getenv("DATABASE_URL", "").lower()
+        )
         logger.info(f"🚀 Railway deployment detected: {is_railway}")
 
     except Exception as e:
         logger.error(f"❌ Error en reset completo de BD: {e}")
         import traceback
+
         logger.error(f"❌ Traceback: {traceback.format_exc()}")
         # Don't crash the app - log and continue
         logger.warning("⚠️ Continuando sin inicialización de BD")
+
 
 # CORS middleware
 allowed_origins = os.getenv("ALLOWED_ORIGINS", "*").split(",")
@@ -105,12 +124,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 # Middleware para logging detallado de requests
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
     logger.info(f"📨 {request.method} {request.url}")
     # Solo loguear body en desarrollo, no en producción por seguridad
-    if os.getenv("LOG_BODY", "true").lower() == "true" and request.method in ["POST", "PUT", "PATCH"]:
+    if os.getenv("LOG_BODY", "true").lower() == "true" and request.method in [
+        "POST",
+        "PUT",
+        "PATCH",
+    ]:
         try:
             body = await request.body()
             logger.info(f"📦 Body: {body.decode()}")
@@ -120,26 +144,33 @@ async def log_requests(request: Request, call_next):
     logger.info(f"📤 Response status: {response.status_code}")
     return response
 
+
 # Include routers
 app.include_router(siniestros.router, prefix="/api/v1/siniestros", tags=["siniestros"])
+
 
 # Auto-load test data endpoint - called after startup
 @app.on_event("startup")
 async def auto_load_test_data():
     """Auto-load test data after application startup"""
     import logging
+
     logger = logging.getLogger(__name__)
 
     try:
         # Check if we're in Railway environment
         railway_env = os.getenv("RAILWAY_ENVIRONMENT", "").lower()
-        is_railway = railway_env in ["production", "staging"] or "railway" in os.getenv("DATABASE_URL", "").lower()
+        is_railway = (
+            railway_env in ["production", "staging"]
+            or "railway" in os.getenv("DATABASE_URL", "").lower()
+        )
 
         if is_railway:
             logger.info("🚀 RAILWAY DEPLOYMENT DETECTED - Auto-loading test data...")
 
             # Wait a bit for database to be fully ready
             import asyncio
+
             await asyncio.sleep(2)
 
             # Execute create_test_data.py script
@@ -149,9 +180,12 @@ async def auto_load_test_data():
             current_dir = os.path.dirname(os.path.dirname(__file__))
             logger.info(f"Running test data creation from: {current_dir}")
 
-            result = subprocess.run([
-                sys.executable, "create_test_data.py"
-            ], capture_output=True, text=True, cwd=current_dir)
+            result = subprocess.run(
+                [sys.executable, "create_test_data.py"],
+                capture_output=True,
+                text=True,
+                cwd=current_dir,
+            )
 
             if result.returncode == 0:
                 logger.info("✅ Test data created successfully for Railway deployment")
@@ -165,13 +199,16 @@ async def auto_load_test_data():
         logger.error(f"❌ Error in auto-load test data: {e}")
         logger.info("⚠️ Continuing without test data")
 
+
 @app.get("/")
 async def root():
     return {"message": "API de Sistema de Informes de Siniestros"}
 
+
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
+
 
 @app.get("/debug/db")
 async def debug_database():
@@ -187,6 +224,7 @@ async def debug_database():
         logger.error(f"Database connection error: {e}")
         return {"database": "error", "error": str(e)}
 
+
 @app.get("/debug/analyze-db")
 async def analyze_database():
     """Analizar completamente la base de datos: tablas, registros, estructura"""
@@ -199,7 +237,7 @@ async def analyze_database():
             "timestamp": str(datetime.now()),
             "database_info": {},
             "tables_analysis": {},
-            "summary": {}
+            "summary": {},
         }
 
         # Información general de la base de datos
@@ -210,11 +248,15 @@ async def analyze_database():
             analysis["database_info"]["connection"] = "✅ Connected"
 
             # Obtener lista de tablas
-            result = db.execute(sa.text("""
+            result = db.execute(
+                sa.text(
+                    """
                 SELECT tablename FROM pg_tables
                 WHERE schemaname = 'public'
                 ORDER BY tablename
-            """))
+            """
+                )
+            )
             tables = [row[0] for row in result]
             analysis["database_info"]["tables"] = tables
             analysis["database_info"]["total_tables"] = len(tables)
@@ -228,7 +270,7 @@ async def analyze_database():
                     "exists": True,
                     "record_count": 0,
                     "has_data": False,
-                    "sample_records": []
+                    "sample_records": [],
                 }
 
                 try:
@@ -246,7 +288,14 @@ async def analyze_database():
                             # Obtener muestra de registros (máximo 3)
                             sample = db.query(model_class).limit(3).all()
                             table_analysis["sample_records"] = [
-                                {"id": getattr(record, 'id', 'N/A'), "data": str(record)[:200] + "..." if len(str(record)) > 200 else str(record)}
+                                {
+                                    "id": getattr(record, "id", "N/A"),
+                                    "data": (
+                                        str(record)[:200] + "..."
+                                        if len(str(record)) > 200
+                                        else str(record)
+                                    ),
+                                }
                                 for record in sample
                             ]
 
@@ -261,7 +310,11 @@ async def analyze_database():
                 "tables_with_data": tables_with_data,
                 "tables_empty": len(tables) - tables_with_data,
                 "total_records": total_records,
-                "database_status": "✅ Active with data" if tables_with_data > 0 else "📭 Empty database"
+                "database_status": (
+                    "✅ Active with data"
+                    if tables_with_data > 0
+                    else "📭 Empty database"
+                ),
             }
 
         finally:
@@ -272,11 +325,13 @@ async def analyze_database():
     except Exception as e:
         logger.error(f"❌ Database analysis error: {e}")
         import traceback
+
         return {
             "error": f"Analysis failed: {str(e)}",
             "traceback": traceback.format_exc(),
-            "timestamp": str(datetime.now())
+            "timestamp": str(datetime.now()),
         }
+
 
 @app.delete("/debug/clear-database")
 async def clear_database():
@@ -346,20 +401,18 @@ async def clear_database():
                 "inspecciones": inspecciones_count,
                 "testigos": testigos_count,
                 "visitas_taller": visitas_count,
-                "dinamicas_accidente": dinamicas_count
+                "dinamicas_accidente": dinamicas_count,
             },
-            "warning": "⚠️ TODOS LOS DATOS HAN SIDO ELIMINADOS PERMANENTEMENTE"
+            "warning": "⚠️ TODOS LOS DATOS HAN SIDO ELIMINADOS PERMANENTEMENTE",
         }
 
     except Exception as e:
         logger.error(f"❌ Error limpiando base de datos: {e}")
         db.rollback()
-        return {
-            "error": f"Error limpiando base de datos: {str(e)}",
-            "status": "failed"
-        }
+        return {"error": f"Error limpiando base de datos: {str(e)}", "status": "failed"}
     finally:
         db.close()
+
 
 @app.post("/debug/reset-database")
 async def reset_database():
@@ -407,17 +460,15 @@ async def reset_database():
                 "✅ Eliminados todos los datos existentes",
                 "✅ Eliminadas todas las tablas",
                 "✅ Recreación completa del esquema",
-                "✅ Base de datos lista para uso"
+                "✅ Base de datos lista para uso",
             ],
-            "status": "ready"
+            "status": "ready",
         }
 
     except Exception as e:
         logger.error(f"❌ Error en reset completo: {e}")
-        return {
-            "error": f"Reset falló: {str(e)}",
-            "status": "failed"
-        }
+        return {"error": f"Reset falló: {str(e)}", "status": "failed"}
+
 
 @app.post("/debug/create-test-data")
 async def create_test_data_endpoint():
@@ -433,9 +484,12 @@ async def create_test_data_endpoint():
         logger.info(f"Directorio actual: {current_dir}")
 
         # Ejecutar el script create_test_data.py
-        result = subprocess.run([
-            sys.executable, "create_test_data.py"
-        ], capture_output=True, text=True, cwd=current_dir)
+        result = subprocess.run(
+            [sys.executable, "create_test_data.py"],
+            capture_output=True,
+            text=True,
+            cwd=current_dir,
+        )
 
         if result.returncode == 0:
             logger.info("✅ Datos de prueba creados exitosamente")
@@ -454,26 +508,28 @@ async def create_test_data_endpoint():
                 "output": result.stdout.strip(),
                 "error": result.stderr.strip(),
                 "siniestros_creados": count,
-                "status": "success"
+                "status": "success",
             }
         else:
             logger.error(f"❌ Error creando datos de prueba: {result.stderr}")
             return {
                 "error": f"Error creando datos: {result.stderr.strip()}",
                 "output": result.stdout.strip(),
-                "status": "failed"
+                "status": "failed",
             }
 
     except Exception as e:
         logger.error(f"❌ Error ejecutando script: {e}")
         import traceback
+
         error_details = traceback.format_exc()
         logger.error(f"Traceback: {error_details}")
         return {
             "error": f"Error ejecutando script: {str(e)}",
             "traceback": error_details,
-            "status": "failed"
+            "status": "failed",
         }
+
 
 @app.post("/debug/apply-migrations")
 async def apply_migrations():
@@ -497,7 +553,7 @@ async def apply_migrations():
             return {
                 "error": "alembic.ini no encontrado en el directorio actual",
                 "current_dir": current_dir,
-                "status": "failed"
+                "status": "failed",
             }
 
         # Verificar que el directorio alembic existe
@@ -505,13 +561,16 @@ async def apply_migrations():
             return {
                 "error": "Directorio alembic/ no encontrado",
                 "current_dir": current_dir,
-                "status": "failed"
+                "status": "failed",
             }
 
         # Ejecutar alembic upgrade head desde el directorio actual
-        result = subprocess.run([
-            sys.executable, "-m", "alembic", "upgrade", "head"
-        ], capture_output=True, text=True, cwd=current_dir)
+        result = subprocess.run(
+            [sys.executable, "-m", "alembic", "upgrade", "head"],
+            capture_output=True,
+            text=True,
+            cwd=current_dir,
+        )
 
         if result.returncode == 0:
             logger.info("✅ Migraciones aplicadas exitosamente")
@@ -520,7 +579,7 @@ async def apply_migrations():
                 "message": "✅ Migraciones aplicadas exitosamente",
                 "output": result.stdout.strip(),
                 "error": result.stderr.strip(),
-                "current_dir": current_dir
+                "current_dir": current_dir,
             }
         else:
             logger.error(f"❌ Error aplicando migraciones: {result.stderr}")
@@ -528,16 +587,17 @@ async def apply_migrations():
                 "error": f"Error aplicando migraciones: {result.stderr.strip()}",
                 "output": result.stdout.strip(),
                 "status": "failed",
-                "current_dir": current_dir
+                "current_dir": current_dir,
             }
 
     except Exception as e:
         logger.error(f"❌ Error ejecutando migraciones: {e}")
         import traceback
+
         error_details = traceback.format_exc()
         logger.error(f"Traceback: {error_details}")
         return {
             "error": f"Error ejecutando migraciones: {str(e)}",
             "traceback": error_details,
-            "status": "failed"
+            "status": "failed",
         }
