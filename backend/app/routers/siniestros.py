@@ -1,6 +1,7 @@
-from fastapi import APIRouter, HTTPException, Depends, UploadFile, File
+from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Request
 from sqlalchemy.orm import Session
 from typing import List
+import logging
 
 from app import models, schemas
 from app.database import get_db
@@ -101,9 +102,20 @@ async def guardar_seccion(
 async def update_siniestro(
     siniestro_id: int,
     siniestro_update: schemas.SiniestroUpdate,
+    request: Request,
     db: Session = Depends(get_db),
 ):
     """Actualizar un siniestro"""
+    logger = logging.getLogger(__name__)
+
+    # DIAGNÓSTICO JSON ERROR
+    try:
+        raw_body = await request.body()
+        logger.error(f"🔥 RAW BODY RECIBIDO: {raw_body}")
+        logger.error(f"🔥 BODY como string: {raw_body.decode('utf-8', errors='ignore')}")
+    except Exception as e:
+        logger.error(f"🔥 ERROR leyendo body: {e}")
+
     siniestro_service = SiniestroService(db)
     validation_service = get_validation_service()
 
