@@ -742,8 +742,6 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
                 story.append(objeto_table)
                 story.append(Spacer(1, 15))
 
-        story.append(PageBreak())  # Salto de página completo
-
         # ==================== INVESTIGACIÓN ====================
         logger.info("🔍 Generando sección de investigación...")
 
