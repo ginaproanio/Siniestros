@@ -648,6 +648,7 @@ def generate_pdf(siniestro: Siniestro, sign_document: bool = True) -> bytes:
         PDF data as bytes
     """
     try:
+        logger.info(f"🔄 Iniciando generación PDF para siniestro {siniestro.id}")
         buffer = io.BytesIO()
 
         doc = SimpleDocTemplate(
@@ -1099,6 +1100,12 @@ def generate_pdf(siniestro: Siniestro, sign_document: bool = True) -> bytes:
         return pdf_data
 
     except Exception as e:
+        # Log detailed error information
+        logger.error(f"❌ ERROR generando PDF para siniestro {siniestro.id}: {str(e)}")
+        import traceback
+        error_details = traceback.format_exc()
+        logger.error(f"🔍 Traceback completo:\n{error_details}")
+
         # Minimal error PDF
         error_buffer = io.BytesIO()
         doc = SimpleDocTemplate(error_buffer, pagesize=letter)
