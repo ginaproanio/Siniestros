@@ -35,8 +35,11 @@ class Siniestro(Base):
 
     # Campos de investigación recabada (todos como JSON arrays para CRUD)
     evidencias_complementarias = Column(Text)  # JSON array de evidencias complementarias
+    evidencias_complementarias_imagen_url = Column(String(500))  # URL de imagen para evidencias
     otras_diligencias = Column(Text)  # JSON array de otras diligencias
-    detalles_visita_taller = Column(Text)  # JSON array de visitas al taller
+    otras_diligencias_imagen_url = Column(String(500))  # URL de imagen para otras diligencias
+    visita_taller_descripcion = Column(Text)  # Descripción de visita al taller
+    visita_taller_imagen_url = Column(String(500))  # URL de imagen para visita al taller
     observaciones = Column(Text)  # JSON array de observaciones
     recomendacion_pago_cobertura = Column(Text)  # JSON array de recomendaciones de pago
     conclusiones = Column(Text)  # JSON array de conclusiones
@@ -135,8 +138,6 @@ class RelatoAsegurado(Base):
     numero_relato = Column(Integer, nullable=False)
     texto = Column(Text, nullable=False)
     imagen_url = Column(String(500))  # URL de la imagen subida
-    imagen_base64 = Column(Text)  # Datos base64 de la imagen para PDFs
-    imagen_content_type = Column(String(50))  # Tipo MIME de la imagen
 
     siniestro = relationship("Siniestro", back_populates="relatos_asegurado")
 
@@ -148,8 +149,6 @@ class RelatoConductor(Base):
     numero_relato = Column(Integer, nullable=False)
     texto = Column(Text, nullable=False)
     imagen_url = Column(String(500))  # URL de la imagen subida
-    imagen_base64 = Column(Text)  # Datos base64 de la imagen para PDFs
-    imagen_content_type = Column(String(50))  # Tipo MIME de la imagen
 
     siniestro = relationship("Siniestro", back_populates="relatos_conductor")
 
@@ -161,8 +160,6 @@ class Inspeccion(Base):
     numero_inspeccion = Column(Integer, nullable=False)
     descripcion = Column(Text, nullable=False)
     imagen_url = Column(String(500))
-    imagen_base64 = Column(Text)  # Datos base64 de la imagen para PDFs
-    imagen_content_type = Column(String(50))  # Tipo MIME de la imagen
 
     siniestro = relationship("Siniestro", back_populates="inspecciones")
 
@@ -174,8 +171,6 @@ class Testigo(Base):
     numero_relato = Column(Integer, nullable=False)
     texto = Column(Text, nullable=False)
     imagen_url = Column(String(500))
-    imagen_base64 = Column(Text)  # Datos base64 de la imagen para PDFs
-    imagen_content_type = Column(String(50))  # Tipo MIME de la imagen
 
     siniestro = relationship("Siniestro", back_populates="testigos")
 
