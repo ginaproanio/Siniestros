@@ -41,7 +41,9 @@ class PDFService:
                 },
             )
         except Exception as e:
-            logger.error(f"Error generando PDF: {e}")
+            logger.error(f"Error generando PDF para siniestro {siniestro_id}: {e}")
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
             raise
 
     def generate_unsigned_pdf(self, siniestro_id: int) -> Response:
