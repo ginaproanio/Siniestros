@@ -232,7 +232,7 @@ async def guardar_seccion(
         elif seccion in [
             "evidencias_complementarias",
             "otras_diligencias",
-            "visita_taller",
+            "detalles_visita_taller",
             "observaciones",
             "recomendacion_pago_cobertura",
             "conclusiones",
