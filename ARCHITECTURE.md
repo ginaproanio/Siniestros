@@ -155,14 +155,81 @@ backend/
 │   │   └── siniestro.py
 │   ├── routers/             # Endpoints REST
 │   │   └── siniestros.py
-│   ├── services/            # Lógica de negocio
-│   │   └── s3_service.py
-│   └── utils/               # Utilidades
-│       └── pdf_generator.py
-├── tests/                   # Tests automatizados
+│   ├── services/            # Lógica de negocio (Pydantic-native)
+│   │   ├── siniestro_service.py  # CRUD operations
+│   │   ├── pdf_service.py        # PDF generation
+│   │   ├── validation_service.py # Business rules
+│   │   └── s3_service.py         # Cloud storage
+│   ├── utils/               # Utilidades
+│   │   └── pdf_generator.py
+│   └── tests/               # Tests automatizados
+│       └── test_pydantic_service_integration.py
 ├── requirements.txt
 └── Procfile
 ```
+
+### **Arquitectura Unificada Pydantic-Native**
+
+```
+┌─────────────────┐    Pydantic Models    ┌─────────────────┐
+│   FastAPI       │◄────────────────────►│  Service Layer  │
+│   (Validation)  │                      │  (Business Logic)│
+│                 │                      │                 │
+│ • Request/Response│                     │ • CRUD Operations│
+│ • Auto-validation│                     │ • Data Processing│
+│ • Type Safety    │                     │ • Pydantic Direct│
+└─────────────────┘                      └─────────────────┘
+         │                                           │
+         └────────────────── SQLAlchemy ─────────────┘
+```
+
+**Beneficios de la Arquitectura Unificada:**
+- ✅ **Type Safety End-to-End**: Pydantic models desde HTTP hasta DB
+- ✅ **Zero Conversion Overhead**: Sin transformación manual de tipos
+- ✅ **Validation Consistency**: Pydantic + business rules complementarios
+- ✅ **Developer Experience**: IntelliSense y refactoring seguros
+- ✅ **Runtime Safety**: Validación automática en todas las capas
+
+### **Evolución Arquitectónica: Pydantic-Native Services**
+
+**Contexto:** Inicialmente existía un desacople entre FastAPI (Pydantic models) y Service Layer (dicts), causando errores de conversión manual.
+
+**Solución Implementada (Phase 1-2):**
+```python
+# ANTES: Conversión manual problemática
+@app.put("/{id}/seccion/antecedentes")
+async def guardar_seccion(datos: List[AntecedenteInput], ...):
+    # ❌ Conversión manual → errores de tipos
+    processed_data = [item.model_dump() for item in datos]
+    result = service.update_section(id, "antecedentes", processed_data)
+
+# DESPUÉS: Arquitectura Pydantic-native
+@app.put("/{id}/seccion/antecedentes")
+async def guardar_seccion(datos: List[AntecedenteInput], ...):
+    # ✅ Service layer acepta Pydantic directamente
+    result = service.update_section(id, "antecedentes", datos)
+```
+
+**Service Layer Evolution:**
+```python
+# ANTES: Solo dicts
+def update_section(self, id, section, data: Any) -> Dict
+
+# DESPUÉS: Pydantic-native con backward compatibility
+def update_section(self, id, section, data: Union[List[BaseModel], BaseModel, Any]) -> Dict:
+    # Conversión automática cuando es necesario para DB
+    if hasattr(item, 'model_dump'):
+        item_data = item.model_dump()
+    else:
+        item_data = item
+```
+
+**Beneficios de la Evolución:**
+- 🔄 **Zero Breaking Changes**: Funciona con código existente
+- 🔄 **Gradual Adoption**: Nuevos endpoints aprovechan Pydantic
+- 🔄 **Type Safety**: IntelliSense completo en services
+- 🔄 **Performance**: Sin overhead de conversión innecesaria
+- 🔄 **Maintainability**: Un solo modelo de datos end-to-end
 
 ### **Modelo de Datos**
 

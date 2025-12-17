@@ -92,17 +92,6 @@ async def guardar_seccion(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        # Log the actual error for debugging
-        import logging
-
-        logger = logging.getLogger(__name__)
-        logger.error(
-            f"Error guardando sección {seccion} para siniestro {siniestro_id}: {str(e)}"
-        )
-        import traceback
-
-        logger.error(f"Traceback: {traceback.format_exc()}")
-
         raise HTTPException(
             status_code=500, detail=validation_service.create_safe_error_message(e)
         )
