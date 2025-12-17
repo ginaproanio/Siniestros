@@ -80,14 +80,56 @@ except ImportError:
     )
 
 
-def get_image_from_base64(base64_data: str, content_type: str = None) -> bytes:
-    """Convertir datos base64 a bytes para procesamiento de imagen"""
+def optimize_image_for_pdf(base64_str: str, max_width: int = 800, max_height: int = 600, quality: int = 85) -> str:
+    """
+    Optimiza imágenes para PDF manteniendo calidad aceptable y reduciendo tamaño del archivo final.
+    """
+    try:
+        import base64
+
+        # Limpiar prefijo si existe
+        if "base64," in base64_str:
+            base64_str = base64_str.split("base64,")[1]
+
+        # Decodificar base64
+        image_data = base64.b64decode(base64_str)
+        img = PILImage.open(io.BytesIO(image_data))
+
+        # Mantener proporciones
+        img.thumbnail((max_width, max_height), PILImage.Resampling.LANCZOS)
+
+        # Convertir a RGB si es necesario (para JPEG)
+        if img.mode in ('RGBA', 'LA', 'P'):
+            background = PILImage.new('RGB', img.size, (255, 255, 255))
+            if img.mode == 'P':
+                img = img.convert('RGBA')
+            background.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
+            img = background
+
+        # Guardar optimizado en buffer
+        output_buffer = io.BytesIO()
+        img.save(output_buffer, format='JPEG', quality=quality, optimize=True)
+
+        # Devolver como base64 optimizado
+        return base64.b64encode(output_buffer.getvalue()).decode('utf-8')
+
+    except Exception as e:
+        logger.warning(f"⚠️ Error optimizando imagen: {e}")
+        return base64_str  # Retornar original si falla
+
+
+def get_image_from_base64(base64_data: str, content_type: str = None, optimize: bool = True) -> bytes:
+    """Convertir datos base64 a bytes para procesamiento de imagen con optimización opcional"""
     if not base64_data or not base64_data.strip():
         logger.warning("⚠️ Datos base64 vacíos o None")
         return None
 
     try:
         import base64
+
+        # Optimizar imagen antes de procesar si está habilitado
+        if optimize:
+            base64_data = optimize_image_for_pdf(base64_data)
 
         # Decodificar base64 a bytes
         image_data = base64.b64decode(base64_data)
@@ -112,6 +154,50 @@ def get_image_from_base64(base64_data: str, content_type: str = None) -> bytes:
     except Exception as e:
         logger.error(f"❌ Error decodificando base64: {e}")
         return None
+
+
+class PDFImageManager:
+    """Gestor de imágenes con cache para ReportLab"""
+
+    def __init__(self):
+        self.image_cache = {}
+
+    def get_image_from_base64(self, base64_str: str, width=None, height=None, optimize=True):
+        """Obtiene imagen optimizada desde base64 con cache"""
+
+        # Generar hash para cache
+        import hashlib
+        img_hash = hashlib.md5(base64_str.encode()).hexdigest()
+
+        if img_hash in self.image_cache:
+            img_data = self.image_cache[img_hash]
+        else:
+            # Decodificar y optimizar
+            img_data = get_image_from_base64(base64_str, optimize=optimize)
+            if img_data:
+                self.image_cache[img_hash] = img_data
+
+        if not img_data:
+            return None, 0, 0
+
+        # Crear ImageReader para ReportLab
+        from reportlab.lib.utils import ImageReader
+        img_reader = ImageReader(io.BytesIO(img_data))
+
+        # Obtener dimensiones originales
+        orig_width, orig_height = img_reader.getSize()
+
+        # Calcular dimensiones manteniendo aspecto
+        if width and height:
+            return img_reader, width, height
+        elif width:
+            height = (orig_height * width) / orig_width
+            return img_reader, width, height
+        elif height:
+            width = (orig_width * height) / orig_height
+            return img_reader, width, height
+        else:
+            return img_reader, orig_width, orig_height
 
 
 def create_pdf_image(
