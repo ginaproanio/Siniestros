@@ -208,50 +208,48 @@ def create_pdf_image(
 
 def header_footer(canvas, doc):
     """Función para dibujar header y footer en cada página"""
+    canvas.saveState()
+
     # Obtener el ancho y alto de la página
     width, height = letter
 
     # ==================== HEADER ====================
-    # Dibujar header en la parte superior (dentro del margen superior)
+    # Dibujar header en la parte superior del área imprimible
     canvas.setStrokeColor(colors.black)
     canvas.setLineWidth(1)
     # Línea horizontal en la parte superior
-    canvas.line(0.5 * inch, height - 0.4 * inch, width - 0.5 * inch, height - 0.4 * inch)
+    canvas.line(0.5 * inch, height - 0.5 * inch, width - 0.5 * inch, height - 0.5 * inch)
 
-    # Título del header (más arriba para evitar overlap)
+    # Título del header
     canvas.setFont("Helvetica-Bold", 10)
     canvas.drawString(
-        0.75 * inch, height - 0.25 * inch, "INFORME DE INVESTIGACIÓN DE SINIESTRO"
+        0.75 * inch, height - 0.75 * inch, "INFORME DE INVESTIGACIÓN DE SINIESTRO"
     )
 
     # Número de página en el header (derecha)
     page_num = canvas.getPageNumber()
     canvas.setFont("Helvetica", 8)
     canvas.drawRightString(
-        width - 0.75 * inch, height - 0.25 * inch, f"Página {page_num}"
+        width - 0.75 * inch, height - 0.75 * inch, f"Página {page_num}"
     )
 
     # ==================== FOOTER ====================
-    # Dibujar footer en la parte inferior (dentro del margen inferior)
+    # Dibujar footer en la parte inferior del área imprimible
     canvas.setStrokeColor(colors.black)
     canvas.setLineWidth(1)
     # Línea horizontal en la parte inferior
-    canvas.line(0.5 * inch, 0.4 * inch, width - 0.5 * inch, 0.4 * inch)
+    canvas.line(0.5 * inch, 0.5 * inch, width - 0.5 * inch, 0.5 * inch)
 
-    # Información del footer (más arriba para evitar overlap)
+    # Información del footer
     canvas.setFont("Helvetica", 8)
     footer_text = "Sistema de Gestión de Siniestros - Susana Espinosa"
-    canvas.drawString(0.75 * inch, 0.2 * inch, footer_text)
+    canvas.drawString(0.75 * inch, 0.25 * inch, footer_text)
 
     # Fecha en el footer (derecha)
     fecha_actual = datetime.now().strftime("%d/%m/%Y")
-    canvas.drawRightString(width - 0.75 * inch, 0.2 * inch, f"Fecha: {fecha_actual}")
+    canvas.drawRightString(width - 0.75 * inch, 0.25 * inch, f"Fecha: {fecha_actual}")
 
-    # Debug: Agregar marca visible para verificar que se ejecuta
-    canvas.setFont("Helvetica", 6)
-    canvas.setFillColor(colors.red)
-    canvas.drawString(0.1 * inch, height - 0.1 * inch, f"[HEADER P{page_num}]")
-    canvas.drawString(0.1 * inch, 0.1 * inch, f"[FOOTER P{page_num}]")
+    canvas.restoreState()
 
 
 logger = logging.getLogger(__name__)
