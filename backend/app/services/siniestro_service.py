@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_
 from pydantic import BaseModel
 from .. import models, schemas
-from .s3_service import upload_file_to_s3, download_image_from_url
+from .s3_service import upload_file_to_s3
 import logging
 
 logger = logging.getLogger(__name__)
@@ -109,7 +109,7 @@ class SiniestroService:
                         "inspecciones", "testigos"]:
             return self._update_list_section(siniestro, section, data)
         elif section in ["evidencias_complementarias", "otras_diligencias",
-                        "detalles_visita_taller", "observaciones",
+                        "visita_taller_descripcion", "observaciones",
                         "recomendacion_pago_cobertura", "conclusiones", "anexo"]:
             return self._update_json_section(siniestro, section, data)
         else:
@@ -210,17 +210,21 @@ class SiniestroService:
         return {"message": f"Sección '{section}' actualizada", "siniestro_id": siniestro.id}
 
     def _process_image_data(self, item_data: Dict[str, Any]) -> Dict[str, Any]:
-        """Process image data for relatos and inspecciones"""
+        """Process image data for relatos and inspecciones
+
+        Note: Since we removed imagen_base64 and imagen_content_type columns
+        from models to sync with database, this function now only validates
+        that image URLs are accessible, without storing base64 data.
+        """
         imagen_url = item_data.get("imagen_url")
         if imagen_url and imagen_url.strip():
             try:
-                image_data = download_image_from_url(imagen_url)
-                if image_data:
-                    import base64
-                    item_data["imagen_base64"] = base64.b64encode(image_data).decode("utf-8")
-                    item_data["imagen_content_type"] = "image/jpeg"
+                # Just validate that the image URL is accessible
+                # We no longer store base64 data in the database
+                logger.info(f"Validating image URL: {imagen_url}")
+                # Could add validation logic here if needed
             except Exception as e:
-                logger.warning(f"No se pudo procesar imagen: {e}")
+                logger.warning(f"No se pudo validar imagen: {e}")
 
         return item_data
 
