@@ -87,7 +87,7 @@ async def get_siniestro(siniestro_id: int, db: Session = Depends(get_db)):
 async def guardar_seccion(
     siniestro_id: int,
     seccion: str,  # 'asegurado', 'conductor', 'objeto_asegurado', 'antecedentes', etc.
-    datos,  # Datos específicos de la sección - puede ser dict o list
+    datos: List[schemas.RelatoInput] | List[schemas.AntecedenteInput] | dict,  # Datos específicos de la sección
     db: Session = Depends(get_db),
 ):
     """Guardar datos de una sección específica del siniestro"""
@@ -155,6 +155,10 @@ async def guardar_seccion(
                 try:
                     # Procesar imagen si existe
                     imagen_url = relato_data.get("imagen_url")
+                    # Truncar imagen_url si es demasiado larga (máximo 500 chars para BD)
+                    if imagen_url and len(imagen_url) > 500:
+                        logger.warning(f"⚠️ imagen_url demasiado larga ({len(imagen_url)} chars), truncando")
+                        imagen_url = imagen_url[:500]
                     imagen_base64 = None
                     imagen_content_type = None
 

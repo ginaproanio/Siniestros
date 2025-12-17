@@ -211,6 +211,14 @@ class DinamicaAccidenteResponse(BaseModel):
     class Config:
         from_attributes = True
 
+# Input schemas for section updates
+class RelatoInput(BaseModel):
+    texto: str
+    imagen_url: Optional[str] = None
+
+class AntecedenteInput(BaseModel):
+    descripcion: str
+
 # Full siniestro response with all relationships
 class SiniestroFullResponse(SiniestroResponse):
     asegurado: Optional[AseguradoResponse] = None
