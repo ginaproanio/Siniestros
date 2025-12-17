@@ -267,7 +267,7 @@ const SiniestroForm: React.FC = () => {
                   className="btn-submit-main"
                   disabled={saving}
                   style={{
-                    backgroundColor: "#007bff",
+                    backgroundColor: "#0f172a",
                     color: "white",
                     border: "none",
                     padding: "12px 24px",
