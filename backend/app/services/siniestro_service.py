@@ -40,10 +40,21 @@ class SiniestroService:
         return db_siniestro
 
     def get_siniestro(self, siniestro_id: int) -> Optional[models.Siniestro]:
-        """Get siniestro by ID"""
-        return self.db.query(models.Siniestro).filter(
-            models.Siniestro.id == siniestro_id
-        ).first()
+        """Get siniestro by ID with all relationships loaded"""
+        from sqlalchemy.orm import selectinload
+        return self.db.query(models.Siniestro).options(
+            selectinload(models.Siniestro.asegurado),
+            selectinload(models.Siniestro.beneficiario),
+            selectinload(models.Siniestro.conductor),
+            selectinload(models.Siniestro.objeto_asegurado),
+            selectinload(models.Siniestro.visita_taller),
+            selectinload(models.Siniestro.dinamica_accidente),
+            selectinload(models.Siniestro.antecedentes),
+            selectinload(models.Siniestro.relatos_asegurado),
+            selectinload(models.Siniestro.relatos_conductor),
+            selectinload(models.Siniestro.inspecciones),
+            selectinload(models.Siniestro.testigos)
+        ).filter(models.Siniestro.id == siniestro_id).first()
 
     def get_siniestros(self, skip: int = 0, limit: int = 100) -> List[models.Siniestro]:
         """Get all siniestros with pagination"""

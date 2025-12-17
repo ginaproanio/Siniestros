@@ -48,9 +48,8 @@ async def get_siniestros(
 @router.get("/{siniestro_id}", response_model=schemas.SiniestroFullResponse)
 async def get_siniestro(siniestro_id: int, db: Session = Depends(get_db)):
     """Obtener un siniestro completo por ID con todas sus relaciones"""
-    siniestro = (
-        db.query(models.Siniestro).filter(models.Siniestro.id == siniestro_id).first()
-    )
+    siniestro_service = SiniestroService(db)
+    siniestro = siniestro_service.get_siniestro(siniestro_id)
     if not siniestro:
         raise HTTPException(status_code=404, detail="Siniestro no encontrado")
     return siniestro
