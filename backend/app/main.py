@@ -16,69 +16,27 @@ app = FastAPI(
 )
 
 
-# Database initialization - COMPLETE RESET on every startup
+# Database initialization - SAFE STARTUP (NO RESET)
 @app.on_event("startup")
 async def startup_event():
-    """🔥 COMPLETE DATABASE RESET: Drop all tables and recreate from scratch"""
+    """✅ SAFE STARTUP: Create tables only if they don't exist"""
     import logging
 
     logger = logging.getLogger(__name__)
 
-    logger.info("� INICIANDO RESET COMPLETO DE BASE DE DATOS...")
+    logger.info("🚀 Iniciando aplicación de forma segura...")
 
     try:
         from app.database import engine, Base
         from app import models
         import sqlalchemy as sa
 
-        # 1. DROP ALL EXISTING TABLES
-        logger.info("🗑️ Eliminando todas las tablas existentes...")
-        with engine.connect() as conn:
-            # Get all table names - compatible with both PostgreSQL and SQLite
-            if "postgresql" in str(engine.url):
-                # PostgreSQL
-                result = conn.execute(
-                    sa.text(
-                        """
-                    SELECT tablename FROM pg_tables
-                    WHERE schemaname = 'public'
-                """
-                    )
-                )
-                tables = [row[0] for row in result]
-            else:
-                # SQLite
-                result = conn.execute(
-                    sa.text(
-                        """
-                    SELECT name FROM sqlite_master
-                    WHERE type='table' AND name NOT LIKE 'sqlite_%'
-                """
-                    )
-                )
-                tables = [row[0] for row in result]
-
-            if tables:
-                # Drop tables with CASCADE to handle foreign keys
-                for table in tables:
-                    try:
-                        conn.execute(sa.text(f"DROP TABLE IF EXISTS {table} CASCADE"))
-                        logger.info(f"  ✅ Dropped table: {table}")
-                    except Exception as e:
-                        logger.warning(f"  ⚠️ Could not drop {table}: {e}")
-
-                conn.commit()
-                logger.info(f"✅ Dropped {len(tables)} tables")
-            else:
-                logger.info("ℹ️ No tables to drop")
-
-        # 2. CREATE ALL TABLES FROM SCRATCH (FIXED: No dropear en producción)
-        logger.info("🏗️ Creando todas las tablas desde cero...")
-        # Base.metadata.drop_all(bind=engine)  # ❌ COMENTADO: NO BORRAR EN PRODUCCIÓN
+        # SAFE: Only create tables if they don't exist
+        logger.info("🔍 Verificando esquema de base de datos...")
         Base.metadata.create_all(bind=engine)  # Solo crear si no existen
-        logger.info("✅ Esquema verificado/creado")
+        logger.info("✅ Esquema verificado/creado de forma segura")
 
-        # 3. Verify database is ready
+        # Verify database is ready
         from sqlalchemy.orm import sessionmaker
 
         SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -106,7 +64,7 @@ async def startup_event():
         logger.info(f"🚀 Railway deployment detected: {is_railway}")
 
     except Exception as e:
-        logger.error(f"❌ Error en reset completo de BD: {e}")
+        logger.error(f"❌ Error en inicio seguro de BD: {e}")
         import traceback
 
         logger.error(f"❌ Traceback: {traceback.format_exc()}")
