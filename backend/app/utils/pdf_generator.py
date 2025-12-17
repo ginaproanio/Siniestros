@@ -1,3 +1,54 @@
+"""
+ARQUITECTURA DE GENERACIÓN DE PDF - SISTEMA SINIESTROS
+
+ESTRUCTURA DEL PDF GENERADO:
+---------------------------
+
+PÁGINA 1: CARÁTULA
+├── Título: "INFORME DE INVESTIGACIÓN DE SINIESTRO"
+├── Tabla con: Compañía, Número de Reclamo, Asegurado, Investigador
+├── Fecha de generación
+└── PageBreak() → Nueva página
+
+PÁGINA 2: ÍNDICE
+├── Lista dinámica de secciones según contenido disponible
+├── Numeración automática de páginas
+└── PageBreak() → Nueva página
+
+PÁGINA 3+: REGISTRO DEL SINIESTRO
+├── Datos básicos (Compañía, Fechas, Ubicación, etc.)
+├── Declaración del siniestro
+├── Información de entidades (Asegurado, Conductor, Objeto, etc.)
+└── FLUYE NATURALMENTE (sin PageBreak forzado)
+
+PÁGINA SIGUIENTE: INVESTIGACIÓN
+├── Antecedentes, Entrevistas, Inspecciones, Testigos
+├── Evidencias, Observaciones, Conclusiones
+└── PageBreak() antes de esta sección
+
+HEADERS/FOOTERS EN TODAS LAS PÁGINAS:
+├── Header: "INFORME DE INVESTIGACIÓN DE SINIESTRO" + "Página X"
+└── Footer: "Sistema de Gestión de Siniestros - Susana Espinosa" + Fecha
+
+FIRMA DIGITAL:
+├── Certificado P12 cargado desde AWS S3
+├── Firma automática si certificado disponible
+└── Compatible con lectores PDF estándar
+
+REGLAS DE SALTOS DE PÁGINA:
+├── PageBreak(): Fuerza nueva página REAL
+├── Spacer(1,120): Solo añade espacio vertical (NO usar para saltos)
+├── Registro fluye naturalmente, Investigación siempre en nueva página
+
+DEPENDENCIAS CRÍTICAS:
+├── reportlab: Motor de generación PDF
+├── cryptography + endesive: Firma digital
+├── pillow: Procesamiento de imágenes
+├── boto3: Acceso a certificados en S3
+
+ARCHIVO FINAL: {numero_reclamo}.pdf
+"""
+
 import io
 import logging
 import os
@@ -161,40 +212,46 @@ def header_footer(canvas, doc):
     width, height = letter
 
     # ==================== HEADER ====================
-    # Línea superior
+    # Dibujar header en la parte superior (dentro del margen superior)
     canvas.setStrokeColor(colors.black)
     canvas.setLineWidth(1)
-    canvas.line(
-        0.5 * inch, height - 0.5 * inch, width - 0.5 * inch, height - 0.5 * inch
-    )
+    # Línea horizontal en la parte superior
+    canvas.line(0.5 * inch, height - 0.4 * inch, width - 0.5 * inch, height - 0.4 * inch)
 
-    # Título del header
+    # Título del header (más arriba para evitar overlap)
     canvas.setFont("Helvetica-Bold", 10)
     canvas.drawString(
-        0.75 * inch, height - 0.7 * inch, "INFORME DE INVESTIGACIÓN DE SINIESTRO"
+        0.75 * inch, height - 0.25 * inch, "INFORME DE INVESTIGACIÓN DE SINIESTRO"
     )
 
     # Número de página en el header (derecha)
     page_num = canvas.getPageNumber()
     canvas.setFont("Helvetica", 8)
     canvas.drawRightString(
-        width - 0.75 * inch, height - 0.7 * inch, f"Página {page_num}"
+        width - 0.75 * inch, height - 0.25 * inch, f"Página {page_num}"
     )
 
     # ==================== FOOTER ====================
-    # Línea inferior
+    # Dibujar footer en la parte inferior (dentro del margen inferior)
     canvas.setStrokeColor(colors.black)
     canvas.setLineWidth(1)
-    canvas.line(0.5 * inch, 0.5 * inch, width - 0.5 * inch, 0.5 * inch)
+    # Línea horizontal en la parte inferior
+    canvas.line(0.5 * inch, 0.4 * inch, width - 0.5 * inch, 0.4 * inch)
 
-    # Información del footer
+    # Información del footer (más arriba para evitar overlap)
     canvas.setFont("Helvetica", 8)
     footer_text = "Sistema de Gestión de Siniestros - Susana Espinosa"
-    canvas.drawString(0.75 * inch, 0.3 * inch, footer_text)
+    canvas.drawString(0.75 * inch, 0.2 * inch, footer_text)
 
     # Fecha en el footer (derecha)
     fecha_actual = datetime.now().strftime("%d/%m/%Y")
-    canvas.drawRightString(width - 0.75 * inch, 0.3 * inch, f"Fecha: {fecha_actual}")
+    canvas.drawRightString(width - 0.75 * inch, 0.2 * inch, f"Fecha: {fecha_actual}")
+
+    # Debug: Agregar marca visible para verificar que se ejecuta
+    canvas.setFont("Helvetica", 6)
+    canvas.setFillColor(colors.red)
+    canvas.drawString(0.1 * inch, height - 0.1 * inch, f"[HEADER P{page_num}]")
+    canvas.drawString(0.1 * inch, 0.1 * inch, f"[FOOTER P{page_num}]")
 
 
 logger = logging.getLogger(__name__)
@@ -298,8 +355,8 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
         doc = SimpleDocTemplate(
             buffer,
             pagesize=letter,
-            topMargin=1 * inch,
-            bottomMargin=1 * inch,
+            topMargin=1.5 * inch,    # Más espacio para header
+            bottomMargin=1.5 * inch, # Más espacio para footer
             leftMargin=1 * inch,
             rightMargin=1 * inch,
         )
