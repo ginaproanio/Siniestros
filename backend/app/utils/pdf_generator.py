@@ -353,13 +353,13 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
         doc = SimpleDocTemplate(
             buffer,
             pagesize=letter,
-            topMargin=1.5 * inch,    # Más espacio para header
-            bottomMargin=1.5 * inch, # Más espacio para footer
+            topMargin=1.2 * inch,    # Espacio para header
+            bottomMargin=1.2 * inch, # Espacio para footer
             leftMargin=1 * inch,
             rightMargin=1 * inch,
         )
 
-        # Agregar función de header/footer
+        # Asignar función de header/footer
         doc.onFirstPage = header_footer
         doc.onLaterPages = header_footer
         styles = getSampleStyleSheet()
@@ -399,6 +399,14 @@ def generate_simple_pdf(siniestro: Siniestro) -> bytes:
 
         # ==================== CARÁTULA ====================
         logger.info("📄 Generando carátula...")
+
+        # DEBUG: Agregar texto visible para verificar que el PDF se genera
+        debug_text = Paragraph(
+            "DEBUG: PDF GENERADO CORRECTAMENTE - SI VES ESTE TEXTO, EL PDF FUNCIONA",
+            ParagraphStyle("Debug", parent=styles["Normal"], fontSize=12, textColor=colors.red, alignment=TA_CENTER)
+        )
+        story.append(debug_text)
+        story.append(Spacer(1, 20))
 
         # Título principal
         title = Paragraph("INFORME DE INVESTIGACIÓN<br/>DE SINIESTRO", title_style)
