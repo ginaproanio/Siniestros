@@ -256,23 +256,25 @@ const SiniestroForm: React.FC = () => {
               );
             })}
           </div>
-          <button
-            type="submit"
-            className="btn-submit-main"
-            disabled={saving}
-            style={{
-              backgroundColor: "#007bff",
-              color: "white",
-              border: "none",
-              padding: "10px 20px",
-              borderRadius: "4px",
-              fontSize: "14px",
-              cursor: saving ? "not-allowed" : "pointer",
-              opacity: saving ? 0.6 : 1
-            }}
-          >
-            {saving ? "💾 Guardando..." : `💾 ${isEditMode ? "Actualizar Siniestro" : "Crear Siniestro"}`}
-          </button>
+          {isEditMode && (
+            <button
+              type="submit"
+              className="btn-submit-main"
+              disabled={saving}
+              style={{
+                backgroundColor: "#007bff",
+                color: "white",
+                border: "none",
+                padding: "10px 20px",
+                borderRadius: "4px",
+                fontSize: "14px",
+                cursor: saving ? "not-allowed" : "pointer",
+                opacity: saving ? 0.6 : 1
+              }}
+            >
+              {saving ? "💾 Guardando..." : "💾 Actualizar Siniestro"}
+            </button>
+          )}
         </div>
 
         {/* Tab Content */}
