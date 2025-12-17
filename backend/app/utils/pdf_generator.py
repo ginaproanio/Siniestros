@@ -378,19 +378,7 @@ def generate_pdf(siniestro: Siniestro, sign_document: bool = True) -> bytes:
         registro_data = [row for row in registro_data_raw if row[1].strip()]
 
         if registro_data:
-            registro_table = Table(registro_data, colWidths=[2.5 * inch, 4 * inch])
-            registro_table.setStyle(TableStyle([
-                ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
-                ("FONTSIZE", (0, 0), (-1, -1), 10),
-                ("GRID", (0, 0), (-1, -1), 1, colors.black),
-                ("ALIGN", (0, 0), (0, -1), "LEFT"),
-                ("ALIGN", (1, 0), (1, -1), "LEFT"),
-                ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
-                ("LEFTPADDING", (0, 0), (-1, -1), 6),
-                ("RIGHTPADDING", (0, 0), (-1, -1), 6),
-                ("TOPPADDING", (0, 0), (-1, -1), 4),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-            ]))
+            registro_table = crear_tabla_estandar(registro_data)
             story.append(registro_table)
             story.append(Spacer(1, 20))
 
@@ -411,19 +399,7 @@ def generate_pdf(siniestro: Siniestro, sign_document: bool = True) -> bytes:
             declaracion_data = [row for row in declaracion_data if row[1].strip()]
 
             if declaracion_data:
-                declaracion_table = Table(declaracion_data, colWidths=[2.5 * inch, 4 * inch])
-                declaracion_table.setStyle(TableStyle([
-                    ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
-                    ("FONTSIZE", (0, 0), (-1, -1), 10),
-                    ("GRID", (0, 0), (-1, -1), 1, colors.black),
-                    ("ALIGN", (0, 0), (0, -1), "LEFT"),
-                    ("ALIGN", (1, 0), (1, -1), "LEFT"),
-                    ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
-                    ("LEFTPADDING", (0, 0), (-1, -1), 6),
-                    ("RIGHTPADDING", (0, 0), (-1, -1), 6),
-                    ("TOPPADDING", (0, 0), (-1, -1), 4),
-                    ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-                ]))
+                declaracion_table = crear_tabla_estandar(declaracion_data)
                 story.append(declaracion_table)
                 story.append(Spacer(1, 15))
 
@@ -473,19 +449,7 @@ def generate_pdf(siniestro: Siniestro, sign_document: bool = True) -> bytes:
                     "objeto_asegurado": "Información del Objeto Asegurado:",
                 }
                 story.append(Paragraph(title_map[entity_name], section_style))
-                entity_table = Table(entity_data_filtered, colWidths=[2.5 * inch, 4 * inch])
-                entity_table.setStyle(TableStyle([
-                    ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
-                    ("FONTSIZE", (0, 0), (-1, -1), 10),
-                    ("GRID", (0, 0), (-1, -1), 1, colors.black),
-                    ("ALIGN", (0, 0), (0, -1), "LEFT"),
-                    ("ALIGN", (1, 0), (1, -1), "LEFT"),
-                    ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
-                    ("LEFTPADDING", (0, 0), (-1, -1), 6),
-                    ("RIGHTPADDING", (0, 0), (-1, -1), 6),
-                    ("TOPPADDING", (0, 0), (-1, -1), 4),
-                    ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-                ]))
+                entity_table = crear_tabla_estandar(entity_data_filtered)
                 story.append(entity_table)
                 story.append(Spacer(1, 15))
 
