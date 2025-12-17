@@ -172,15 +172,20 @@ class ValidationService:
 
     def _validate_list_data(self, data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Validate list data (relatos, inspecciones, etc.)"""
+        # Handle case where data might not be a list (flexible parsing)
         if not isinstance(data, list):
-            raise ValueError("Datos deben ser una lista")
+            # If it's not a list, try to wrap it in a list
+            if isinstance(data, dict):
+                data = [data]
+            else:
+                raise ValueError("Datos deben ser una lista o un objeto")
 
         if len(data) > 50:  # Reasonable limit
             raise ValueError("Demasiados elementos en la lista")
 
         for item in data:
             if not isinstance(item, dict):
-                raise ValueError("Cada elemento debe ser un objeto")
+                raise ValueError(f"Cada elemento debe ser un objeto, pero se recibió: {type(item)} - {item}")
 
             # Validate image URLs if present
             if 'imagen_url' in item and item['imagen_url']:
