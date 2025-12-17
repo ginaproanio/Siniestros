@@ -36,6 +36,15 @@ async def create_siniestro(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
+        # Log the actual error for debugging
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(
+            f"Error guardando sección {seccion} para siniestro {siniestro_id}: {str(e)}"
+        )
+        import traceback
+        logger.error(f"Traceback: {traceback.format_exc()}")
+
         raise HTTPException(
             status_code=500, detail=validation_service.create_safe_error_message(e)
         )
@@ -123,6 +132,15 @@ async def update_siniestro(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
+        # Log the actual error for debugging
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(
+            f"Error guardando sección {seccion} para siniestro {siniestro_id}: {str(e)}"
+        )
+        import traceback
+        logger.error(f"Traceback: {traceback.format_exc()}")
+
         raise HTTPException(
             status_code=500, detail=validation_service.create_safe_error_message(e)
         )
@@ -152,6 +170,15 @@ async def create_testigo(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
+        # Log the actual error for debugging
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(
+            f"Error guardando sección {seccion} para siniestro {siniestro_id}: {str(e)}"
+        )
+        import traceback
+        logger.error(f"Traceback: {traceback.format_exc()}")
+
         raise HTTPException(
             status_code=500, detail=validation_service.create_safe_error_message(e)
         )
@@ -201,8 +228,17 @@ async def diagnostico_pdf(db: Session = Depends(get_db)):
     try:
         return pdf_service.generate_diagnostic_pdf()
     except Exception as e:
+        # Log the actual error for debugging
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(
+            f"Error guardando sección {seccion} para siniestro {siniestro_id}: {str(e)}"
+        )
+        import traceback
+        logger.error(f"Traceback: {traceback.format_exc()}")
+
         raise HTTPException(
-            status_code=500, detail="Error generando PDF de diagnóstico"
+            status_code=500, detail=validation_service.create_safe_error_message(e)
         )
 
 
